@@ -4,6 +4,18 @@
 
 ---
 
+## 📅 2026年02月25日
+
+### [需求-009] 进一步精简 Messaging 与 Ant 兼容性组件
+- **背景**: 为了进一步优化构建环境，剥离不常用的消息中间件和遗留构建工具支持。
+- **范围**: 
+    - 忽略 `spring-boot-antlib` (Tool) 及其相关烟雾测试。
+    - 忽略 `spring-boot-starter-artemis` 与 `spring-boot-starter-amqp` (Starters)。
+    - 同步屏蔽 `spring-boot-smoke-test-artemis` 与 `spring-boot-smoke-test-ant` 以加速全量构建检测。
+- **结果**: 构建依赖树进一步精简，减少了由于这些组件引入的潜在不稳定因素。
+
+---
+
 ## 📅 2026年02月24日
 
 ### [需求-008] 模块深度精简与构建性能极致优化

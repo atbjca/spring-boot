@@ -67,7 +67,7 @@ settings.gradle.projectsLoaded {
 
 include "spring-boot-project:spring-boot-dependencies"
 include "spring-boot-project:spring-boot-parent"
-include "spring-boot-project:spring-boot-tools:spring-boot-antlib"
+// include "spring-boot-project:spring-boot-tools:spring-boot-antlib"
 include "spring-boot-project:spring-boot-tools:spring-boot-autoconfigure-processor"
 include "spring-boot-project:spring-boot-tools:spring-boot-buildpack-platform"
 include "spring-boot-project:spring-boot-tools:spring-boot-configuration-metadata"
@@ -113,6 +113,8 @@ def ignoredStarters = [
 	"spring-boot-starter-graphql",
 	"spring-boot-starter-hateoas",
 	"spring-boot-starter-integration",
+	"spring-boot-starter-artemis",
+	"spring-boot-starter-amqp",
 ] as Set
 
 def ignoredSmokeTests = [
@@ -132,6 +134,8 @@ def ignoredSmokeTests = [
 	"spring-boot-smoke-test-secure-jersey",
 	"spring-boot-smoke-test-integration",
 	"spring-boot-smoke-test-parent-context",
+	"spring-boot-smoke-test-artemis",
+	"spring-boot-smoke-test-ant",
 ] as Set
 
 file("${rootDir}/spring-boot-project/spring-boot-starters").eachDirMatch(~/spring-boot-starter.*/) {

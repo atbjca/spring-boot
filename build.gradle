@@ -2,6 +2,7 @@ plugins {
 	id "base"
 	id "org.jetbrains.kotlin.jvm" apply false // https://youtrack.jetbrains.com/issue/KT-30276
 	id "io.spring.nohttp" version "0.0.11"
+	id 'maven-publish' // 2026-02-25 因为 publishing 而添加的插件
 }
 
 description = "Spring Boot Build"
@@ -25,7 +26,7 @@ check {
 }
 
 allprojects {
-	group "org.springframework.boot"
+	group "libiao.test.org.springframework.boot"
 
 	repositories {
 		maven {
@@ -66,4 +67,23 @@ allprojects {
 tasks.named("checkstyleNohttp").configure {
 	maxHeapSize = "10240m"
 	minHeapSize = "6144m"
+}
+
+// 2026-02-25 增加了 deploy 配置
+subprojects {
+	afterEvaluate { project ->
+		publishing {
+			repositories {
+				maven {
+					name = 'nexus'
+					url = project.version.toString().endsWith('-SNAPSHOT') ? nexusSnapshotUrl : nexusReleaseUrl
+					allowInsecureProtocol = true
+					credentials {
+						username = nexusUsername
+						password = nexusPassword
+					}
+				}
+			}
+		}
+	}
 }

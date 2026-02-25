@@ -46,7 +46,7 @@
 | `spring-boot-autoconfigure-processor` | 扫描自动配置以提升启动查询速度。 | 建议保留 |
 | `spring-boot-buildpack-platform` | 适配 Cloud Native Buildpacks 规范的构建库。 | 可选 |
 | `spring-boot-jarmode-layertools` | Docker 分层 Jar 支持模式。 | 可选 |
-| `spring-boot-antlib` | 适配 Ant 的 Library。 | ✅ 可忽略 |
+| `spring-boot-antlib` | **🚫 [IGNORED]** 适配 Ant 的 Library。 | ✅ 可忽略 |
 | `spring-boot-test-support` | 为内部测试提供的辅助工具。 | ✅ 可忽略 |
 
 ---
@@ -104,9 +104,9 @@
 | `spring-boot-starter-tomcat` | 默认内嵌 Tomcat 容器。 |
 | `spring-boot-starter-jersey` | **🚫 [IGNORED]** 使用 JAX-RS (Jersey) 替代 Spring MVC。 |
 | `spring-boot-starter-rsocket` | **🚫 [IGNORED]** RSocket 二进制协议通讯支持。 |
-| `spring-boot-starter-amqp` | RabbitMQ (AMQP) 消息中间件集成；**未忽略**，因为被 `spring-boot-cli` 等内部模块用于构建测试仓库。 |
+| `spring-boot-starter-amqp` | **🚫 [IGNORED]** RabbitMQ (AMQP) 消息中间件集成。 |
 | `spring-boot-starter-activemq` | **🚫 [IGNORED]** ActiveMQ 消息中间件集成。 |
-| `spring-boot-starter-artemis` | ActiveMQ Artemis 消息集成；**未忽略**，因为被 `spring-boot-cli` 的测试仓库等内部模块直接依赖。 |
+| `spring-boot-starter-artemis` | **🚫 [IGNORED]** ActiveMQ Artemis 消息集成。 |
 | `spring-boot-starter-graphql` | **🚫 [IGNORED]** Spring for GraphQL 支持。 |
 | `spring-boot-starter-integration` | **🚫 [IGNORED]** Spring Integration 企业集成模式支持。*注意：由于 `spring-boot-cli` 强依赖此模块进行测试，已同步忽略 CLI。* |
 
@@ -286,6 +286,11 @@
 | 2026-02-24 | `spring-boot-cli` | Tool | 随 Integration 组件一同忽略，避免测试依赖导致构建失败。 |
 | 2026-02-24 | `spring-boot-docs` | Tool | 随 CLI 组件一同忽略，因其构建过程依赖 CLI。 |
 | 2026-02-24 | `spring-boot-smoke-test-integration` | Test | 随 Integration 组件一同忽略。 |
+| 2026-02-25 | `spring-boot-antlib` | Tool | 根据需求进一步精简构建，排除 Ant 兼容库。 |
+| 2026-02-25 | `spring-boot-starter-amqp` | Starter | 项目不使用 AMQP (RabbitMQ) 技术栈。 |
+| 2026-02-25 | `spring-boot-starter-artemis` | Starter | 项目不使用 ActiveMQ Artemis，且 CLI 已被忽略，不再需要保留。 |
+| 2026-02-25 | `spring-boot-smoke-test-ant` | Test | 随 antlib 组件一同忽略。 |
+| 2026-02-25 | `spring-boot-smoke-test-artemis` | Test | 随 Artemis 组件一同忽略。 |
 
 
 ---
