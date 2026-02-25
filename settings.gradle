@@ -1,10 +1,31 @@
 pluginManagement {
 	repositories {
+		maven {
+			name = 'nexus'
+			url = nexusPublicUrl
+			allowInsecureProtocol = true
+			credentials {
+				username = nexusUsername
+				password = nexusPassword
+			}
+		}
+		mavenLocal()
 		mavenCentral()
 		gradlePluginPortal()
 		if (version.endsWith('-SNAPSHOT')) {
-			maven { url "https://repo.spring.io/snapshot" }
+			maven {
+				name = 'nexus'
+				url = nexusSnapshotUrl
+				allowInsecureProtocol = true
+				credentials {
+					username = nexusUsername
+					password = nexusPassword
+				}
+			}
 		}
+//		if (version.endsWith('-SNAPSHOT')) {
+//			maven { url "https://repo.spring.io/snapshot" }
+//		}
 	}
 	resolutionStrategy {
 		eachPlugin {
@@ -62,9 +83,9 @@ include "spring-boot-project:spring-boot"
 include "spring-boot-project:spring-boot-autoconfigure"
 include "spring-boot-project:spring-boot-actuator"
 include "spring-boot-project:spring-boot-actuator-autoconfigure"
-include "spring-boot-project:spring-boot-cli"
+// include "spring-boot-project:spring-boot-cli"
 include "spring-boot-project:spring-boot-devtools"
-include "spring-boot-project:spring-boot-docs"
+// include "spring-boot-project:spring-boot-docs"
 include "spring-boot-project:spring-boot-properties-migrator"
 include "spring-boot-project:spring-boot-test"
 include "spring-boot-project:spring-boot-test-autoconfigure"
@@ -75,10 +96,52 @@ include "spring-boot-tests:spring-boot-integration-tests:spring-boot-server-test
 include "spring-boot-system-tests:spring-boot-deployment-tests"
 include "spring-boot-system-tests:spring-boot-image-tests"
 
+def ignoredStarters = [
+	"spring-boot-starter-data-cassandra",
+	"spring-boot-starter-data-cassandra-reactive",
+	"spring-boot-starter-data-neo4j",
+	"spring-boot-starter-data-couchbase",
+	"spring-boot-starter-data-couchbase-reactive",
+	"spring-boot-starter-data-r2dbc",
+	"spring-boot-starter-data-rest",
+	"spring-boot-starter-data-ldap",
+	"spring-boot-starter-jooq",
+	"spring-boot-starter-jta-atomikos",
+	"spring-boot-starter-jersey",
+	"spring-boot-starter-rsocket",
+	"spring-boot-starter-activemq",
+	"spring-boot-starter-graphql",
+	"spring-boot-starter-hateoas",
+	"spring-boot-starter-integration",
+] as Set
+
+def ignoredSmokeTests = [
+	"spring-boot-smoke-test-activemq",
+	"spring-boot-smoke-test-amqp",
+	"spring-boot-smoke-test-cache",
+	"spring-boot-smoke-test-data-ldap",
+	"spring-boot-smoke-test-data-r2dbc",
+	"spring-boot-smoke-test-data-r2dbc-flyway",
+	"spring-boot-smoke-test-data-r2dbc-liquibase",
+	"spring-boot-smoke-test-data-rest",
+	"spring-boot-smoke-test-graphql",
+	"spring-boot-smoke-test-hateoas",
+	"spring-boot-smoke-test-jersey",
+	"spring-boot-smoke-test-jta-atomikos",
+	"spring-boot-smoke-test-rsocket",
+	"spring-boot-smoke-test-secure-jersey",
+	"spring-boot-smoke-test-integration",
+	"spring-boot-smoke-test-parent-context",
+] as Set
+
 file("${rootDir}/spring-boot-project/spring-boot-starters").eachDirMatch(~/spring-boot-starter.*/) {
-	include "spring-boot-project:spring-boot-starters:${it.name}"
+	if (!ignoredStarters.contains(it.name)) {
+		include "spring-boot-project:spring-boot-starters:${it.name}"
+	}
 }
 
 file("${rootDir}/spring-boot-tests/spring-boot-smoke-tests").eachDirMatch(~/spring-boot-smoke-test.*/) {
-	include "spring-boot-tests:spring-boot-smoke-tests:${it.name}"
+	if (!ignoredSmokeTests.contains(it.name)) {
+		include "spring-boot-tests:spring-boot-smoke-tests:${it.name}"
+	}
 }

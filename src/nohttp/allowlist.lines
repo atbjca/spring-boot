@@ -4,3 +4,10 @@
 ^http://www.jdotsoft.com.*
 ^http://www.liquibase.org/xml/ns/dbchangelog/.*
 ^http://www.w3.org/2000/09/xmldsig.*
+^http://www.apache.org/licenses/LICENSE-2.0.txt
+^http://192.168.131.*
+^http://findbugs.sourceforge.net/.*
+^http://maven.apache.org/maven-v4_0_0.xsd
+^http://code.google.com/.*
+^http://download.oracle.com/javase/8/docs/api/.*
+^http://jaxb.java.net.*

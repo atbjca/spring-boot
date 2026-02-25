@@ -5,8 +5,30 @@ plugins {
 }
 
 repositories {
+	// 2026-02-24 增加私服的配置
+	maven {
+		name = 'nexus'
+		url = nexusPublicUrl
+		allowInsecureProtocol = true
+		credentials {
+			username = nexusUsername
+			password = nexusPassword
+		}
+	}
+	mavenLocal()
 	mavenCentral()
 	gradlePluginPortal()
+	if (version.endsWith('-SNAPSHOT')) {
+		maven {
+			name = 'nexus'
+			url = nexusSnapshotUrl
+			allowInsecureProtocol = true
+			credentials {
+				username = nexusUsername
+				password = nexusPassword
+			}
+		}
+	}
 }
 
 sourceCompatibility = 1.8

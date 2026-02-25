@@ -28,13 +28,34 @@ allprojects {
 	group "org.springframework.boot"
 
 	repositories {
+		maven {
+			name = 'nexus'
+			url = nexusPublicUrl
+			allowInsecureProtocol = true
+			credentials {
+				username = nexusUsername
+				password = nexusPassword
+			}
+		}
+		mavenLocal()
 		mavenCentral()
-		if (version.contains('-')) {
-			maven { url "https://repo.spring.io/milestone" }
-		}
 		if (version.endsWith('-SNAPSHOT')) {
-			maven { url "https://repo.spring.io/snapshot" }
+			maven {
+				name = 'nexus'
+				url = nexusSnapshotUrl
+				allowInsecureProtocol = true
+				credentials {
+					username = nexusUsername
+					password = nexusPassword
+				}
+			}
 		}
+//		if (version.contains('-')) {
+//			maven { url "https://repo.spring.io/milestone" }
+//		}
+//		if (version.endsWith('-SNAPSHOT')) {
+//			maven { url "https://repo.spring.io/snapshot" }
+//		}
 	}
 
 	configurations.all {
@@ -43,5 +64,6 @@ allprojects {
 }
 
 tasks.named("checkstyleNohttp").configure {
-	maxHeapSize = "1536m"
+	maxHeapSize = "10240m"
+	minHeapSize = "6144m"
 }
