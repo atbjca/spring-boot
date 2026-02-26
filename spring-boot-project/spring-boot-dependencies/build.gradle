@@ -1163,7 +1163,8 @@ bom {
 			]
 		}
 	}
-	library("Log4j2", "2.17.2") {
+	// 2026-02-26: 升级到 2.25.3 以修复 CVE-2025-68161 漏洞并提升 Java 8 环境下的稳定性
+	library("Log4j2", "2.25.3") {
 		group("org.apache.logging.log4j") {
 			imports = [
 				"log4j-bom"

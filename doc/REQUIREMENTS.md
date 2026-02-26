@@ -6,6 +6,11 @@
 
 ## 📅 2026年02月26日
 
+### [需求-015] 全局 Log4j 2 版本安全升级 (2.25.3)
+- **背景**: 项目原使用的 Log4j 2.17.2 虽然修复了 Log4Shell，但存在最新的 CVE-2025-68161（SSL/TLS 域名验证缺失）高危漏洞。
+- **方案**: 将 `spring-boot-dependencies` 中的 Log4j2 版本从 2.17.2 升至 2.25.3。
+- **结果**: 修复了全系统日志框架的已知安全漏洞，同时保留了对 Java 8 的完美支持。
+
 ### [需求-014] Maven 插件内部模板自动化同步机制
 - **背景**: [需求-013] 通过手动修改内部模板解决了描述符不匹配问题，但存在后续更名遗忘维护的风险。
 - **方案**: 在 `spring-boot-maven-plugin/build.gradle` 中增加 `syncPluginPomGroupId` 任务，自动拦截并同步 `src/maven/resources/pom.xml` 中的 `groupId` 为当前项目的 `project.group`。
