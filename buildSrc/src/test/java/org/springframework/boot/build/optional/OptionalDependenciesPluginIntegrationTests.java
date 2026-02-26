@@ -87,8 +87,13 @@ class OptionalDependenciesPluginIntegrationTests {
 			out.println("    id 'org.springframework.boot.optional-dependencies'");
 			out.println("    id 'java'");
 			out.println("}");
+			// 【私服适配】原始代码为 mavenCentral()，因内网环境无法访问公网，
+			// 改为内部 Nexus 私服，确保嵌套 Gradle TestKit 项目可正常下载依赖。
 			out.println("repositories {");
-			out.println("    mavenCentral()");
+			out.println("    maven {");
+			out.println("        url 'http://192.168.131.36:8088/repository/maven-public/'");
+			out.println("        allowInsecureProtocol = true");
+			out.println("    }");
 			out.println("}");
 			out.println("dependencies {");
 			out.println("    optional 'org.springframework:spring-jcl:5.1.2.RELEASE'");

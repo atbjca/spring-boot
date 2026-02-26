@@ -160,8 +160,13 @@ class TestFailuresPluginIntegrationTests {
 			writer.println("	id 'org.springframework.boot.test-failures'");
 			writer.println("}");
 			writer.println();
+			// 【私服适配】原始代码为 mavenCentral()，因内网环境无法访问公网，
+			// 改为内部 Nexus 私服，确保嵌套 Gradle TestKit 项目可正常下载依赖。
 			writer.println("repositories {");
-			writer.println("	mavenCentral()");
+			writer.println("	maven {");
+			writer.println("		url 'http://192.168.131.36:8088/repository/maven-public/'");
+			writer.println("		allowInsecureProtocol = true");
+			writer.println("	}");
 			writer.println("}");
 			writer.println();
 			writer.println("dependencies {");

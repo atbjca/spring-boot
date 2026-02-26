@@ -42,6 +42,19 @@ new File(projectDir.parentFile, "gradle.properties").withInputStream {
 		"kotlin", "maven", "springFramework"].each {
 		versions[it] = properties[it + "Version"]
 	}
+	// =====================================================================
+	// 【buildSrc Jackson 版本隔离说明】
+	// Gradle 7.6 的 TestKit 在构建嵌套测试项目时，会将宿主 buildSrc 的编译 classpath
+	// 重新打包为临时 JAR 文件（位于 .gradle-test-kit/caches/jars-9/ 目录下）。
+	// 然而，Jackson 2.14+ 引入了 Java 模块系统支持（Multi-Release JAR 含 module-info.class），
+	// 这导致 Gradle 7.6 在 "repackaging" 阶段无法正确处理该文件，抛出：
+	//   GradleException: Failed to create Jar file .../jackson-core-2.15.x.jar
+	//
+	// 解决方案：buildSrc 内部锁定 Jackson 为 2.13.5（不含 module-info.class，稳定兼容）。
+	// 注意：主项目（spring-boot-project/**）中的 jacksonVersion 仍由根目录
+	// gradle.properties 控制（当前为 2.15.4），两者互不影响。
+	// =====================================================================
+	versions["jackson"] = "2.13.5"
 }
 ext.set("versions", versions)
 

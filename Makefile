@@ -4,6 +4,7 @@ help: ## 显示帮助信息
 	@echo ""
 	@echo "可用命令:"
 	@echo "  make clean    - 清理构建产物 ，耗时约 40s"
+	@echo "  make format   - 格式化代码"
 	@echo "  make build-thin - 编译打包（不测试、无文档、不安装、不发布），耗时约 6m 31s"
 	@echo "  make install  - 编译并安装到本地 Maven 仓库（~/.m2/repository）"
 	@echo "  make deploy   - 发布到 Nexus 私服（不安装到本地 Maven 仓库（~/.m2/repository）），耗时约 1m 40s"
@@ -16,11 +17,14 @@ help: ## 显示帮助信息
 clean: ## 清理构建产物
 	./gradlew clean
 
-build: ## 编译打包
-	./gradlew clean build
+format: ## 格式化代码
+	./gradlew :spring-boot-project:spring-boot:formatMain
 
-build-thin: ## 编译打包
-	./gradlew clean build -x test -x intTest -x checkstyleMain -x checkstyleTest -x asciidoctor -x javadoc
+build: clean ## 编译打包
+	./gradlew build
+
+build-thin: clean format ## 编译打包
+	./gradlew build -x test -x intTest -x checkstyleMain -x checkstyleTest -x asciidoctor -x javadoc
 
 install: clean ## 编译并安装到本地 Maven 仓库 # ./gradlew clean build publishToMavenLocal
 	./gradlew publishToMavenLocal -x test
