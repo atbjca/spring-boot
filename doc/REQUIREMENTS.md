@@ -4,6 +4,17 @@
 
 ---
 
+## 📅 2026年02月26日
+
+### [需求-011] Spring Boot Dependencies 动态 Group ID 传播修复
+- **背景**: 用户修改根目录 `build.gradle` 中的全局 `group` 属性后，发现生成的 `spring-boot-dependencies` BOM 文件中管理的 Spring Boot 原生组件仍指向旧的 `org.springframework.boot`。
+- **方案**: 
+    - 修改 `spring-boot-project/spring-boot-dependencies/build.gradle`。
+    - 将硬编码的 `group("org.springframework.boot")` 替换为 `group(project.group)`，建立动态关联。
+- **结果**: 实现了全局 `group` ID 的一键同步，增强了项目在定制化构建（如私有化部署、更名发行版）时的灵活性。
+
+---
+
 ## 📅 2026年02月25日
 
 ### [需求-010] 核心组件安全扫描分析及版本强化升级

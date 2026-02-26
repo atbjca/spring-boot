@@ -1529,7 +1529,10 @@ bom {
 		}
 	}
 	library("Spring Boot", "${version}") {
-		group("org.springframework.boot") {
+		// 2026-02-26: 将硬编码的 "org.springframework.boot" 改为 project.group。
+		// 这样当你在此项目根目录的 build.gradle 中修改 group 属性时（例如改为 libiao.test...），
+		// 这里管理的 Spring Boot 所有子模块都能自动跟随改变，而不需要手动到这个巨大的文件中到处搜索替换。
+		group(project.group) {
 			modules = [
 				"spring-boot",
 				"spring-boot-test",
