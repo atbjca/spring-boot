@@ -156,3 +156,28 @@ tasks.named("documentPluginGoals") {
 		"stop": "integration-tests"
 	]
 }
+
+// 2026-02-26: 自动化同步逻辑
+// 由于 buildSrc 格式校验极其严苛，我们不在 Java 代码里做动态替换，
+// 而是直接在 Gradle 钩子里确保模板文件始终与 project.group 保持一致。
+def syncPluginPomGroupId = tasks.register("syncPluginPomGroupId") {
+	doLast {
+		def pomFile = file("src/maven/resources/pom.xml")
+		if (pomFile.exists()) {
+			def content = pomFile.text
+			def updatedContent = content.replaceAll(
+				'<groupId>.*</groupId>', 
+				"<groupId>${project.group}</groupId>"
+			)
+			if (content != updatedContent) {
+				pomFile.text = updatedContent
+				println "成功同步插件模板 Group ID 至: ${project.group}"
+			}
+		}
+	}
+}
+
+// 确保在生成描述符的任务运行前先执行同步
+tasks.matching { it.name.startsWith("sync") && it.name.contains("Inputs") }.all {
+	it.dependsOn syncPluginPomGroupId
+}

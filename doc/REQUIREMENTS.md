@@ -6,6 +6,25 @@
 
 ## 📅 2026年02月26日
 
+### [需求-014] Maven 插件内部模板自动化同步机制
+- **背景**: [需求-013] 通过手动修改内部模板解决了描述符不匹配问题，但存在后续更名遗忘维护的风险。
+- **方案**: 在 `spring-boot-maven-plugin/build.gradle` 中增加 `syncPluginPomGroupId` 任务，自动拦截并同步 `src/maven/resources/pom.xml` 中的 `groupId` 为当前项目的 `project.group`。
+- **结果**: 实现了插件描述符身份信息的“零手动、自动同步”，彻底消除更名时的隐性风险，同时规避了 `buildSrc` 的代码格式校验难题。
+
+### [需求-013] Maven 插件描述符 (plugin.xml) 身份一致性修复
+- **背景**: 使用自定义 `groupId` 构建插件后，Maven 报错 `Plugin's descriptor contains the wrong group ID`。
+- **原因**: 插件描述符生成过程中使用了一个内部 `pom.xml` 模板，该模板硬编码了 `groupId` 为 `org.springframework.boot`，导致生成的 `plugin.xml` 内部身份信息与外部发布的坐标不一致。
+- **方案**: 
+    - 修改 `spring-boot-maven-plugin/src/maven/resources/pom.xml` 模板，引入 `{{groupId}}` 变量。
+    - 更新 `buildSrc` 中的 `MavenPluginPlugin.java` 逻辑，在构建时动态替换 `version` 和 `groupId` 占位符。
+- **结果**: 彻底解决了更名后插件“书内名字”和“封面名字”不统一导致的 Maven 拒绝执行问题。
+
+### [需求-012] Starter Parent 插件 Group ID 动态传播修复
+- **背景**: 使用自定义 `groupId` 的 `spring-boot-maven-plugin` 打包时，发现生成的 JAR 包只有 3KB 左右（原始包），未执行 `repackage`。
+- **原因**: `spring-boot-starter-parent` 的 `pluginManagement` 中硬编码了插件的 `groupId` 为 `org.springframework.boot`，导致 Maven 无法将自定义插件与其预设的 `repackage` goal 自动绑定。
+- **方案**: 将 `spring-boot-starter-parent/build.gradle` 中生成 POM 的逻辑由硬编码改为动态引用 `${project.group}`。
+- **结果**: 解决了自定义 Group ID 导致的工具链断裂问题，确保了打包结果的一致性。
+
 ### [需求-011] Spring Boot Dependencies 动态 Group ID 传播修复
 - **背景**: 用户修改根目录 `build.gradle` 中的全局 `group` 属性后，发现生成的 `spring-boot-dependencies` BOM 文件中管理的 Spring Boot 原生组件仍指向旧的 `org.springframework.boot`。
 - **方案**: 

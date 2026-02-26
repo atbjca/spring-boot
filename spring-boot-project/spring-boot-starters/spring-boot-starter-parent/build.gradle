@@ -150,7 +150,11 @@ publishing.publications.withType(MavenPublication) {
 							}
 						}
 						plugin {
-							delegate.groupId('org.springframework.boot')
+							// 2026-02-26: 将硬编码的 'org.springframework.boot' 改为 "${project.group}"。
+							// 这是为了确保当你修改全局 group ID 时，自定义的 spring-boot-maven-plugin 
+							// 依然能在这里被正确配置，从而自动获得下面定义的 'repackage' 执行逻辑。
+							// 如果不改这里，Maven 就找不到对应的 repackage 目标，导致打包出来的 jar 只有几 KB 大小。
+							delegate.groupId("${project.group}")
 							delegate.artifactId('spring-boot-maven-plugin')
 							executions {
 								execution {
@@ -183,7 +187,8 @@ publishing.publications.withType(MavenPublication) {
 							}
 							delegate.dependencies {
 								dependency {
-									delegate.groupId('org.springframework.boot')
+									// 2026-02-26: 同步修改这里的 shade 插件依赖，确保与全局 group 一致
+									delegate.groupId("${project.group}")
 									delegate.artifactId('spring-boot-maven-plugin')
 									delegate.version("${project.version}")
 								}
