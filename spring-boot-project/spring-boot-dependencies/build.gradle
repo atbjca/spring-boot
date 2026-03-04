@@ -1848,7 +1848,8 @@ bom {
 			]
 		}
 	}
-	library("Spring Security", "5.7.14") {
+	// 2026-03-04: 升级到 5.8.16 (通往 6.x 的桥接版本)
+	library("Spring Security", "5.8.16") {
 		considerSnapshots()
 		prohibit {
 			versionRange "[6.0.0-M1,)"

@@ -8,7 +8,7 @@
 | 升级日期 | 组件名称 | 升级前版本 | 升级后版本 | 修复漏洞 / 原因 | 兼容性说明 |
 | :---: | :--- | :---: | :---: | :--- | :--- |
 | 2026-02-25 | `org.springframework:spring-core` 等 | 5.3.31 | **5.3.39** | CVE-2024-22243 URI解析漏洞等 | Maven Central 公开的 5.3.x 最终版 |
-| 2026-02-25 | `org.springframework.security:*` | 5.7.11 | **5.7.14** | 常规权限强化，跟随 Spring 5.3.x | Maven Central 公开的 5.7.x 最高版 |
+| 2026-03-04 | `org.springframework.security:*` | 5.7.14 | **5.8.16** | 5.8.x 分支最终维稳版，CVE相关修复 | 通往 6.x 的桥接版本，Java 8 最终版 |
 | 2026-02-25 | `tomcat-embed-core` 等 | 9.0.83 | **9.0.115** | HTTP/2 DoS 等多项高危修复 | *需同步修复 `getAllowLinking()`/`setAllowLinking()` 新接口* |
 | 2026-02-25 | `jackson-databind` 等 | 2.13.5 | **2.15.4** | 反序列化漏洞强化 | 2.16+ BOM 传递 javax 库触发 SB2.7 禁止规则，上限为 2.15.x |
 | 2026-02-25 | `org.yaml:snakeyaml` | 1.30 | **2.5** | CVE-2022-1471 Constructor 反序列化 | 直接升至 2.x 主版本 |
@@ -28,9 +28,9 @@
 - 5.3.40 及以后为 Spring 商业支持专属版本，**未发布至 Maven Central**
 - 5.3.39（2024-08-14 发布）为开源社区可使用的最终版
 
-### Spring Security 版本上限（5.7.14）
-- 5.7.15–5.7.17 未在 Maven Central 发布
-- 5.7.14（2024-11-18 发布）为公开的最高版
+### Spring Security 版本上限（5.8.16）
+- 5.8.16（2024-11-18 发布）为 5.8.x 分支在 Maven Central 公开的最高稳定版。
+- 作为 6.0 的过渡版本，它保留了对 Java 8 的支持。
 
 ### Tomcat 源码适配说明
 - Tomcat 9.0.84+ 在 `WebResourceSet` 接口新增了 `getAllowLinking()` 和 `setAllowLinking(boolean)` 方法
