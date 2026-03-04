@@ -1,0 +1,97 @@
+Configuration on demand is an incubating feature.
+> Task :buildSrc:compileJava UP-TO-DATE
+> Task :buildSrc:compileGroovy NO-SOURCE
+> Task :buildSrc:pluginDescriptors UP-TO-DATE
+> Task :buildSrc:processResources UP-TO-DATE
+> Task :buildSrc:classes UP-TO-DATE
+> Task :buildSrc:jar UP-TO-DATE
+> Task :buildSrc:assemble UP-TO-DATE
+> Task :buildSrc:checkFormatMain UP-TO-DATE
+> Task :buildSrc:checkFormatTest UP-TO-DATE
+> Task :buildSrc:checkFormat UP-TO-DATE
+> Task :buildSrc:checkstyleMain UP-TO-DATE
+> Task :buildSrc:compileTestJava UP-TO-DATE
+> Task :buildSrc:compileTestGroovy NO-SOURCE
+> Task :buildSrc:processTestResources UP-TO-DATE
+> Task :buildSrc:testClasses UP-TO-DATE
+> Task :buildSrc:checkstyleTest UP-TO-DATE
+> Task :buildSrc:pluginUnderTestMetadata UP-TO-DATE
+> Task :buildSrc:test UP-TO-DATE
+> Task :buildSrc:validatePlugins UP-TO-DATE
+> Task :buildSrc:check UP-TO-DATE
+> Task :buildSrc:build UP-TO-DATE
+> Task :spring-boot-project:spring-boot:syncJavaTemplates UP-TO-DATE
+> Task :spring-boot-project:spring-boot-test:processResources UP-TO-DATE
+> Task :spring-boot-project:spring-boot-autoconfigure:processResources UP-TO-DATE
+> Task :spring-boot-project:spring-boot-test:extractLegalResources UP-TO-DATE
+> Task :spring-boot-project:spring-boot-tools:spring-boot-configuration-processor:compileJava UP-TO-DATE
+> Task :spring-boot-project:spring-boot-tools:spring-boot-autoconfigure-processor:compileJava UP-TO-DATE
+> Task :spring-boot-project:spring-boot-autoconfigure:processTestResources UP-TO-DATE
+> Task :spring-boot-project:spring-boot-tools:spring-boot-configuration-processor:processResources UP-TO-DATE
+> Task :spring-boot-project:spring-boot-tools:spring-boot-autoconfigure-processor:processResources UP-TO-DATE
+> Task :spring-boot-project:spring-boot-tools:spring-boot-configuration-processor:classes UP-TO-DATE
+> Task :spring-boot-project:spring-boot-tools:spring-boot-autoconfigure-processor:classes UP-TO-DATE
+> Task :spring-boot-project:spring-boot-tools:spring-boot-autoconfigure-processor:extractLegalResources UP-TO-DATE
+> Task :spring-boot-project:spring-boot-tools:spring-boot-configuration-processor:extractLegalResources UP-TO-DATE
+> Task :spring-boot-project:spring-boot-tools:spring-boot-configuration-processor:jar UP-TO-DATE
+> Task :spring-boot-project:spring-boot-tools:spring-boot-autoconfigure-processor:jar UP-TO-DATE
+> Task :spring-boot-project:spring-boot-tools:spring-boot-test-support:compileJava UP-TO-DATE
+> Task :spring-boot-project:spring-boot-tools:spring-boot-test-support:processResources NO-SOURCE
+> Task :spring-boot-project:spring-boot-tools:spring-boot-test-support:classes UP-TO-DATE
+> Task :spring-boot-project:spring-boot-tools:spring-boot-test-support:extractLegalResources UP-TO-DATE
+> Task :spring-boot-project:spring-boot-tools:spring-boot-test-support:jar UP-TO-DATE
+> Task :spring-boot-project:spring-boot:compileKotlin UP-TO-DATE
+> Task :spring-boot-project:spring-boot:processResources UP-TO-DATE
+> Task :spring-boot-project:spring-boot:compileJava UP-TO-DATE
+> Task :spring-boot-project:spring-boot:classes UP-TO-DATE
+> Task :spring-boot-project:spring-boot:extractLegalResources UP-TO-DATE
+> Task :spring-boot-project:spring-boot:inspectClassesForKotlinIC UP-TO-DATE
+> Task :spring-boot-project:spring-boot:jar UP-TO-DATE
+> Task :spring-boot-project:spring-boot-test:compileKotlin UP-TO-DATE
+> Task :spring-boot-project:spring-boot-test:compileJava UP-TO-DATE
+> Task :spring-boot-project:spring-boot-test:classes UP-TO-DATE
+> Task :spring-boot-project:spring-boot-test:inspectClassesForKotlinIC UP-TO-DATE
+> Task :spring-boot-project:spring-boot-test:jar UP-TO-DATE
+> Task :spring-boot-project:spring-boot-autoconfigure:compileKotlin UP-TO-DATE
+> Task :spring-boot-project:spring-boot-autoconfigure:compileJava UP-TO-DATE
+> Task :spring-boot-project:spring-boot-autoconfigure:classes UP-TO-DATE
+> Task :spring-boot-project:spring-boot-autoconfigure:compileTestKotlin UP-TO-DATE
+> Task :spring-boot-project:spring-boot-autoconfigure:compileTestJava UP-TO-DATE
+> Task :spring-boot-project:spring-boot-autoconfigure:testClasses UP-TO-DATE
+
+> Task :spring-boot-project:spring-boot-autoconfigure:test
+
+ThymeleafReactiveAutoConfigurationTests > useSecurityDialect() FAILED
+    java.lang.IllegalStateException at ThymeleafReactiveAutoConfigurationTests.java:229
+
+ThymeleafServletAutoConfigurationTests > useSecurityDialect() FAILED
+    java.lang.NoClassDefFoundError at ThymeleafServletAutoConfigurationTests.java:232
+        Caused by: java.lang.ClassNotFoundException at ThymeleafServletAutoConfigurationTests.java:232
+
+51 tests completed, 2 failed
+
+> Task :spring-boot-project:spring-boot-autoconfigure:test FAILED
+
+Found test failures in 1 test task:
+
+:spring-boot-project:spring-boot-autoconfigure:test
+    org.springframework.boot.autoconfigure.thymeleaf.ThymeleafReactiveAutoConfigurationTests > useSecurityDialect()
+    org.springframework.boot.autoconfigure.thymeleaf.ThymeleafServletAutoConfigurationTests > useSecurityDialect()
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':spring-boot-project:spring-boot-autoconfigure:test'.
+> There were failing tests. See the report at: file:///Volumes/LIBIAO_EX/dev/GitHub/spring-boot-2.7/spring-boot-project/spring-boot-autoconfigure/build/reports/tests/test/index.html
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+
+* Get more help at https://help.gradle.org
+
+BUILD FAILED in 1m 5s
+44 actionable tasks: 1 executed, 43 up-to-date
+
+A build scan was not published as you have not authenticated with server 'ge.spring.io'.
+For more information, please see https://gradle.com/help/gradle-authenticating-with-gradle-enterprise.

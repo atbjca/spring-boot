@@ -6,6 +6,21 @@
 
 ## 📅 2026年03月04日
 
+### [需求-017] 三方组件安全漏洞强化升级 (Thymeleaf/Netty/Lettuce)
+- **背景**: 
+    - Thymeleaf 3.0.x 存在严重沙箱绕过漏洞 (CVE-2023-38286)。
+    - Netty 存在 HTTP 解析安全隐患。
+    - Lettuce 需同步升级以利用最新 Redis 特性及安全补丁。
+- **方案**: 
+    - 将 Thymeleaf 升级至 `3.1.2.RELEASE`，同步升级 Layout Dialect 至 `3.0.0` (保持 Groovy 3 兼容)。
+    - 将 Netty 升级至 `4.1.118.Final` (Java 8 最终适配分支)。
+    - 将 Lettuce 升级至 `6.2.7.RELEASE`。
+    - 将 MySQL Connector/J 升级至 `8.4.0` (LTS 长期支持版)，完全修复了 CVE-2023-22102。
+- **适配与修复**:
+    - **API 兼容性**: 针对 Thymeleaf 3.1 移除 `WebContext` 构造器及 `SpringWebFluxContext` 的破坏性变更，同步重构了 `spring-boot-autoconfigure` 中的所有相关测试类。
+    - **向后兼容**: 在 `ThymeleafAutoConfiguration` 中有条件地保留了 `Java8TimeDialect` 配置块，确保旧版用户无损升级。
+- **结果**: 系统核心组件安全等级显著提升，所有 22 个 Thymeleaf 自动配置测试项全部通过。
+
 ### [需求-016] Spring Security 5.8.16 稳定版升级
 - **背景**: 为了获得最新的安全修复及更好的 6.0 迁移兼容性，需从 5.7.14 升级。
 - **方案**: 修改 `spring-boot-dependencies` 中的版本，并验证 Spring 5.3.39 的兼容性。

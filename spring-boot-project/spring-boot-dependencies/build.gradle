@@ -1145,7 +1145,7 @@ bom {
 			]
 		}
 	}
-	library("Lettuce", "6.1.10.RELEASE") {
+	library("Lettuce", "6.2.7.RELEASE") {
 		group("io.lettuce") {
 			modules = [
 				"lettuce-core"
@@ -1194,7 +1194,7 @@ bom {
 			]
 		}
 	}
-	library("Maven AntRun Plugin", "3.0.0") {
+	library("Maven AntRun Plugin", "3.1.0") {
 		group("org.apache.maven.plugins") {
 			plugins = [
 				"maven-antrun-plugin"
@@ -1236,7 +1236,7 @@ bom {
 			]
 		}
 	}
-	library("Maven Enforcer Plugin", "3.0.0") {
+	library("Maven Enforcer Plugin", "3.1.0") {
 		group("org.apache.maven.plugins") {
 			plugins = [
 				"maven-enforcer-plugin"
@@ -1299,7 +1299,7 @@ bom {
 			]
 		}
 	}
-	library("Maven Source Plugin", "3.2.1") {
+	library("Maven Source Plugin", "3.1.0") {
 		group("org.apache.maven.plugins") {
 			plugins = [
 				"maven-source-plugin"
@@ -1365,7 +1365,7 @@ bom {
 			]
 		}
 	}
-	library("MySQL", "8.0.33") {
+	library("MySQL", "8.4.0") {
 		group("com.mysql") {
 			modules = [
 				"mysql-connector-j" {
@@ -1388,7 +1388,7 @@ bom {
 			]
 		}
 	}
-	library("Netty", "4.1.101.Final") {
+	library("Netty", "4.1.118.Final") {
 		group("io.netty") {
 			imports = [
 				"netty-bom"
@@ -1907,7 +1907,7 @@ bom {
 			]
 		}
 	}
-	library("Thymeleaf", "3.0.15.RELEASE") {
+	library("Thymeleaf", "3.1.2.RELEASE") {
 		group("org.thymeleaf") {
 			modules = [
 				"thymeleaf",

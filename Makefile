@@ -18,12 +18,12 @@ clean: ## 清理构建产物
 	./gradlew clean
 
 format: ## 格式化代码
-	./gradlew :spring-boot-project:spring-boot:formatMain
+	./gradlew format
 
-build: clean ## 编译打包
+build: clean format ## 编译打包
 	./gradlew build
 
-build-thin: clean format ## 编译打包
+build-thin: clean format ## 编译打包 -x checkstyleNohttp
 	./gradlew build -x test -x intTest -x checkstyleMain -x checkstyleTest -x asciidoctor -x javadoc
 
 install: clean ## 编译并安装到本地 Maven 仓库 # ./gradlew clean build publishToMavenLocal
