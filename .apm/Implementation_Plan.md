@@ -1,70 +1,65 @@
-# Spring Boot 2.7 Fork GAV 自动映射改造 – APM Implementation Plan
+# Spring Boot 2.7 Fork 传递依赖排除与 NES GAV 映射文档 – APM Implementation Plan
 **Memory Strategy:** Dynamic-MD
-**Last Modification:** Phase 2 complete — All tasks finished. REQUIREMENTS.md restored with 需求-001~018; GAV_MAPPING.md expanded to 8 sections covering full module mappings. Project complete.
-**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施 GAV 自动映射机制改造。通过 Gradle resolutionStrategy.eachDependency 实现 org.springframework / org.springframework.security 到 fork GAV 的透明替换，使子模块 build.gradle 无需修改即可解析 fork 依赖。同时恢复 BOM 导入方式、集中化 GAV 配置、完善项目文档。所有变更需添加完备中文注释。
+**Last Modification:** Phase 1 全部完成（7/7 任务），新增 Task 1.8 维护 REQUIREMENTS.md。
+**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施两项并行改造：(1) 在 spring-boot-dependencies BOM 中排除第三方组件对原始 Spring/Spring Security/Authorization Server 的传递依赖，确保下游消费者不会因第三方 POM 引入原始坐标；(2) 整合四个 fork 项目（spring-boot、spring-framework、spring-security、spring-authorization-server）的 GAV 映射，编写面向下游使用者的完整 NES_GAV_MAPPING.md 文档。
 
-## Phase 1: Gradle 构建基础设施改造
+## Phase 1: 传递依赖排除与 NES GAV 映射文档编写
 
-### Task 1.1 – gradle.properties GAV 配置集中化 - Agent_Build
-**Objective:** 将所有 fork 相关的 GAV 映射参数集中定义到 gradle.properties，实现单点管理。
-**Output:** 更新后的 gradle.properties 文件，包含完整的 fork 配置参数和中文注释。
-**Guidance:** 核心发现——所有 artifactId 转换共享同一规则（`spring` → fork 前缀），因此仅需两个核心参数。所有参数必须有中文注释。
+### Task 1.1 – spring-boot-dependencies 第三方组件传递依赖排除 - Agent_Build
+**Objective:** 在 spring-boot-dependencies/build.gradle 中对逐个声明的第三方模块添加 exclude，排除其对原始 Spring/Spring Security/Authorization Server 的传递依赖，确保发布的 BOM POM 包含 exclusion 元素。
+**Output:** 修改后的 spring-boot-dependencies/build.gradle，包含完整的 exclude 声明和结构化中文注释。
+**Guidance:** 仅处理逐个声明的 library 模块，跳过 BOM 导入的组件（spring-data-bom、spring-session-bom、spring-integration-bom）。已在 settings.gradle 中忽略的 starter 不处理。每处 exclude 需有结构化注释便于日后 fork 对应组件时快速移除。需区分 A 类（未 fork 的 Spring 生态组件）和 B 类（非 Spring 第三方组件）。
 
-- 新增 `forkArtifactPrefix=bjca-footstone-bpring`（制品名前缀，替换原始 `spring`）和 `forkGroupIdBase=cn.bjca.footstone.bpring`（基础 GroupId，自动派生 `.boot` / `.security`）
-- 保留并整理已有版本配置（`version`、`springFrameworkVersion`、`springSecurityVersion`），新增 `springBootVersion=2.7.18`（用于 SpringBootVersion.getVersion() 运行时常量）
-- 每个配置项添加完备中文注释，说明用途、影响范围、配置变更示例
+1. 审查 `spring-boot-dependencies/build.gradle` 中所有逐个声明的 library 模块（跳过 BOM 导入的 spring-data-bom、spring-session-bom、spring-integration-bom），列出可能传递依赖原始 Spring 坐标的第三方组件
+2. 对识别出的每个组件，确认其传递依赖的具体 group（`org.springframework` / `org.springframework.security`），并确定需要排除的 group 列表
+3. 在对应的 library 声明中添加 `exclude group:` 语句，排除原始 Spring / Spring Security / Authorization Server 传递依赖
+4. 为每处 exclude 添加结构化中文注释，包含：排除原因（组件类别 A/B）、排除的 group、移除条件（"当此组件完成 fork 后移除此 exclude"）
 
-### Task 1.2 – root build.gradle 自动映射机制实现 - Agent_Build
-**Objective:** 通过 resolutionStrategy.eachDependency 实现 org.springframework / org.springframework.security 到 fork GAV 的自动透明替换。
-**Output:** 修改后的 build.gradle，包含完整的自动映射逻辑和中文注释。
-**Guidance:** 映射规则——对 `org.springframework` 组：artifactId 中 `spring-` 替换为 `${forkArtifactPrefix}-`，GroupId 替换为 `${forkGroupIdBase}`；对 `org.springframework.security` 组：同理但 GroupId 替换为 `${forkGroupIdBase}.security`。需确保不影响 buildSrc 插件解析。**Depends on: Task 1.1 Output**
+### Task 1.2 – NES_GAV_MAPPING.md 编写 - Agent_Docs
+**Objective:** 整合四个 fork 项目的 GAV 映射信息，编写面向下游使用者的完整 NES GAV 映射文档。
+**Output:** doc/NES_GAV_MAPPING.md，覆盖全部 fork 模块映射、使用说明、配置示例。
+**Guidance:** 目标读者是下游组件使用者。语言中英混合、尽量中文。版本以 gradle.properties 实际值为准（springFrameworkVersion=5.3.39-nes.patch.1-SNAPSHOT 等）。内容越详细越好，包含 Maven/Gradle 配置示例。整合来源：spring-boot-2.7（/Volumes/LIBIAO_EX/dev/GitHub/spring-boot-2.7/doc/GAV_MAPPING.md）、spring-framework（/Users/anan/Documents/GitHub/spring-framework/doc/GAV_MAPPING.md）、spring-security（/Users/anan/Documents/GitHub/spring-security/doc/GAV_MAPPING.md）、spring-authorization-server（/Users/anan/Documents/GitHub/spring-authorization-server/doc/GAV_MAPPING.md）。
 
-1. 将 `group "cn.bjca.footstone.bpring.boot"` 改为动态引用 `group "${forkGroupIdBase}.boot"`
-2. 在 `allprojects` 块内添加 `configurations.all { resolutionStrategy.eachDependency }` 规则：当 `requested.group == 'org.springframework'` 时，将 artifactId 中的 `spring-` 替换为 `${forkArtifactPrefix}-`，GroupId 替换为 `${forkGroupIdBase}`，版本设为 `${springFrameworkVersion}`；当 `requested.group == 'org.springframework.security'` 时同理替换为 `.security` 子组
-3. 处理边界情况：确保 resolutionStrategy 不影响 buildSrc 插件解析、不误替换非 `spring-` 前缀的依赖项
-4. 所有新增代码添加完备中文注释块，解释映射规则、配置来源、以及如何修改
+- 整合四个 fork 项目的 GAV 映射表，按组件系列（Spring Boot、Spring Framework、Spring Security、Authorization Server）分章节，每个模块列出完整的原始坐标→fork 坐标映射，版本以 gradle.properties 实际值为准
+- 添加「快速开始」章节：包含 Maven dependencyManagement 和 Gradle dependencyManagement 的完整 BOM 引入示例，以及常用 starter 的依赖声明示例
+- 添加「兼容关系链」章节：说明四个 fork 项目的版本对应关系、BOM 层级继承关系
+- 添加「注意事项」章节：说明 Java 包名不变（org.springframework.*）、import 语句无需修改、NES（Never-Ending Support）命名含义等使用者需要知道的关键信息
 
-### Task 1.3 – settings.gradle 动态化改造 - Agent_Build
-**Objective:** 将项目名称转换中的硬编码值改为从 gradle.properties 读取，使 GAV 变更时无需修改 settings.gradle。
-**Output:** 修改后的 settings.gradle，项目名转换使用动态配置。
-**Guidance:** 需处理 settings.gradle 中访问 gradle.properties 的方式（Gradle 属性在 settings 阶段可用）。**Depends on: Task 1.1 Output**
-
-- 将 `rootProject.name` 硬编码值改为使用 `forkArtifactPrefix` 动态拼接：`"${forkArtifactPrefix}-boot-build"`
-- 将子项目名称替换中的硬编码 `"bjca-footstone-bpring-boot"` 改为 `"${forkArtifactPrefix}-boot"`，保持 `"spring-boot"` 作为替换源不变
-- 添加中文注释说明配置来源、修改方法、以及与 gradle.properties 的关联
-
-### Task 1.4 – spring-boot-dependencies BOM 修正 - Agent_Build
-**Objective:** 将 BOM 中 Spring Framework 和 Spring Security 的显式模块列表恢复为 BOM 导入方式，使用 fork 坐标。
-**Output:** 修改后的 spring-boot-dependencies/build.gradle，使用 BOM 导入代替显式模块列表。
-**Guidance:** BOM 导入方式自动覆盖所有子模块，无需手动维护模块清单。与 Task 1.2 的 resolutionStrategy 配合，实现完整的依赖映射链。**Depends on: Task 1.1 Output**
-
-1. 将 Spring Framework library 定义从 `group("cn.bjca.footstone.bpring") { modules = [...] }` 改为 `group("${forkGroupIdBase}") { imports = ["${forkArtifactPrefix}-framework-bom"] }`，版本使用 `"${springFrameworkVersion}"`
-2. 将 Spring Security library 定义从 `group("cn.bjca.footstone.bpring.security") { modules = [...] }` 改为 `group("${forkGroupIdBase}.security") { imports = ["${forkArtifactPrefix}-security-bom"] }`，版本使用 `"${springSecurityVersion}"`
-3. 添加中文注释说明 BOM 导入方式的优势（自动覆盖所有子模块、无需手动维护模块列表、与 resolutionStrategy 的协作关系）
-
-### Task 1.5 – 构建验证 - User ✅ Complete
-**Objective:** 验证所有 Gradle 改动后构建是否通过。
+### Task 1.3 – 构建验证 - User
+**Objective:** 验证 Task 1.1 的 exclude 修改后项目构建是否通过。
 **Output:** 构建日志（成功或失败信息）。
-**Guidance:** 由用户手动执行。如有失败，提供完整错误日志供 Agent_Build 分析。**Depends on: Task 1.1, 1.2, 1.3, 1.4 Output**
-**Status:** ✅ BUILD SUCCESSFUL in 4m 29s — 1977 actionable tasks: 1913 executed, 45 from cache, 19 up-to-date。经过五轮代码修复（buildSrc 坐标替换、属性访问、GString 类型转换 x2、Maven 仓库配置）后构建全部通过。
+**Guidance:** 由用户手动执行。如有失败，提供完整错误日志供 Agent_Build 分析修复。**Depends on: Task 1.1 Output**
 
-## Phase 2: 文档完善
+- 用户执行全量构建，验证 exclude 修改不破坏现有构建。如有失败，提供完整错误日志供 Agent_Build 分析修复
 
-### Task 2.1 – 恢复并完善 doc/REQUIREMENTS.md - Agent_Docs ✅ Complete
-**Objective:** 恢复历史变更记录并新增 GAV 自动映射改造需求章节，形成完整的项目需求文档。
-**Output:** 完整的 doc/REQUIREMENTS.md，包含历史记录（需求-001 到 需求-017）和新增的 GAV 改造章节。
-**Guidance:** 需从 git 历史恢复被删除的内容，新增章节需涵盖背景、约束、目标、红线、SCA 规避原则、兼容关系链。**Depends on: Task 1.1, 1.2, 1.3, 1.4 Output by Agent_Build**
+### Task 1.4 – bomrCheck 修复与版本升级 - Agent_Build
+**Objective:** 修复 Task 1.1 exclude 导致的 bomrCheck 失败，并完成两项版本升级（spring-data-bom、logback）。
+**Output:** 修改后的 spring-boot-dependencies/build.gradle，bomrCheck 通过且版本已更新。
+**Guidance:** bomrCheck 报告所有 exclude 为 "Unnecessary exclusions"（`[org.springframework:null]`），需研究 bomr 检查机制并修正 exclude 方式或配置 bomr 允许规则。版本升级：spring-data-bom 由 `2021.2.18` 改为 `2021.2.18-nes.patch.1-SNAPSHOT`；Logback 由 `1.2.13` 改为 `1.2.13-nes.patch.1-SNAPSHOT`。**Depends on: Task 1.3 Output**
 
-1. 从 git 恢复 REQUIREMENTS.md 的历史变更记录（需求-001 到 需求-017 的完整内容）
-2. 在文档顶部新增「GAV 自动映射改造」章节（需求-018），完整记录：背景与目的、核心约束与红线（源码兼容性、功能完整性）、GAV 重命名规则（含 `forkArtifactPrefix` / `forkGroupIdBase` 单点配置说明）、自动映射机制原理（resolutionStrategy.eachDependency）、SCA 规避策略、与 Spring Framework 和 Spring Security fork 的完整兼容关系链
-3. 确保新增章节与历史记录格式统一，按时间倒序排列，所有内容使用中文
+1. 研究项目的 bomr 检查机制（bomrCheck task），理解其如何验证 exclusion 合法性，找出 "Unnecessary exclusions" 的判定逻辑
+2. 修复 Task 1.1 添加的 exclude 使其通过 bomrCheck（可能需要调整 exclude 语法、配置 bomr 允许规则、或采用其他机制）
+3. 将 spring-data-bom 版本从 `2021.2.18` 改为 `2021.2.18-nes.patch.1-SNAPSHOT`
+4. 将 Logback 版本从 `1.2.13` 改为 `1.2.13-nes.patch.1-SNAPSHOT`
 
-### Task 2.2 – 完善 doc/GAV_MAPPING.md - Agent_Docs ✅ Complete
-**Objective:** 补充缺失模块映射，添加完整的跨项目依赖清单和自动映射机制说明。
-**Output:** 完整的 doc/GAV_MAPPING.md，覆盖所有模块映射和配置方法。
-**Guidance:** 需参考 settings.gradle 中已包含的模块列表和 fork 仓库中的模块清单。
+### Task 1.5 – 二次构建验证 - User
+**Objective:** 验证 Task 1.4 的修复和版本升级后项目构建是否通过。
+**Output:** 构建日志（成功或失败信息）。
+**Guidance:** 由用户手动执行。**Depends on: Task 1.4 Output**
 
-- 补充缺失的 starter 模块映射（data-redis、data-mongodb、data-elasticsearch、data-jdbc、webflux、websocket、web-services、oauth2-client、oauth2-resource-server、freemarker、mustache、groovy-templates、quartz、batch、mail、cache、jetty、undertow、reactor-netty 等）
-- 新增「Spring Framework 完整模块映射」节，列出所有 `org.springframework:spring-xxx` → `cn.bjca.footstone.bpring:bjca-footstone-bpring-xxx` 的映射（含 r2dbc、webmvc、websocket 等）
-- 新增「Spring Security 完整模块映射」节，列出所有 `org.springframework.security:spring-security-xxx` → `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-xxx` 的映射
-- 新增「自动映射机制说明」节，说明 gradle.properties 单点配置方法、resolutionStrategy.eachDependency 工作原理、下游项目如何使用 BOM
+- 用户执行全量构建，验证所有修改不破坏现有构建
+
+### Task 1.6 – 移除不必要的 exclude - Agent_Build
+**Objective:** 移除 bomrCheck 判定为"Unnecessary"的 7 个模块的 exclude（这些模块实际不传递依赖 org.springframework）。
+**Output:** 修改后的 spring-boot-dependencies/build.gradle，移除 7 个模块的 exclude 及对应注释。
+**Guidance:** bomrCheck 通配符逻辑验证 resolved dependencies 中是否存在对应 group 的制品，以下 7 个模块不存在（其 Spring 依赖为 provided/compileOnly 不传递）：activemq-spring、cache2k-spring、hazelcast-spring、spring-restdocs-asciidoctor、spring-retry、thymeleaf-spring5、thymeleaf-extras-springsecurity5。移除这些 exclude 及对应注释，保留其他组件的 exclude 不变。**Depends on: Task 1.5 Output**
+
+1. 移除以下 7 个模块的 exclude 声明及其结构化注释，将 library 声明还原为原始格式（plain string 或无 exclude 的 closure）：activemq-spring、cache2k-spring、hazelcast-spring、spring-restdocs-asciidoctor、spring-retry、thymeleaf-spring5、thymeleaf-extras-springsecurity5
+2. 验证其余组件的 exclude 未被影响
+
+### Task 1.7 – 三次构建验证 - User
+**Objective:** 验证 Task 1.6 修复后项目构建是否通过。
+**Output:** 构建日志（成功或失败信息）。
+**Guidance:** 由用户手动执行。**Depends on: Task 1.6 Output**
+
+- 用户执行全量构建，验证所有修改不破坏现有构建

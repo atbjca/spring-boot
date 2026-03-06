@@ -1,6 +1,6 @@
-# Spring Boot 2.7 Fork GAV 自动映射改造 – APM Memory Root
+# Spring Boot 2.7 Fork NES 改造 – APM Memory Root
 **Memory Strategy:** Dynamic-MD
-**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施 GAV 自动映射机制改造。通过 Gradle resolutionStrategy.eachDependency 实现 org.springframework / org.springframework.security 到 fork GAV 的透明替换，恢复 BOM 导入方式，集中化 GAV 配置到 gradle.properties，完善项目文档。
+**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施 NES (Never-Ending Support) 改造。Phase 01-02 完成了 GAV 自动映射机制（resolutionStrategy、BOM 导入、文档完善）。Phase 03 实施传递依赖排除（spring-boot-dependencies BOM 中排除第三方组件对原始 Spring 坐标的传递依赖）与 NES GAV 映射文档编写（整合四个 fork 项目的完整 GAV 映射文档）。
 
 ## Phase 01 – Gradle 构建基础设施改造 Summary
 * **结果**: BUILD SUCCESSFUL (4m29s, 1977 tasks)。全部 5 个任务完成，经过 5 轮迭代修复。
@@ -24,3 +24,19 @@
 * **Memory Logs**:
   - `.apm/Memory/Phase_02_Documentation/Task_2_1_Restore_REQUIREMENTS_MD.md`
   - `.apm/Memory/Phase_02_Documentation/Task_2_2_Complete_GAV_MAPPING_MD.md`
+
+## Phase 03 – 传递依赖排除与 NES GAV 映射文档 Summary
+* **结果**: BUILD SUCCESSFUL (4m35s)。全部 7 个任务完成，经过 3 轮构建验证迭代修复。
+* **核心交付**:
+  - `spring-boot-dependencies/build.gradle`：7 个组件共 29 个有效 exclude（28 个 `org.springframework:*` + 1 个 `org.springframework.security:*`）+ 8 处结构化中文注释；版本升级 spring-data-bom → 2021.2.18-nes.patch.1-SNAPSHOT、Logback → 1.2.13-nes.patch.1-SNAPSHOT
+  - `doc/NES_GAV_MAPPING.md`：~450 行完整 NES GAV 映射文档，覆盖 4 个 fork 项目 80+ 模块映射、Maven/Gradle 配置示例、BOM 层级、迁移清单、FAQ
+* **关键发现**: bomrCheck 通配符排除必须使用 `module: "*"` 语法（不能省略 module）；7 个模块的 Spring 依赖为 provided/compileOnly 不传递给下游，exclude 无意义需移除。
+* **涉及 Agent**: Agent_Build（Task 1.1、1.4、1.6）、Agent_Docs（Task 1.2）、User（Task 1.3、1.5、1.7 构建验证）
+* **Memory Logs**:
+  - `.apm/Memory/Phase_03_Dependency_Exclusion_GAV_Mapping/Task_1_1_Transitive_Dependency_Exclusion.md`
+  - `.apm/Memory/Phase_03_Dependency_Exclusion_GAV_Mapping/Task_1_2_NES_GAV_MAPPING.md`
+  - `.apm/Memory/Phase_03_Dependency_Exclusion_GAV_Mapping/Task_1_3_Build_Verification.md`
+  - `.apm/Memory/Phase_03_Dependency_Exclusion_GAV_Mapping/Task_1_4_bomrCheck_Fix_Version_Upgrade.md`
+  - `.apm/Memory/Phase_03_Dependency_Exclusion_GAV_Mapping/Task_1_5_Build_Verification_2.md`
+  - `.apm/Memory/Phase_03_Dependency_Exclusion_GAV_Mapping/Task_1_6_Remove_Unnecessary_Excludes.md`
+  - `.apm/Memory/Phase_03_Dependency_Exclusion_GAV_Mapping/Task_1_7_Build_Verification_3.md`
