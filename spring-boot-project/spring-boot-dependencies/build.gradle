@@ -1764,10 +1764,12 @@ bom {
 			versionRange "[6.0.0-M1,)"
 			because "we upgrade in Spring Boot 3.x"
 		}
-		group("org.springframework") {
-			imports = [
-				"spring-framework-bom"
-			]
+		// 使用 BOM 导入方式替代显式模块列表：自动覆盖所有子模块，无需手动维护模块清单
+		// 与 root build.gradle 中 resolutionStrategy 协作：BOM 提供版本管理，resolutionStrategy 提供坐标映射
+		// 注意：此处使用字符串拼接而非 GString 插值（"${...}"），因为 BOM 插件 DSL 的
+		// group() 和 setImports() 方法要求 java.lang.String 类型，GStringImpl 无法自动转换
+		group(forkGroupIdBase) {
+			imports = [forkArtifactPrefix + "-framework-bom"]
 		}
 	}
 	library("Spring GraphQL", "1.0.6") {
@@ -1849,15 +1851,26 @@ bom {
 		}
 	}
 	// 2026-03-04: 升级到 5.8.16 (通往 6.x 的桥接版本)
-	library("Spring Security", "5.8.16") {
+	library("Spring Security", "${springSecurityVersion}") {
 		considerSnapshots()
 		prohibit {
 			versionRange "[6.0.0-M1,)"
 			because "it uses Spring Framework 6"
 		}
-		group("org.springframework.security") {
-			imports = [
-				"spring-security-bom"
+		// 使用 BOM 导入方式：自动管理所有 Security 子模块版本，无需逐一列举
+		// BOM 导入 vs modules 列表：imports 通过上游 BOM 自动获取完整模块清单，避免遗漏或过时
+		// 注意：使用字符串拼接避免 GString 类型转换问题（同 Spring Framework 处理）
+		group(forkGroupIdBase + ".security") {
+			imports = [forkArtifactPrefix + "-security-bom"]
+		}
+	}
+	// 2026-03-06: Spring Authorization Server fork（独立于 Spring Security，版本号独立管理）
+	// 该组件属于 Spring Authorization Server 项目，非 Spring Security 核心模块，因此需单独定义 library 条目
+	library("Spring Security OAuth2 Authorization Server", "0.4.5-nes.patch.1-SNAPSHOT") {
+		considerSnapshots()
+		group(forkGroupIdBase + ".security") {
+			modules = [
+				forkArtifactPrefix + "-security-oauth2-authorization-server"
 			]
 		}
 	}

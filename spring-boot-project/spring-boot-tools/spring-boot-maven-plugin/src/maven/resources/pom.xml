@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<!-- 2026-02-26: 此处的 groupId 在构建时会被插件子目录 build.gradle 中的 syncPluginPomGroupId 任务自动同步 -->
 	<!-- 无论手动填什么，最终都会被 project.group 强制覆盖，以确保生成的描述符与项目坐标一致 -->
-	<groupId>libiao.test.org.springframework.boot</groupId>
+	<groupId>cn.bjca.footstone.bpring.boot</groupId>
 	<artifactId>spring-boot-maven-plugin</artifactId>
 	<version>{{version}}</version>
 	<packaging>maven-plugin</packaging>
@@ -35,7 +35,7 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>libiao.test.org.springframework.boot</groupId>
+				<groupId>cn.bjca.footstone.bpring.boot</groupId>
 				<artifactId>maven-plugin-plugin</artifactId>
 				<version>3.6.0</version>
 				<configuration>

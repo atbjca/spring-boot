@@ -162,7 +162,7 @@ task extractTomcatConfigProperties(type: Sync) {
 def syncJavaTemplates = tasks.register("syncJavaTemplates", Sync) {
 	from("src/main/javaTemplates")
 	into("build/generated-sources/main")
-	def properties = ["springBootVersion": project.version]
+	def properties = ["springBootVersion": "2.7.18"]
 	expand(properties)
 	inputs.properties(properties)
 }

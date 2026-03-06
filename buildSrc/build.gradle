@@ -55,6 +55,11 @@ new File(projectDir.parentFile, "gradle.properties").withInputStream {
 	// gradle.properties 控制（当前为 2.15.4），两者互不影响。
 	// =====================================================================
 	versions["jackson"] = "2.13.5"
+
+	// 加载 fork GAV 核心配置（来自根目录 gradle.properties，与主项目共享同一数据源）
+	// buildSrc 是独立构建，无法自动访问根项目属性，因此需在此手动加载
+	ext.set("forkArtifactPrefix", properties["forkArtifactPrefix"])
+	ext.set("forkGroupIdBase", properties["forkGroupIdBase"])
 }
 ext.set("versions", versions)
 
@@ -81,7 +86,10 @@ if (version.endsWith('-SNAPSHOT')) {
 dependencies {
 	checkstyle "io.spring.javaformat:spring-javaformat-checkstyle:${javaFormatVersion}"
 
-	implementation(platform("org.springframework:spring-framework-bom:${versions.springFramework}"))
+	// buildSrc 是独立构建，先于主项目编译，root build.gradle 中的
+	// resolutionStrategy.eachDependency 不作用于此，因此必须直接使用 fork 坐标。
+	// forkGroupIdBase 和 forkArtifactPrefix 来自 gradle.properties，Gradle 自动加载。
+	implementation(platform("${forkGroupIdBase}:${forkArtifactPrefix}-framework-bom:${versions.springFramework}"))
 	implementation("com.fasterxml.jackson.core:jackson-databind:${versions.jackson}")
 	implementation("com.gradle:gradle-enterprise-gradle-plugin:3.12.1")
 	implementation("com.tngtech.archunit:archunit:1.0.0")
@@ -92,14 +100,14 @@ dependencies {
 	implementation("org.asciidoctor:asciidoctor-gradle-jvm:3.3.2")
 	implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}")
 	implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:${versions.kotlin}")
-	implementation("org.springframework:spring-context")
-	implementation("org.springframework:spring-core")
-	implementation("org.springframework:spring-web")
+	implementation("${forkGroupIdBase}:${forkArtifactPrefix}-context")
+	implementation("${forkGroupIdBase}:${forkArtifactPrefix}-core")
+	implementation("${forkGroupIdBase}:${forkArtifactPrefix}-web")
 
 	testImplementation("org.assertj:assertj-core:${versions.assertj}")
 	testImplementation("org.hamcrest:hamcrest:${versions.hamcrest}")
 	testImplementation("org.junit.jupiter:junit-jupiter:${versions.junitJupiter}")
-	testImplementation("org.springframework:spring-test")
+	testImplementation("${forkGroupIdBase}:${forkArtifactPrefix}-test")
 
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

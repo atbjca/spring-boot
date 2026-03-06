@@ -1,5 +1,18 @@
 <settings>
 	<localRepository>localRepositoryPath</localRepository>
+	<!-- nexus 仓库凭据（fork 构建需要访问私有仓库解析 fork BOM 制品） -->
+	<servers>
+		<server>
+			<id>nexus-public</id>
+			<username>nexusUsernamePlaceholder</username>
+			<password>nexusPasswordPlaceholder</password>
+		</server>
+		<server>
+			<id>nexus-snapshots</id>
+			<username>nexusUsernamePlaceholder</username>
+			<password>nexusPasswordPlaceholder</password>
+		</server>
+	</servers>
 	<profiles>
 		<profile>
 			<id>spring-repositories</id>
@@ -7,6 +20,18 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<repositories>
+				<!-- fork 私有仓库：用于解析 fork BOM 制品（如 bjca-footstone-bpring-framework-bom） -->
+				<repository>
+					<id>nexus-public</id>
+					<url>nexusPublicUrlPlaceholder</url>
+				</repository>
+				<repository>
+					<id>nexus-snapshots</id>
+					<url>nexusSnapshotUrlPlaceholder</url>
+					<snapshots>
+						<enabled>true</enabled>
+					</snapshots>
+				</repository>
 				<repository>
 					<id>spring-snapshot</id>
 					<url>https://repo.spring.io/snapshot</url>

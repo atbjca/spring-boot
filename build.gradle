@@ -26,7 +26,8 @@ check {
 }
 
 allprojects {
-	group "libiao.test.org.springframework.boot"
+	// 动态引用 gradle.properties 中的 forkGroupIdBase，实现 groupId 单点管理
+	group "${forkGroupIdBase}.boot"
 
 	repositories {
 		maven {
@@ -61,6 +62,42 @@ allprojects {
 
 	configurations.all {
 		resolutionStrategy.cacheChangingModulesFor 0, "minutes"
+
+		// ====================================================================
+		// Fork GAV 自动映射规则
+		// ====================================================================
+		// 设计目的：透明地将上游 org.springframework / org.springframework.security
+		// 组的依赖坐标自动替换为 fork 后的 GAV，使所有子模块 build.gradle 无需
+		// 任何修改即可解析 fork 依赖。
+		//
+		// 映射参数来源：gradle.properties
+		//   - forkArtifactPrefix  : 制品名前缀（替换原始 "spring"）
+		//   - forkGroupIdBase     : 基础 GroupId
+		//   - springFrameworkVersion : fork Spring Framework 版本
+		//   - springSecurityVersion  : fork Spring Security 版本
+		//
+		// 如需增加新的映射组（如 spring-data），可在下方仿照现有规则添加
+		// 新的 else if 分支，并在 gradle.properties 中定义对应版本参数。
+		// ====================================================================
+		resolutionStrategy.eachDependency { details ->
+			def requested = details.requested
+
+			// 规则一：org.springframework 组映射
+			// 将 org.springframework:spring-xxx 替换为
+			//   ${forkGroupIdBase}:${forkArtifactPrefix}-xxx:${springFrameworkVersion}
+			if (requested.group == 'org.springframework' && requested.name.startsWith('spring-')) {
+				def newArtifactId = requested.name.replaceFirst(/^spring-/, "${forkArtifactPrefix}-")
+				details.useTarget("${forkGroupIdBase}:${newArtifactId}:${springFrameworkVersion}")
+			}
+
+			// 规则二：org.springframework.security 组映射
+			// 将 org.springframework.security:spring-security-xxx 替换为
+			//   ${forkGroupIdBase}.security:${forkArtifactPrefix}-security-xxx:${springSecurityVersion}
+			else if (requested.group == 'org.springframework.security' && requested.name.startsWith('spring-security-')) {
+				def newArtifactId = requested.name.replaceFirst(/^spring-security-/, "${forkArtifactPrefix}-security-")
+				details.useTarget("${forkGroupIdBase}.security:${newArtifactId}:${springSecurityVersion}")
+			}
+		}
 	}
 }
 

@@ -129,12 +129,19 @@ public class BomExtension {
 				syncBom.setDestinationDir(generatedBomDir);
 				syncBom.from(((GenerateMavenPom) task).getDestination(), (pom) -> pom.rename((name) -> "pom.xml"));
 				try {
+					// 读取 Maven settings 模板并替换占位符
 					String settingsXmlContent = FileCopyUtils
 						.copyToString(new InputStreamReader(
 								getClass().getClassLoader().getResourceAsStream("effective-bom-settings.xml"),
 								StandardCharsets.UTF_8))
 						.replace("localRepositoryPath",
 								new File(this.project.getBuildDir(), "local-m2-repository").getAbsolutePath());
+					// fork 构建：注入 nexus 私有仓库配置，使 Maven 进程能解析 fork BOM 制品
+					settingsXmlContent = settingsXmlContent
+						.replace("nexusPublicUrlPlaceholder", getPropertyOrEmpty("nexusPublicUrl"))
+						.replace("nexusSnapshotUrlPlaceholder", getPropertyOrEmpty("nexusSnapshotUrl"))
+						.replace("nexusUsernamePlaceholder", getPropertyOrEmpty("nexusUsername"))
+						.replace("nexusPasswordPlaceholder", getPropertyOrEmpty("nexusPassword"));
 					syncBom.from(this.project.getResources().getText().fromString(settingsXmlContent),
 							(settingsXml) -> settingsXml.rename((name) -> "settings.xml"));
 				}
@@ -155,6 +162,11 @@ public class BomExtension {
 					.add(effectiveBomConfiguration.getName(), effectiveBom,
 							(artifact) -> artifact.builtBy(generateEffectiveBom));
 			});
+	}
+
+	private String getPropertyOrEmpty(String propertyName) {
+		Object value = this.project.findProperty(propertyName);
+		return (value != null) ? value.toString() : "";
 	}
 
 	private String createDependencyNotation(String groupId, String artifactId, DependencyVersion version) {

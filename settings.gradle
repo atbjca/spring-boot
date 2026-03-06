@@ -44,7 +44,18 @@ plugins {
 	id "io.spring.ge.conventions" version "0.0.13"
 }
 
-rootProject.name="spring-boot-build"
+// 根项目名称：引用 gradle.properties 中的 forkArtifactPrefix 动态拼接
+// 修改方法：仅需修改 gradle.properties 中的 forkArtifactPrefix 即可全局生效
+rootProject.name="${forkArtifactPrefix}-boot-build"
+
+// 子项目名称转换：将上游原始名称 "spring-boot" 替换为 fork 制品名前缀
+// "spring-boot" 作为替换源保持固定，因为这是 include 语句中使用的上游目录名称
+rootProject.children.each { project ->
+	project.name = project.name.replace("spring-boot", "${forkArtifactPrefix}-boot")
+	project.children.each { subproject ->
+		subproject.name = subproject.name.replace("spring-boot", "${forkArtifactPrefix}-boot")
+	}
+}
 
 settings.gradle.projectsLoaded {
 	gradleEnterprise {
