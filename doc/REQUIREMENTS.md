@@ -6,6 +6,82 @@
 
 ## 📅 2026年03月06日
 
+### [需求-019] BOM 传递依赖排除、NES GAV 映射文档与版本升级
+
+#### 背景与目的
+在完成 [需求-018] GAV 自动映射改造后，下游消费者引入 `spring-boot-dependencies` BOM 时发现：部分第三方组件（如 Spring AMQP、Batch、Kafka 等）会通过传递依赖重新引入原始 `org.springframework` / `org.springframework.security` 坐标，导致 fork GAV 替换不彻底，SCA 扫描仍可匹配到官方 CVE 记录。同时，四个 fork 项目各自维护独立的 `GAV_MAPPING.md`，下游使用者缺乏一份整合性参考文档。此外，部分依赖版本需同步升级至 fork 版本以保证全链路一致性。
+
+本需求涵盖三项改造工作，是 Phase 03 的核心交付内容。
+
+#### 改造一：spring-boot-dependencies BOM 第三方组件传递依赖排除
+
+##### 问题分析
+`spring-boot-dependencies` BOM 管理了大量第三方组件，其中 7 类组件（Spring AMQP、Batch、GraphQL、HATEOAS、Kafka、LDAP、WS，以及 RESTDocs 部分模块）在编译时直接依赖 `org.springframework` 或 `org.springframework.security`，形成传递依赖链。由于根项目 `resolutionStrategy.eachDependency` 规则仅对当前构建的依赖解析生效，下游消费者通过 BOM 引入这些第三方组件时，传递依赖仍然为原始 `org.springframework` / `org.springframework.security` 坐标，导致 SCA 工具可以匹配到已知 CVE 记录。
+
+##### 解决方案
+在 `spring-boot-dependencies/build.gradle` 中，为上述第三方组件添加 `exclude group: "xxx", module: "*"` 排除声明，切断原始坐标的传递依赖链。下游消费者自身的 `resolutionStrategy` 将自动将被排除后缺失的原始依赖替换为对应的 fork 坐标，实现完整的 GAV 替换闭环。
+
+##### 关键实施细节
+- 共添加 **29 个 exclude 语句**（28 个 `org.springframework:*` + 1 个 `org.springframework.security:*`）
+- 添加 **8 处结构化中文注释**（按 A 类组件 group 级别分组标注）
+- **bomrCheck 兼容性**：exclude 必须使用 `module: "*"` 完整语法，不能省略 module 参数，否则 bomrCheck 校验不通过
+- **无需 exclude 的组件**（7 个）：
+    - `activemq-spring`、`cache2k-spring`、`hazelcast-spring` —— Spring 依赖为 provided/compileOnly，不传递
+    - `spring-restdocs-asciidoctor` —— 不传递 Spring 核心依赖
+    - `spring-retry` —— Spring 依赖为 compileOnly
+    - `thymeleaf-spring5`、`thymeleaf-extras-springsecurity5` —— Spring 依赖为 provided
+- **跳过 BOM 导入的组件**：`spring-data-bom`、`spring-session-bom`、`spring-integration-bom`（BOM 自身不传递运行时依赖）
+
+##### 覆盖范围
+```
+Spring AMQP        → 排除 org.springframework:*
+Spring Batch       → 排除 org.springframework:*
+Spring GraphQL     → 排除 org.springframework:*
+Spring HATEOAS     → 排除 org.springframework:*
+Spring Kafka       → 排除 org.springframework:*
+Spring LDAP        → 排除 org.springframework:*
+Spring WS          → 排除 org.springframework:*
+Spring RESTDocs    → 排除 org.springframework:*（部分模块）
+                   → 排除 org.springframework.security:*（spring-restdocs-core）
+```
+
+#### 改造二：NES GAV 映射整合文档
+
+##### 问题分析
+Spring Boot、Spring Framework、Spring Security、Spring Authorization Server 四个 fork 项目各自维护独立的 `GAV_MAPPING.md`，下游使用者在集成时需逐个查阅，缺乏统一的参考入口，增加了集成成本和出错概率。
+
+##### 解决方案
+创建 `doc/NES_GAV_MAPPING.md`（约 450 行），整合四个项目的完整 GAV 映射信息，作为下游消费者的一站式参考文档。
+
+##### 文档内容
+- **兼容关系链**：Spring Boot ↔ Spring Framework ↔ Spring Security ↔ Spring Authorization Server 的版本对应关系图
+- **快速开始**：Maven 和 Gradle 配置示例（含私有仓库配置、BOM 导入方式、`resolutionStrategy` 模板）
+- **完整映射表**：80+ 模块的原始坐标 → fork 坐标映射，按项目分四组（Boot / Framework / Security / Authorization Server）
+- **已排除 Starter 清单**：列出因模块精简（[需求-008]、[需求-009]）而排除的 Starter 模块
+- **迁移清单**：从官方版本迁移至 fork 版本的完整步骤指引
+- **FAQ**：涵盖常见集成问题、包名是否修改、版本号解读等高频问题
+
+##### 文件路径
+`doc/NES_GAV_MAPPING.md`
+
+#### 改造三：依赖版本升级
+
+为保证全链路版本一致性，将以下组件版本对齐至 fork 版本体系：
+
+| 组件 | 原版本 | 升级后版本 | 说明 |
+|------|--------|-----------|------|
+| Spring Data BOM | `2021.2.18` | `2021.2.18-nes.patch.1-SNAPSHOT` | 对齐 fork 版本体系，确保 Spring Data 模块使用 fork 构建产物 |
+| Logback | `1.2.13` | `1.2.13-nes.patch.1-SNAPSHOT` | 对齐 fork 版本体系，使用内部安全补丁版本 |
+
+版本号均遵循 `原始版本号-nes.patch.N-SNAPSHOT` 格式，与 [需求-018] 中定义的版本号规则保持一致。
+
+#### 结果
+- **传递依赖排除**：BOM 中第三方组件的原始 Spring 坐标传递链被完整切断，SCA 规避策略从核心模块扩展至完整依赖树，下游消费者无需额外配置即可获得完整的 GAV 替换效果
+- **GAV 映射文档**：NES GAV 映射整合文档为下游消费者提供一站式参考入口，覆盖 80+ 模块映射和完整迁移指南，显著降低集成成本
+- **版本对齐**：Spring Data BOM 和 Logback 版本升级至 fork 版本体系，保证从构建到运行时的全链路版本一致性
+
+---
+
 ### [需求-018] GAV 自动映射改造
 
 #### 背景与目的

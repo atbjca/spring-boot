@@ -1171,7 +1171,7 @@ bom {
 			]
 		}
 	}
-	library("Logback", "1.2.13") {
+	library("Logback", "1.2.13-nes.patch.1-SNAPSHOT") {
 		group("ch.qos.logback") {
 			modules = [
 				"logback-access",
@@ -1721,12 +1721,25 @@ bom {
 			because "it uses Spring Framework 6"
 		}
 		group("org.springframework.amqp") {
+			// [A 类排除] 未 fork 的 Spring 生态组件，传递依赖原始 Spring 坐标
+			// 排除 group: org.springframework
+			// 移除条件：当此组件完成 fork 后移除所有 exclude
 			modules = [
-				"spring-amqp",
-				"spring-rabbit",
-				"spring-rabbit-stream",
-				"spring-rabbit-junit",
-				"spring-rabbit-test"
+				"spring-amqp" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-rabbit" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-rabbit-stream" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-rabbit-junit" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-rabbit-test" {
+					exclude group: "org.springframework", module: "*"
+				}
 			]
 		}
 	}
@@ -1737,15 +1750,26 @@ bom {
 			because "it uses Spring Framework 6"
 		}
 		group("org.springframework.batch") {
+			// [A 类排除] 未 fork 的 Spring 生态组件，传递依赖原始 Spring 坐标
+			// 排除 group: org.springframework
+			// 移除条件：当此组件完成 fork 后移除所有 exclude
 			modules = [
-				"spring-batch-core",
-				"spring-batch-infrastructure",
-				"spring-batch-integration",
-				"spring-batch-test"
+				"spring-batch-core" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-batch-infrastructure" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-batch-integration" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-batch-test" {
+					exclude group: "org.springframework", module: "*"
+				}
 			]
 		}
 	}
-	library("Spring Data Bom", "2021.2.18") {
+	library("Spring Data Bom", "2021.2.18-nes.patch.1-SNAPSHOT") {
 		considerSnapshots()
 		calendarName = "Spring Data Release"
 		prohibit {
@@ -1775,9 +1799,16 @@ bom {
 	library("Spring GraphQL", "1.0.6") {
 		considerSnapshots()
 		group("org.springframework.graphql") {
+			// [A 类排除] 未 fork 的 Spring 生态组件，传递依赖原始 Spring 坐标
+			// 排除 group: org.springframework
+			// 移除条件：当此组件完成 fork 后移除所有 exclude
 			modules = [
-					"spring-graphql",
-					"spring-graphql-test"
+					"spring-graphql" {
+						exclude group: "org.springframework", module: "*"
+					},
+					"spring-graphql-test" {
+						exclude group: "org.springframework", module: "*"
+					}
 			]
 		}
 	}
@@ -1788,8 +1819,13 @@ bom {
 			because "it uses Spring Framework 6"
 		}
 		group("org.springframework.hateoas") {
+			// [A 类排除] 未 fork 的 Spring 生态组件，传递依赖原始 Spring 坐标
+			// 排除 group: org.springframework
+			// 移除条件：当此组件完成 fork 后移除所有 exclude
 			modules = [
-				"spring-hateoas"
+				"spring-hateoas" {
+					exclude group: "org.springframework", module: "*"
+				}
 			]
 		}
 	}
@@ -1808,9 +1844,16 @@ bom {
 	library("Spring Kafka", "2.8.11") {
 		considerSnapshots()
 		group("org.springframework.kafka") {
+			// [A 类排除] 未 fork 的 Spring 生态组件，传递依赖原始 Spring 坐标
+			// 排除 group: org.springframework
+			// 移除条件：当此组件完成 fork 后移除所有 exclude
 			modules = [
-				"spring-kafka",
-				"spring-kafka-test"
+				"spring-kafka" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-kafka-test" {
+					exclude group: "org.springframework", module: "*"
+				}
 			]
 		}
 	}
@@ -1821,24 +1864,48 @@ bom {
 			because "it uses Spring Framework 6"
 		}
 		group("org.springframework.ldap") {
+			// [A 类排除] 未 fork 的 Spring 生态组件，传递依赖原始 Spring 坐标
+			// 排除 group: org.springframework
+			// 移除条件：当此组件完成 fork 后移除所有 exclude
 			modules = [
-				"spring-ldap-core",
-				"spring-ldap-core-tiger",
-				"spring-ldap-ldif-core",
-				"spring-ldap-odm",
-				"spring-ldap-test"
+				"spring-ldap-core" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-ldap-core-tiger" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-ldap-ldif-core" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-ldap-odm" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-ldap-test" {
+					exclude group: "org.springframework", module: "*"
+				}
 			]
 		}
 	}
 	library("Spring RESTDocs", "2.0.8.RELEASE") {
 		considerSnapshots()
 		group("org.springframework.restdocs") {
+			// [A 类排除] 未 fork 的 Spring 生态组件，传递依赖原始 Spring 坐标
+			// 排除 group: org.springframework
+			// 移除条件：当此组件完成 fork 后移除所有 exclude
 			modules = [
 				"spring-restdocs-asciidoctor",
-				"spring-restdocs-core",
-				"spring-restdocs-mockmvc",
-				"spring-restdocs-restassured",
-				"spring-restdocs-webtestclient"
+				"spring-restdocs-core" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-restdocs-mockmvc" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-restdocs-restassured" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-restdocs-webtestclient" {
+					exclude group: "org.springframework", module: "*"
+				}
 			]
 		}
 	}
@@ -1893,12 +1960,27 @@ bom {
 			because "it uses Spring Framework 6"
 		}
 		group("org.springframework.ws") {
+			// [A 类排除] 未 fork 的 Spring 生态组件，传递依赖原始 Spring 坐标
+			// 排除 group: org.springframework（所有模块）、org.springframework.security（spring-ws-security）
+			// 移除条件：当此组件完成 fork 后移除所有 exclude
 			modules = [
-				"spring-ws-core",
-				"spring-ws-security",
-				"spring-ws-support",
-				"spring-ws-test",
-				"spring-xml"
+				"spring-ws-core" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-ws-security" {
+					exclude group: "org.springframework", module: "*"
+					// 额外排除：此模块传递依赖 spring-security-core
+					exclude group: "org.springframework.security", module: "*"
+				},
+				"spring-ws-support" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-ws-test" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-xml" {
+					exclude group: "org.springframework", module: "*"
+				}
 			]
 		}
 	}
