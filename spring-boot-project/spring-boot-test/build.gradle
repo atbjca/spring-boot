@@ -44,7 +44,7 @@ dependencies {
 	testImplementation(project(":spring-boot-project:spring-boot-tools:spring-boot-test-support"))
 	testImplementation("io.mockk:mockk")
 	testImplementation("jakarta.json:jakarta.json-api")
-	testImplementation("ch.qos.logback:logback-classic")
+	testImplementation("cn.bjca.footstone.bogback:bjca-footstone-bogback-classic")
 	testImplementation("com.squareup.okhttp3:okhttp")
 	testImplementation("org.apache.tomcat.embed:tomcat-embed-core")
 	testImplementation("org.codehaus.groovy:groovy")

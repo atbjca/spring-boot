@@ -23,7 +23,7 @@ dependencies {
 	api("org.apache.commons:commons-compress")
 	api("org.springframework:spring-core")
 
-	compileOnly("ch.qos.logback:logback-classic")
+	compileOnly("cn.bjca.footstone.bogback:bjca-footstone-bogback-classic")
 
 	loader(project(":spring-boot-project:spring-boot-tools:spring-boot-loader"))
 

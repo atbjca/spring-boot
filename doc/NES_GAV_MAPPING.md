@@ -15,8 +15,9 @@
 4. [Spring Framework GAV 映射表](#4-spring-framework-gav-映射表)
 5. [Spring Security GAV 映射表](#5-spring-security-gav-映射表)
 6. [Spring Authorization Server GAV 映射表](#6-spring-authorization-server-gav-映射表)
-7. [已排除的 Starter 清单](#7-已排除的-starter-清单)
-8. [注意事项](#8-注意事项)
+7. [Logback GAV 映射表](#7-logback-gav-映射表)
+8. [已排除的 Starter 清单](#8-已排除的-starter-清单)
+9. [注意事项](#9-注意事项)
 
 ---
 
@@ -57,6 +58,7 @@ bjca-footstone-bpring-boot-dependencies (Spring Boot BOM — 版本管理中心)
 | Spring Framework | `org.springframework` | `cn.bjca.footstone.bpring` |
 | Spring Security | `org.springframework.security` | `cn.bjca.footstone.bpring.security` |
 | Authorization Server | `org.springframework.security` | `cn.bjca.footstone.bpring.security` |
+| Logback | `ch.qos.logback` | `cn.bjca.footstone.bogback` |
 
 ---
 
@@ -453,7 +455,42 @@ implementation 'cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security
 
 ---
 
-## 7. 已排除的 Starter 清单
+## 7. Logback GAV 映射表
+
+| 原始 GroupId | 原始 ArtifactId | NES Fork GroupId | NES Fork ArtifactId | NES Fork Version |
+| :--- | :--- | :--- | :--- | :--- |
+| `ch.qos.logback` | `logback-core` | `cn.bjca.footstone.bogback` | `bjca-footstone-bogback-core` | `1.2.13-nes.patch.1-SNAPSHOT` |
+| `ch.qos.logback` | `logback-classic` | `cn.bjca.footstone.bogback` | `bjca-footstone-bogback-classic` | `1.2.13-nes.patch.1-SNAPSHOT` |
+
+> **说明**：`logback-access` 暂未 fork，如需使用请继续引用原始坐标 `ch.qos.logback:logback-access`。
+
+### Maven 依赖声明
+
+```xml
+<dependency>
+  <groupId>cn.bjca.footstone.bogback</groupId>
+  <artifactId>bjca-footstone-bogback-classic</artifactId>
+  <version>1.2.13-nes.patch.1-SNAPSHOT</version>
+</dependency>
+<dependency>
+  <groupId>cn.bjca.footstone.bogback</groupId>
+  <artifactId>bjca-footstone-bogback-core</artifactId>
+  <version>1.2.13-nes.patch.1-SNAPSHOT</version>
+</dependency>
+```
+
+### Gradle 依赖声明
+
+```groovy
+implementation 'cn.bjca.footstone.bogback:bjca-footstone-bogback-classic:1.2.13-nes.patch.1-SNAPSHOT'
+implementation 'cn.bjca.footstone.bogback:bjca-footstone-bogback-core:1.2.13-nes.patch.1-SNAPSHOT'
+```
+
+> **提示**：引入 `bjca-footstone-bpring-boot-dependencies` BOM 后，版本号可省略，由 BOM 统一管理。Java 包名保持不变（`ch.qos.logback.*`），import 语句无需修改。
+
+---
+
+## 8. 已排除的 Starter 清单
 
 以下 Starter 因依赖链冲突、私服缺失或构建精简策略，已从当前 NES 构建中排除，**不产生 fork 制品**。如下游项目需要使用这些功能，请继续使用官方原始坐标或联系维护团队评估纳入。
 

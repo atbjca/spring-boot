@@ -21,7 +21,7 @@ dependencies {
 	api("org.springframework:spring-core")
 	api("org.springframework:spring-context")
 
-	optional("ch.qos.logback:logback-classic")
+	optional("cn.bjca.footstone.bogback:bjca-footstone-bogback-classic")
 	optional("com.atomikos:transactions-jdbc")
 	optional("com.atomikos:transactions-jms")
 	optional("com.atomikos:transactions-jta")

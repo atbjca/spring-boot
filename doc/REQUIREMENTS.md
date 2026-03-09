@@ -6,6 +6,141 @@
 
 ## 📅 2026年03月09日
 
+### [需求-024] Logback 依赖全局替换为 NES Fork 坐标
+
+#### 背景与目的
+项目已 fork Logback 并发布为 `cn.bjca.footstone.bogback` 坐标，需将项目内所有对原始 `ch.qos.logback:logback-classic` / `logback-core` 的依赖引用替换为 fork 版本，确保构建产物和下游 BOM 均使用 fork 坐标。
+
+#### 修改内容
+
+##### 1. BOM 版本管理 — 新增 fork group
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+- **改动**：在 `library("Logback")` 中新增 `cn.bjca.footstone.bogback` group，包含 `bjca-footstone-bogback-classic` 和 `bjca-footstone-bogback-core` 两个模块
+- **保留**：原始 `ch.qos.logback` group 保留 `logback-access`（暂未 fork）
+
+##### 2. 项目内部 build.gradle 全局替换（11 处）
+所有引用 `ch.qos.logback:logback-classic` 的模块已替换为 `cn.bjca.footstone.bogback:bjca-footstone-bogback-classic`：
+
+| 模块 | 配置类型 |
+|---|---|
+| `spring-boot-starter-logging` | `api` |
+| `spring-boot` | `optional` |
+| `spring-boot-actuator-autoconfigure` | `optional` |
+| `spring-boot-loader-tools` | `compileOnly` |
+| `spring-boot-docs` | `implementation` |
+| `spring-boot-autoconfigure` | `testImplementation` |
+| `spring-boot-test` | `testImplementation` |
+| `spring-boot-test-autoconfigure` | `testImplementation` |
+| `spring-boot-devtools` | `testImplementation` |
+| `spring-boot-loader` | `testRuntimeOnly` |
+| `spring-boot-actuator` | `testRuntimeOnly` |
+
+##### 3. 文档更新
+- `doc/NES_GAV_MAPPING.md`：新增 Logback GAV 映射表章节（第 7 章），含 Maven/Gradle 示例
+
+#### 说明
+- Java 包名保持不变（`ch.qos.logback.*`），Java 源码中的 import 语句**无需修改**
+- `logback-access` 暂未 fork，保留原始坐标
+
+---
+
+### [需求-023] Undertow 路径遍历漏洞修复（CVE-2024-1459）
+
+#### 背景与目的
+安全扫描发现 Undertow 存在路径遍历漏洞，攻击者可构造含 `/..;/` 的 HTTP 请求绕过路径规范化，越权访问受限文件。
+
+#### 修改内容
+
+| CVE 编号 | 组件 | Maven 坐标 | 原版本 | 升级版本 | 漏洞类型 | CVSS |
+|---|---|---|---|---|---|---|
+| CVE-2024-1459 | Undertow | `io.undertow:undertow-core` | 2.2.28.Final | **2.2.31.Final** | `handlePath` 路径遍历（`/..;/` → `../`），可越权读取文件 | 5.3 |
+
+##### Undertow 2.2.28.Final → 2.2.31.Final
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+- **改动**：`library("Undertow", "2.2.28.Final")` → `library("Undertow", "2.2.31.Final")`
+- **修复内容**：修复 `handlePath` 函数在 `PATH_SEGMENT_START` 和 `PATH_DOT_SEGMENT` 状态下对分号的处理缺陷，防止 `/..;/` 被错误规范化为路径遍历序列
+- **兼容性**：2.2.x 分支内升级，Java 8 兼容
+
+#### 涉及文件
+- `spring-boot-project/spring-boot-dependencies/build.gradle`（Undertow 版本）
+
+---
+
+### [需求-022] 第三方组件安全漏洞升级（aspectjweaver / CVE-2024-52979 / CVE-2024-6763 / CVE-2024-13009）
+
+#### 背景与目的
+安全扫描发现四个第三方依赖组件存在已知漏洞或安全风险，需升级至修复版本。
+
+#### 修改内容
+
+| CVE / 漏洞 | 组件 | Maven 坐标 | 原版本 | 升级版本 | 漏洞类型 | CVSS |
+|---|---|---|---|---|---|---|
+| 反序列化 gadget chain | AspectJ | `org.aspectj:aspectjweaver` | 1.9.7 | **1.9.25.1** | `SimpleCache$StorableCachingMap` 反序列化链可实现任意文件写入 | 无 CVE 编号 |
+| CVE-2024-52979 | Elasticsearch | `org.elasticsearch:elasticsearch` | 7.17.15 | **7.17.29** | Mustache 搜索模板不受控资源消耗导致 DoS | 7.5 |
+| CVE-2024-6763 | Jetty | `org.eclipse.jetty:jetty-http` | 9.4.53.v20231009 | **9.4.57.v20241219** | HttpURI authority 段验证不足，可导致 Open Redirect / SSRF | 3.7 |
+| CVE-2024-13009 | Jetty | `org.eclipse.jetty:jetty-server` | 9.4.53.v20231009 | **9.4.57.v20241219** | GzipHandler 请求体缓冲区错误释放导致跨请求数据泄露 | 7.2 |
+
+##### 1. AspectJ 1.9.7 → 1.9.25.1
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+- **改动**：`library("AspectJ", "1.9.7")` → `library("AspectJ", "1.9.25.1")`，移除 `prohibit [1.9.8.M1,)` 约束，新增详尽安全注释
+- **升级原因**：消除反序列化 gadget chain 风险（`SimpleCache$StorableCachingMap` + `commons-collections` 可实现任意文件写入）
+- **⚠️ Java 版本要求变更**：1.9.8+ 要求 **Java 11**（原 1.9.7 支持 Java 8+），已在 build.gradle 中添加注释说明
+- **安全使用场景**：应用不接受不可信 Java 反序列化、已配置 ObjectInputFilter 白名单、classpath 不同时含 commons-collections
+- **需额外评估场景**：应用存在 `ObjectInputStream.readObject()` 处理不可信输入（RMI/JMX/自定义协议）、下游仍依赖 Java 8
+
+##### 2. Elasticsearch 7.17.15 → 7.17.29
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+- **改动**：`library("Elasticsearch", "7.17.15")` → `library("Elasticsearch", "7.17.29")`；新增 `co.elastic.clients:elasticsearch-java` 模块纳入版本管理
+- **修复内容**：修复恶意 Mustache 搜索模板导致节点资源耗尽崩溃的 DoS 漏洞（ESA-2024-40），以及 7.17.25 至 7.17.29 间的其他安全修复
+- **新增模块**：`co.elastic.clients:elasticsearch-java`（新一代 Elasticsearch Java 客户端，替代已废弃的 `elasticsearch-rest-high-level-client`），版本随 Elasticsearch 统一管理
+
+##### 3. Jetty 9.4.53.v20231009 → 9.4.57.v20241219（同时修复 CVE-2024-6763 和 CVE-2024-13009）
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+- **改动**：`library("Jetty", "9.4.53.v20231009")` → `library("Jetty", "9.4.57.v20241219")`
+- **CVE-2024-6763 修复**：修复 `HttpURI` 对 URI authority 段解析验证不足的问题，防止解析差异被利用进行 Open Redirect 或 SSRF 攻击
+- **CVE-2024-13009 修复**：修复 `GzipHandler` 在 GZIP 解压错误时缓冲区未正确释放导致的跨请求数据泄露/污染问题
+
+#### 涉及文件
+- `spring-boot-project/spring-boot-dependencies/build.gradle`（AspectJ、Elasticsearch、Jetty 版本）
+
+---
+
+### [需求-021] 第三方组件安全漏洞升级（CVE-2024-31573 / CVE-2023-51074 / CVE-2026-24400）
+
+#### 背景与目的
+安全扫描发现三个第三方依赖组件存在已知漏洞，需升级至修复版本以消除安全风险。
+
+#### 修改内容
+
+| CVE 编号 | 组件 | Maven 坐标 | 原版本 | 升级版本 | 漏洞类型 | CVSS |
+|---|---|---|---|---|---|---|
+| CVE-2024-31573 | XMLUnit | `org.xmlunit:xmlunit-core` | 2.9.1 | **2.10.0** | XSLT 扩展函数默认未禁用，可导致 RCE | 5.6~9.8 |
+| CVE-2023-51074 | json-path | `com.jayway.jsonpath:json-path` | 2.7.0 | **2.9.0** | `Criteria.parse()` 无限递归导致 DoS（StackOverflow） | 5.3 |
+| CVE-2026-24400 | AssertJ | `org.assertj:assertj-core` | 3.22.0 | **3.27.7** | `XmlStringPrettyFormatter` XXE 注入（任意文件读取/SSRF） | 8.2 |
+
+##### 1. XMLUnit 2.9.1 → 2.10.0
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+- **改动**：`library("XmlUnit2", "2.9.1")` → `library("XmlUnit2", "2.10.0")`
+- **修复内容**：默认禁用 XSLT extension functions，防止处理不可信 XSLT 样式表时的远程代码执行
+
+##### 2. json-path 2.7.0 → 2.9.0
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+- **改动**：`library("Json Path", "2.7.0")` → `library("Json Path", "2.9.0")`
+- **修复内容**：修复 `Criteria.parse()` / `PathCompiler` 中的无限递归，防止恶意 JSONPath 表达式导致栈溢出
+- **注意**：2.9.0 相比 2.7.0 可能存在部分不向后兼容的行为变更（某些边缘 JSONPath 表达式可能抛出 `InvalidPathException`）
+
+##### 3. AssertJ 3.22.0 → 3.27.7
+- **文件**：`gradle.properties`
+- **改动**：`assertjVersion=3.22.0` → `assertjVersion=3.27.7`
+- **修复内容**：废弃并修复 `XmlStringPrettyFormatter` 中未禁用 DTD 处理和外部实体解析的问题，防止 XXE 注入
+- **兼容性**：AssertJ 整个 3.x 系列均支持 Java 8（Java 17 要求从 4.x 起），3.27.7 与 Java 8 完全兼容
+
+#### 涉及文件
+- `spring-boot-project/spring-boot-dependencies/build.gradle`（XMLUnit、json-path 版本）
+- `gradle.properties`（assertjVersion）
+
+---
+
 ### [需求-020] Maven 发布 ArtifactId Fork 命名修复
 
 #### 背景与目的

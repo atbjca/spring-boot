@@ -98,11 +98,40 @@ bom {
 			]
 		}
 	}
-	library("AspectJ", "1.9.7") {
-		prohibit {
-			versionRange "[1.9.8.M1,)"
-			because "it requires Java 11"
-		}
+	// ============================================================================
+	// AspectJ 1.9.7 → 1.9.25.1 升级说明
+	// ============================================================================
+	// 【升级原因】
+	//   aspectjweaver 存在已知的 Java 反序列化 gadget chain 安全风险（无独立 CVE 编号）。
+	//   攻击链：HashSet.readObject() → TiedMapEntry.hashCode() → LazyMap.get()
+	//         → SimpleCache$StorableCachingMap.put() → FileOutputStream.write()
+	//   攻击者可利用 aspectjweaver 中的 SimpleCache$StorableCachingMap 类，
+	//   配合 commons-collections (3.x/4.x)，实现任意文件写入，进而可能达成 RCE。
+	//   参考工具：ysoserial AspectJWeaver payload。
+	//
+	// 【⚠️ Java 版本要求变更】
+	//   1.9.7 支持 Java 8+；1.9.8+ 要求 Java 11+。
+	//   已移除原有 prohibit "[1.9.8.M1,)" 约束。下游使用者需确保运行环境为 Java 11+。
+	//
+	// 【何时可以安全使用此版本】
+	//   ✅ 应用不接受外部不可信数据的 Java 反序列化（最常见场景，绝大多数 Web 应用）
+	//   ✅ 已配置 JEP 290 ObjectInputFilter 白名单，排除了 org.aspectj.weaver.** 包
+	//   ✅ 运行环境为 Java 11+
+	//   ✅ classpath 中不同时存在 commons-collections 3.x/4.x（gadget chain 必要条件之一缺失）
+	//
+	// 【何时需要额外防护或评估】
+	//   ⚠️ 应用存在 ObjectInputStream.readObject() 处理不可信输入的入口
+	//      （如 RMI、JMX、自定义 Socket 协议、某些消息中间件的序列化传输）
+	//   ⚠️ classpath 同时包含 aspectjweaver + commons-collections，且有反序列化入口
+	//   ⚠️ 下游使用者仍依赖 Java 8 运行环境（需保持 1.9.7 或寻找替代方案）
+	//
+	// 【防护建议】
+	//   1. 优先确保应用无不可信反序列化入口（根本解决）
+	//   2. 配置 ObjectInputFilter（Java 9+ 内置，Java 8u121+ 通过 sun.misc.ObjectInputFilter）：
+	//      jdk.serialFilter=!org.aspectj.weaver.tools.cache.**
+	//   3. 若必须支持 Java 8，保持 1.9.7 并应用上述过滤器
+	// ============================================================================
+	library("AspectJ", "1.9.25.1") {
 		group("org.aspectj") {
 			modules = [
 				"aspectjrt",
@@ -295,7 +324,7 @@ bom {
 			]
 		}
 	}
-	library("Elasticsearch", "7.17.15") {
+	library("Elasticsearch", "7.17.29") {
 		group("org.elasticsearch") {
 			modules = [
 				"elasticsearch"
@@ -323,6 +352,11 @@ bom {
 		group("org.elasticsearch.plugin") {
 			modules = [
 				"transport-netty4-client"
+			]
+		}
+		group("co.elastic.clients") {
+			modules = [
+				"elasticsearch-java"
 			]
 		}
 	}
@@ -969,7 +1003,7 @@ bom {
 			]
 		}
 	}
-	library("Jetty", "9.4.53.v20231009") {
+	library("Jetty", "9.4.57.v20241219") {
 		prohibit {
 			versionRange "[10.0.0-alpha0,)"
 			because "it requires Java 11"
@@ -1031,7 +1065,7 @@ bom {
 			]
 		}
 	}
-	library("Json Path", "2.7.0") {
+	library("Json Path", "2.9.0") {
 		group("com.jayway.jsonpath") {
 			modules = [
 				"json-path",
@@ -1172,6 +1206,12 @@ bom {
 		}
 	}
 	library("Logback", "1.2.13-nes.patch.1-SNAPSHOT") {
+		group("cn.bjca.footstone.bogback") {
+			modules = [
+				"bjca-footstone-bogback-classic",
+				"bjca-footstone-bogback-core"
+			]
+		}
 		group("ch.qos.logback") {
 			modules = [
 				"logback-access",
@@ -2070,7 +2110,7 @@ bom {
 			]
 		}
 	}
-	library("Undertow", "2.2.28.Final") {
+	library("Undertow", "2.2.31.Final") {
 		group("io.undertow") {
 			modules = [
 				"undertow-core",
@@ -2107,7 +2147,7 @@ bom {
 			]
 		}
 	}
-	library("XmlUnit2", "2.9.1") {
+	library("XmlUnit2", "2.10.0") {
 		group("org.xmlunit") {
 			modules = [
 				"xmlunit-assertj",

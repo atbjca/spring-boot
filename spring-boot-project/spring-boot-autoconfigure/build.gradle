@@ -227,7 +227,7 @@ dependencies {
 
 	testImplementation(project(":spring-boot-project:spring-boot-tools:spring-boot-test-support"))
 	testImplementation(project(":spring-boot-project:spring-boot-test"))
-	testImplementation("ch.qos.logback:logback-classic")
+	testImplementation("cn.bjca.footstone.bogback:bjca-footstone-bogback-classic")
 	testImplementation("commons-fileupload:commons-fileupload")
 	testImplementation("com.atomikos:transactions-jms")
 	testImplementation("com.github.h-thurow:simple-jndi")

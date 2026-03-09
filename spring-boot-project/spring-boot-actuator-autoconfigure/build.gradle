@@ -25,7 +25,7 @@ dependencies {
 	implementation("com.fasterxml.jackson.core:jackson-databind")
 	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
-	optional("ch.qos.logback:logback-classic")
+	optional("cn.bjca.footstone.bogback:bjca-footstone-bogback-classic")
 	optional("com.datastax.oss:java-driver-core") {
 		exclude group: "org.slf4j", module: "jcl-over-slf4j"
 	}

@@ -110,7 +110,7 @@ dependencies {
 	testImplementation("org.testcontainers:neo4j")
 	testImplementation("org.testcontainers:testcontainers")
 
-	testRuntimeOnly("ch.qos.logback:logback-classic")
+	testRuntimeOnly("cn.bjca.footstone.bogback:bjca-footstone-bogback-classic")
 	testRuntimeOnly("io.projectreactor.netty:reactor-netty-http")
 	testRuntimeOnly("jakarta.xml.bind:jakarta.xml.bind-api")
 	testRuntimeOnly("org.apache.tomcat.embed:tomcat-embed-el")
