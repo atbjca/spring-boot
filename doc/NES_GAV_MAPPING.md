@@ -222,6 +222,8 @@ dependencies {
 > **Version**：`2.7.18-nes.patch.1-SNAPSHOT`
 >
 > **ArtifactId 映射规则**：`spring-boot-{name}` → `bjca-footstone-bpring-boot-{name}`
+>
+> **例外**：`spring-boot-gradle-plugin` 保留原始 artifactId 不变（使用独立发布机制，不经过 DeployedPlugin）
 
 ### 3.1 核心基础设施（BOM / Parent）
 
@@ -293,7 +295,7 @@ dependencies {
 | `spring-boot-loader` | `bjca-footstone-bpring-boot-loader` | 可执行 JAR 类加载器 |
 | `spring-boot-loader-tools` | `bjca-footstone-bpring-boot-loader-tools` | Loader 工具库 |
 | `spring-boot-maven-plugin` | `bjca-footstone-bpring-boot-maven-plugin` | Maven 打包插件 |
-| `spring-boot-gradle-plugin` | `bjca-footstone-bpring-boot-gradle-plugin` | Gradle 打包插件 |
+| `spring-boot-gradle-plugin` | `spring-boot-gradle-plugin` | Gradle 打包插件（**保留原始命名**，使用独立发布机制，不经过 DeployedPlugin） |
 | `spring-boot-autoconfigure-processor` | `bjca-footstone-bpring-boot-autoconfigure-processor` | 自动配置注解处理器 |
 | `spring-boot-configuration-processor` | `bjca-footstone-bpring-boot-configuration-processor` | 配置元数据注解处理器 |
 | `spring-boot-configuration-metadata` | `bjca-footstone-bpring-boot-configuration-metadata` | 配置元数据模型 |

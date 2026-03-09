@@ -1,6 +1,6 @@
 # Spring Boot 2.7 Fork NES 改造 – APM Memory Root
 **Memory Strategy:** Dynamic-MD
-**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施 NES (Never-Ending Support) 改造。Phase 01-02 完成了 GAV 自动映射机制（resolutionStrategy、BOM 导入、文档完善）。Phase 03 实施传递依赖排除（spring-boot-dependencies BOM 中排除第三方组件对原始 Spring 坐标的传递依赖）与 NES GAV 映射文档编写（整合四个 fork 项目的完整 GAV 映射文档）。
+**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施 NES (Never-Ending Support) 改造。Phase 01-02 完成了 GAV 自动映射机制（resolutionStrategy、BOM 导入、文档完善）。Phase 03 实施传递依赖排除（spring-boot-dependencies BOM 中排除第三方组件对原始 Spring 坐标的传递依赖）与 NES GAV 映射文档编写（整合四个 fork 项目的完整 GAV 映射文档）。Phase 04 修复 Maven 发布时 artifactId 未使用 fork 前缀的问题（仅在 DeployedPlugin 发布阶段显式设置 artifactId），并同步更新 NES GAV 映射文档。
 
 ## Phase 01 – Gradle 构建基础设施改造 Summary
 * **结果**: BUILD SUCCESSFUL (4m29s, 1977 tasks)。全部 5 个任务完成，经过 5 轮迭代修复。
@@ -40,3 +40,18 @@
   - `.apm/Memory/Phase_03_Dependency_Exclusion_GAV_Mapping/Task_1_5_Build_Verification_2.md`
   - `.apm/Memory/Phase_03_Dependency_Exclusion_GAV_Mapping/Task_1_6_Remove_Unnecessary_Excludes.md`
   - `.apm/Memory/Phase_03_Dependency_Exclusion_GAV_Mapping/Task_1_7_Build_Verification_3.md`
+
+## Phase 04 – Artifact ID 发布修复与文档同步 Summary
+* **结果**: BUILD SUCCESSFUL，已部署到 Nexus。全部 5 个任务完成（含后续追加的 Task 2.4~2.5）。
+* **核心交付**:
+  - `buildSrc/src/main/java/org/springframework/boot/build/DeployedPlugin.java`：在 MavenPublication 创建后添加 artifactId 显式设置逻辑（方案 B），通过 `project.findProperty("forkArtifactPrefix")` 读取属性，将 `spring-boot` 替换为 `forkArtifactPrefix + "-boot"`，附详尽中文注释
+  - `spring-boot-starter-parent/build.gradle`：修复 `pom.withXml` 闭包中 3 处硬编码 artifactId（parent 的 `spring-boot-dependencies`、pluginManagement 和 shade 依赖的 `spring-boot-maven-plugin`），改为动态读取 forkArtifactPrefix
+  - `doc/NES_GAV_MAPPING.md`：修正 `spring-boot-gradle-plugin` 保留原始命名的例外说明，全文 artifactId 一致性验证通过
+* **关键发现**: `spring-boot-gradle-plugin` 使用独立的 `java-gradle-plugin` 发布机制，不经过 DeployedPlugin，artifactId 保留原始命名；`spring-boot-parent` 使用 BOM import（非 `<parent>`）是 Gradle java-platform 插件的预期行为，与原始 Spring Boot 一致；`spring-boot-starter-parent` 的 `<parent>` 元素由 `pom.withXml` 手动构建，其中硬编码的 artifactId 需动态替换。
+* **涉及 Agent**: Agent_Build（Task 2.1、2.4）、User（Task 2.2、2.5 构建验证）、Agent_Docs（Task 2.3）
+* **Memory Logs**:
+  - `.apm/Memory/Phase_04_Artifact_ID_Fix/Task_2_1_DeployedPlugin_ArtifactId_Fix.md`
+  - `.apm/Memory/Phase_04_Artifact_ID_Fix/Task_2_2_Build_Verification.md`
+  - `.apm/Memory/Phase_04_Artifact_ID_Fix/Task_2_3_NES_GAV_MAPPING_Update.md`
+  - `.apm/Memory/Phase_04_Artifact_ID_Fix/Task_2_4_Starter_Parent_POM_Fix.md`
+  - `.apm/Memory/Phase_04_Artifact_ID_Fix/Task_2_5_Build_Verification_POM_Check.md`

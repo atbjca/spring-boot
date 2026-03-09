@@ -1,7 +1,7 @@
-# Spring Boot 2.7 Fork 传递依赖排除与 NES GAV 映射文档 – APM Implementation Plan
+# Spring Boot 2.7 Fork 构建与 GAV 治理 – APM Implementation Plan
 **Memory Strategy:** Dynamic-MD
-**Last Modification:** Phase 1 全部完成（7/7 任务），新增 Task 1.8 维护 REQUIREMENTS.md。
-**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施两项并行改造：(1) 在 spring-boot-dependencies BOM 中排除第三方组件对原始 Spring/Spring Security/Authorization Server 的传递依赖，确保下游消费者不会因第三方 POM 引入原始坐标；(2) 整合四个 fork 项目（spring-boot、spring-framework、spring-security、spring-authorization-server）的 GAV 映射，编写面向下游使用者的完整 NES_GAV_MAPPING.md 文档。
+**Last Modification:** 新增 Task 2.6~2.8（BOM artifactId 全局替换 + Maven 插件描述符修复），修复方案 B 系统性缺陷。
+**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施持续改造：Phase 1（已完成）在 BOM 中排除传递依赖并编写 NES GAV 映射文档；Phase 2 修复 Maven 发布时 artifactId 未使用 fork 前缀的问题（仅在 DeployedPlugin 发布阶段替换，不改内部项目名），并同步更新 GAV 映射文档。
 
 ## Phase 1: 传递依赖排除与 NES GAV 映射文档编写
 
@@ -63,3 +63,81 @@
 **Guidance:** 由用户手动执行。**Depends on: Task 1.6 Output**
 
 - 用户执行全量构建，验证所有修改不破坏现有构建
+
+## Phase 2: Artifact ID 发布修复与文档同步
+
+### Task 2.1 – DeployedPlugin.java artifactId 发布修复 - Agent_Build
+**Objective:** 在 DeployedPlugin.java 的 MavenPublication 创建后显式设置 artifactId，将 `spring-boot` 替换为 `forkArtifactPrefix + "-boot"`，确保 Maven 发布的制品使用 fork 命名。
+**Output:** 修改后的 buildSrc/src/main/java/org/springframework/boot/build/DeployedPlugin.java，包含详尽中文注释。
+**Guidance:** 方案 B（仅修改发布阶段）。从 `project.findProperty("forkArtifactPrefix")` 读取属性，确保单一配置源。不修改 settings.gradle、不修改内部项目名。与 spring-framework fork 的做法一致。每处新增代码必须添加详尽中文注释。
+
+- 在 `DeployedPlugin.java` 的 `apply()` 方法中，`MavenPublication` 创建后（第 46 行之后），从 `project.findProperty("forkArtifactPrefix")` 获取制品名前缀属性
+- 使用 `publication.setArtifactId(project.getName().replace("spring-boot", forkArtifactPrefix + "-boot"))` 显式设置 artifactId，确保发布的 Maven 制品使用 fork 命名
+- 为新增代码添加详尽中文注释，说明：(1) 为什么需要显式设置 artifactId——settings.gradle 的项目名替换因执行顺序问题未生效 (2) 替换逻辑的原理——将 project.name 中的 "spring-boot" 替换为 forkArtifactPrefix + "-boot" (3) 修改方法——仅需修改 gradle.properties 中 forkArtifactPrefix 即可全局生效
+
+### Task 2.2 – 构建验证 - User
+**Objective:** 验证 Task 2.1 修改后 make install 的制品 artifactId 是否正确。
+**Output:** 验证结果（成功或失败信息）。
+**Guidance:** 由用户手动执行。**Depends on: Task 2.1 Output by Agent_Build**
+
+- 执行 `make install`，确认构建成功
+- 检查 `~/.m2/repository/cn/bjca/footstone/bpring/boot/` 目录下所有 artifact 名称是否已变为 `bjca-footstone-bpring-boot-*`。如有失败，提供完整错误日志供 Agent_Build 分析修复
+
+### Task 2.3 – NES_GAV_MAPPING.md artifact 映射更新 - Agent_Docs
+**Objective:** 更新 NES_GAV_MAPPING.md 中 Spring Boot 模块的 artifact ID 映射，反映 fork 后的实际 artifactId。
+**Output:** 更新后的 doc/NES_GAV_MAPPING.md。
+**Guidance:** 将所有 Spring Boot 模块的 artifactId 从 `spring-boot-*` 更新为 `bjca-footstone-bpring-boot-*`（基于 forkArtifactPrefix 的实际值）。语言中英混合、尽量中文。**Depends on: Task 2.2 Output by User**
+
+- 更新所有 Spring Boot 模块的原始坐标→fork 坐标映射表，artifact ID 从 `spring-boot-*` 改为 `bjca-footstone-bpring-boot-*`
+- 更新「快速开始」章节中的 Maven/Gradle 依赖声明示例，确保 artifactId 使用 fork 命名
+- 全文检查所有出现 `spring-boot` artifact 引用的地方，确保一致性
+
+### Task 2.4 – spring-boot-starter-parent POM 硬编码 artifactId 修复 - Agent_Build
+**Objective:** 修复 `spring-boot-starter-parent/build.gradle` 中 `pom.withXml` 闭包里 3 处硬编码的 `spring-boot-*` artifactId，改为动态读取 `forkArtifactPrefix` 属性进行替换，确保生成的 POM 中 `<parent>` 和 pluginManagement 引用正确的 fork artifactId。
+**Output:** 修改后的 `spring-boot-project/spring-boot-starters/spring-boot-starter-parent/build.gradle`，包含详尽中文注释。
+**Guidance:** 3 处需修复的硬编码位置：(1) 第 15 行 `delegate.artifactId("spring-boot-dependencies")` — parent POM 的 artifactId (2) 第 158 行 `delegate.artifactId('spring-boot-maven-plugin')` — pluginManagement 中 repackage 插件 (3) 第 192 行 `delegate.artifactId('spring-boot-maven-plugin')` — shade 插件依赖。使用 `project.findProperty("forkArtifactPrefix")` 读取属性，替换逻辑与 DeployedPlugin.java 一致（将 "spring-boot" 替换为 forkArtifactPrefix + "-boot"）。每处修改添加详尽中文注释。遵循最小修改原则。**Depends on: Task 2.1 Output**
+
+1. 在 `pom.withXml` 闭包开头，通过 `project.findProperty("forkArtifactPrefix")` 获取 fork 前缀属性，计算 fork 后的 artifactId
+2. 将第 15 行 `"spring-boot-dependencies"` 替换为动态计算的 fork artifactId（如 `"bjca-footstone-bpring-boot-dependencies"`）
+3. 将第 158 行和第 192 行 `'spring-boot-maven-plugin'` 替换为动态计算的 fork artifactId（如 `"bjca-footstone-bpring-boot-maven-plugin"`）
+4. 为新增代码添加详尽中文注释，说明替换原因和逻辑
+
+### Task 2.5 – 构建验证与 POM 结构检查 - User
+**Objective:** 验证 Task 2.4 修改后 `make install` 构建成功，且 `bjca-footstone-bpring-boot-starter-parent` POM 中 `<parent>` artifactId 正确。
+**Output:** 验证结果（成功或失败信息）。
+**Guidance:** 由用户手动执行。**Depends on: Task 2.4 Output by Agent_Build**
+
+- 执行 `make install`，确认构建成功
+- 检查 `~/.m2/repository/cn/bjca/footstone/bpring/boot/bjca-footstone-bpring-boot-starter-parent/` 下的 POM 文件，确认 `<parent>` 中 artifactId 为 `bjca-footstone-bpring-boot-dependencies`（而非 `spring-boot-dependencies`）
+- 检查 POM 中 pluginManagement 的 `spring-boot-maven-plugin` artifactId 是否也已正确替换
+
+### Task 2.6 – BomPlugin POM 生成 artifactId 全局替换 - Agent_Build
+**Objective:** 在 BomPlugin.java 的 PublishingCustomizer 中增加 fork artifactId 替换逻辑，确保生成的 `spring-boot-dependencies` POM 中所有 `<dependencyManagement>` 和 `<pluginManagement>` 条目的 artifactId 均使用 fork 命名。
+**Output:** 修改后的 `buildSrc/src/main/java/org/springframework/boot/build/bom/BomPlugin.java`，包含详尽中文注释。
+**Guidance:** 当前问题：BomPlugin 生成的 POM 中，69 个 Spring Boot 内部模块的 artifactId 仍为 `spring-boot-*`，与 DeployedPlugin 发布的 `bjca-footstone-bpring-boot-*` 不匹配。修复方案：在 `PublishingCustomizer.customizePom()` 的 `pom.withXml` 逻辑中，遍历所有 `<dependencyManagement>` 和 `<pluginManagement>` 中的 `<artifactId>` 节点，对以 `spring-boot` 开头的值应用 `"spring-boot"` → `forkArtifactPrefix + "-boot"` 替换。通过 `project.findProperty("forkArtifactPrefix")` 读取属性。未配置时保持原始值（向后兼容）。每处修改添加详尽中文注释。
+
+1. 读取 `buildSrc/src/main/java/org/springframework/boot/build/bom/BomPlugin.java`，理解 `PublishingCustomizer` 内部类的 `customizePom()` 方法和 `pom.withXml` 逻辑
+2. 在 `customizePom()` 方法的 `pom.withXml` 回调中，获取 `forkArtifactPrefix` 属性
+3. 遍历 `<dependencyManagement><dependencies>` 下所有 `<dependency>` 节点的 `<artifactId>` 子节点，对以 `spring-boot` 开头的值执行替换
+4. 遍历 `<pluginManagement><plugins>` 下所有 `<plugin>` 节点的 `<artifactId>` 子节点，对以 `spring-boot` 开头的值执行替换
+5. 为新增代码添加详尽中文注释
+
+### Task 2.7 – Maven 插件描述符 artifactId 修复 - Agent_Build
+**Objective:** 修复 `spring-boot-maven-plugin` 的 Maven 插件描述符（`plugin.xml`）中 artifactId 与发布名不匹配的问题，确保 JAR 内部的 `plugin.xml` 使用 fork artifactId。
+**Output:** 修改后的 `spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/build.gradle`（扩展现有同步任务）。
+**Guidance:** 当前问题：`src/maven/resources/pom.xml` 模板中 `<artifactId>spring-boot-maven-plugin</artifactId>` 硬编码，Maven Plugin Tools 据此生成的 `plugin.xml` 中 artifactId 为 `spring-boot-maven-plugin`，与发布名 `bjca-footstone-bpring-boot-maven-plugin` 不匹配，导致 Maven 报 InvalidPluginDescriptorException。修复方案：扩展现有的 `syncPluginPomGroupId` 任务（约第 160-183 行），使其同时替换 `<artifactId>` 中的 `spring-boot` 为 `forkArtifactPrefix + "-boot"`。重命名任务为 `syncPluginPomCoordinates` 或类似名称。**Depends on: Task 2.6 Output**
+
+1. 读取 `spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/build.gradle`，理解现有 `syncPluginPomGroupId` 任务逻辑
+2. 扩展该任务的 `replaceAll` 逻辑，增加 artifactId 替换：将 `<artifactId>spring-boot-maven-plugin</artifactId>` 替换为动态计算的 fork artifactId
+3. 考虑将任务名从 `syncPluginPomGroupId` 改为更准确的名称（如 `syncPluginPomCoordinates`），并更新所有引用
+4. 为新增代码添加详尽中文注释
+
+### Task 2.8 – 全面构建验证与 POM/插件描述符检查 - User
+**Objective:** 验证 Task 2.6 和 2.7 修改后构建成功，BOM POM 中所有 artifactId 正确，Maven 插件描述符匹配，且下游 Maven 项目可正常使用。
+**Output:** 验证结果（成功或失败信息）。
+**Guidance:** 由用户手动执行。**Depends on: Task 2.7 Output by Agent_Build**
+
+- 执行 `make install`，确认构建成功
+- 检查 `bjca-footstone-bpring-boot-dependencies` POM：所有 Spring Boot 模块 artifactId 应为 `bjca-footstone-bpring-boot-*`，pluginManagement 中应为 `bjca-footstone-bpring-boot-maven-plugin`
+- 检查 Maven 插件 JAR 内 `META-INF/maven/plugin.xml`：artifactId 应为 `bjca-footstone-bpring-boot-maven-plugin`
+- 使用 `bjca-footstone-bpring-boot-starter-parent` 创建测试 Maven 项目，执行 `mvn clean package` 确认不报错

@@ -123,7 +123,48 @@ public class BomPlugin implements Plugin<Project> {
 					projectNode.children().add(properties);
 				}
 				addPluginManagement(projectNode);
+				// ── Fork artifactId 全局替换 ──────────────────────────────
+				// (1) 为什么：BOM 中 dependencyManagement 和 pluginManagement
+				// 条目使用原始 Gradle 项目名（spring-boot-*），但
+				// DeployedPlugin 发布的 artifactId 已替换为 fork 命名
+				// （如 bjca-footstone-bpring-boot-*），需在 POM 生成时
+				// 保持一致，否则下游项目无法正确解析 managed 依赖和插件。
+				// (2) 替换范围：dependencyManagement 和 pluginManagement 中
+				// 所有以 "spring-boot" 开头的 artifactId。
+				// (3) 替换逻辑与 DeployedPlugin.java 一致：
+				// "spring-boot" → forkArtifactPrefix + "-boot"。
+				// 当 forkArtifactPrefix 未配置时跳过替换（向后兼容）。
+				Object forkArtifactPrefix = this.project.findProperty("forkArtifactPrefix");
+				if (forkArtifactPrefix != null && !forkArtifactPrefix.toString().isEmpty()) {
+					String prefix = forkArtifactPrefix.toString();
+					// 替换 dependencyManagement 中的 artifactId
+					if (dependencyManagement != null) {
+						replaceSpringBootArtifactIds(findChild(dependencyManagement, "dependencies"), "dependency",
+								prefix);
+					}
+					// 替换 pluginManagement 中的 artifactId
+					Node build = findChild(projectNode, "build");
+					if (build != null) {
+						Node pluginMgmt = findChild(build, "pluginManagement");
+						replaceSpringBootArtifactIds((pluginMgmt != null) ? findChild(pluginMgmt, "plugins") : null,
+								"plugin", prefix);
+					}
+				}
 			});
+		}
+
+		// Fork artifactId 替换辅助方法：遍历容器节点下的子节点，
+		// 将以 "spring-boot" 开头的 artifactId 替换为 forkPrefix + "-boot"
+		private void replaceSpringBootArtifactIds(Node container, String childTag, String prefix) {
+			if (container == null) {
+				return;
+			}
+			for (Node child : findChildren(container, childTag)) {
+				Node aidNode = findChild(child, "artifactId");
+				if (aidNode != null && aidNode.text().startsWith("spring-boot")) {
+					aidNode.setValue(aidNode.text().replace("spring-boot", prefix + "-boot"));
+				}
+			}
 		}
 
 		@SuppressWarnings("unchecked")

@@ -157,21 +157,42 @@ tasks.named("documentPluginGoals") {
 	]
 }
 
-// 2026-02-26: 自动化同步逻辑
+// 自动化同步插件模板 POM 坐标逻辑
 // 由于 buildSrc 格式校验极其严苛，我们不在 Java 代码里做动态替换，
-// 而是直接在 Gradle 钩子里确保模板文件始终与 project.group 保持一致。
-def syncPluginPomGroupId = tasks.register("syncPluginPomGroupId") {
+// 而是直接在 Gradle 钩子里确保模板文件始终与项目坐标保持一致。
+// ── 扩展说明（artifactId 同步）──────────────────────────────
+// (1) 为什么：原任务 syncPluginPomGroupId 仅同步 groupId，但 Maven Plugin
+//     Tools 根据 src/maven/resources/pom.xml 中的完整坐标生成 plugin.xml
+//     描述符，若 artifactId 仍为 "spring-boot-maven-plugin" 而发布名为
+//     "bjca-footstone-bpring-boot-maven-plugin"，Maven 会报描述符不匹配错误：
+//     "Invalid plugin descriptor ... Plugin's descriptor contains the wrong
+//     artifact ID: spring-boot-maven-plugin"
+// (2) 替换逻辑与 DeployedPlugin.java / BomPlugin.java 一致：
+//     将 project.name 中的 "spring-boot" 替换为 forkArtifactPrefix + "-boot"。
+// (3) 当 forkArtifactPrefix 未配置时仅同步 groupId，跳过 artifactId 替换
+//     （向后兼容）。
+def syncPluginPomCoordinates = tasks.register("syncPluginPomCoordinates") {
 	doLast {
 		def pomFile = file("src/maven/resources/pom.xml")
 		if (pomFile.exists()) {
 			def content = pomFile.text
+			// 同步 groupId
 			def updatedContent = content.replaceAll(
-				'<groupId>.*</groupId>', 
+				'<groupId>.*</groupId>',
 				"<groupId>${project.group}</groupId>"
 			)
+			// 同步 artifactId（仅当 forkArtifactPrefix 已配置时）
+			def forkPrefix = project.findProperty("forkArtifactPrefix")
+			if (forkPrefix) {
+				def forkArtifactId = project.getName().replace("spring-boot", "${forkPrefix}-boot")
+				updatedContent = updatedContent.replaceFirst(
+					'<artifactId>[^<]+</artifactId>',
+					"<artifactId>${forkArtifactId}</artifactId>"
+				)
+			}
 			if (content != updatedContent) {
 				pomFile.text = updatedContent
-				println "成功同步插件模板 Group ID 至: ${project.group}"
+				println "成功同步插件模板坐标 — groupId: ${project.group}" + (forkPrefix ? ", artifactId: ${project.getName().replace('spring-boot', forkPrefix + '-boot')}" : "")
 			}
 		}
 	}
@@ -179,5 +200,5 @@ def syncPluginPomGroupId = tasks.register("syncPluginPomGroupId") {
 
 // 确保在生成描述符的任务运行前先执行同步
 tasks.matching { it.name.startsWith("sync") && it.name.contains("Inputs") }.all {
-	it.dependsOn syncPluginPomGroupId
+	it.dependsOn syncPluginPomCoordinates
 }

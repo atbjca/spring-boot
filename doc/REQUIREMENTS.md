@@ -4,6 +4,49 @@
 
 ---
 
+## 📅 2026年03月09日
+
+### [需求-020] Maven 发布 ArtifactId Fork 命名修复
+
+#### 背景与目的
+完成 [需求-018] GAV 自动映射改造后，发现 `make install` 发布到本地 Maven 仓库的制品 artifactId 仍为原始 `spring-boot-*` 命名，未使用 fork 前缀 `bjca-footstone-bpring-boot-*`。原因是 settings.gradle 的项目名替换因 Gradle 执行顺序问题未能生效于 Maven 发布阶段，且 BOM POM 和 Maven 插件描述符中均存在硬编码的原始 artifactId。
+
+采用**方案 B**（仅在发布阶段显式设置 artifactId，不修改内部 Gradle 项目名、不修改 settings.gradle），通过 `project.findProperty("forkArtifactPrefix")` 读取 gradle.properties 中的属性，保持单一配置源。
+
+#### 修改内容
+
+##### 1. DeployedPlugin.java — MavenPublication artifactId 显式设置
+- **文件**：`buildSrc/src/main/java/org/springframework/boot/build/DeployedPlugin.java`
+- **改动**：在 `MavenPublication` 创建后，通过 `project.findProperty("forkArtifactPrefix")` 获取前缀，将 `project.getName()` 中的 `"spring-boot"` 替换为 `forkArtifactPrefix + "-boot"` 作为发布 artifactId
+- **影响范围**：所有通过 DeployedPlugin 发布的模块（54 个），`spring-boot-gradle-plugin` 例外（使用独立的 `java-gradle-plugin` 发布机制）
+
+##### 2. BomPlugin.java — BOM POM artifactId 全局替换
+- **文件**：`buildSrc/src/main/java/org/springframework/boot/build/bom/BomPlugin.java`
+- **改动**：在 `PublishingCustomizer.customizePom()` 的 `pom.withXml` 回调中，遍历 `<dependencyManagement>` 和 `<pluginManagement>` 中所有以 `"spring-boot"` 开头的 `<artifactId>`，执行相同的替换逻辑
+- **影响范围**：`spring-boot-dependencies` BOM POM 中约 69 个内部模块 + 1 个 maven-plugin 条目
+
+##### 3. spring-boot-starter-parent/build.gradle — POM withXml 硬编码修复
+- **文件**：`spring-boot-project/spring-boot-starters/spring-boot-starter-parent/build.gradle`
+- **改动**：将 `pom.withXml` 闭包中 3 处硬编码的 artifactId（`spring-boot-dependencies`、`spring-boot-maven-plugin` × 2）改为动态读取 `forkArtifactPrefix` 计算
+- **影响范围**：`spring-boot-starter-parent` POM 的 `<parent>` 和 `<pluginManagement>` 节点
+
+##### 4. spring-boot-maven-plugin/build.gradle — 插件描述符坐标同步
+- **文件**：`spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/build.gradle`
+- **改动**：将 `syncPluginPomGroupId` 任务扩展并重命名为 `syncPluginPomCoordinates`，在原有 groupId 同步基础上增加 artifactId 同步逻辑，确保 `src/maven/resources/pom.xml` 模板中的 artifactId 与 fork 名一致，Maven Plugin Tools 据此生成正确的 `META-INF/maven/plugin.xml` 描述符
+- **影响范围**：Maven 插件 JAR 内部的 plugin descriptor
+
+##### 5. NES_GAV_MAPPING.md — 文档同步
+- **文件**：`doc/NES_GAV_MAPPING.md`
+- **改动**：修正 `spring-boot-gradle-plugin` 保留原始命名的例外说明；全文 artifactId 一致性验证通过
+
+#### 关键发现
+- `spring-boot-gradle-plugin` 使用独立的 `java-gradle-plugin` 发布机制，不经过 DeployedPlugin，artifactId 保留原始命名
+- `spring-boot-parent` 使用 BOM import（非 `<parent>`）是 Gradle `java-platform` 插件的预期行为，与原始 Spring Boot 一致
+- `spring-boot-starter-parent` 的 `<parent>` 元素由 `pom.withXml` 手动构建
+- buildSrc 代码需通过 `checkFormatMain`（Spring Java Format）和 `checkstyleMain`（NestedIfDepth ≤ 3 层）双重检查
+
+---
+
 ## 📅 2026年03月06日
 
 ### [需求-019] BOM 传递依赖排除、NES GAV 映射文档与版本升级
