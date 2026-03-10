@@ -30,7 +30,8 @@ import org.springframework.core.env.Environment;
  */
 class SpringBootBanner implements Banner {
 
-	private static final String[] BANNER = {""};
+	private static final String[] BANNER = { "" };
+
 	private static final String SPRING_BOOT = " :: Bpring Boot :: ";
 
 	private static final int STRAP_LINE_SIZE = 42;
