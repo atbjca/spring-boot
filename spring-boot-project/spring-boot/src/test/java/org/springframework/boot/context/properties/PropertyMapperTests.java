@@ -56,7 +56,7 @@ class PropertyMapperTests {
 
 	@Test
 	void fromValueAlwaysApplyingWhenNonNullShouldAlwaysApplyNonNullToSource() {
-		this.map.alwaysApplyingWhenNonNull().from((String) null).toCall(() -> fail(null));
+		this.map.alwaysApplyingWhenNonNull().from((String) null).toCall(() -> fail((String) null));
 	}
 
 	@Test
@@ -100,14 +100,14 @@ class PropertyMapperTests {
 
 	@Test
 	void whenNonNullWhenSuppliedNullShouldNotMap() {
-		this.map.from(() -> null).whenNonNull().as(String::valueOf).toCall(() -> fail(null));
+		this.map.from(() -> null).whenNonNull().as(String::valueOf).toCall(() -> fail((String) null));
 	}
 
 	@Test
 	void whenNonNullWhenSuppliedThrowsNullPointerExceptionShouldNotMap() {
 		this.map.from(() -> {
 			throw new NullPointerException();
-		}).whenNonNull().as(String::valueOf).toCall(() -> fail(null));
+		}).whenNonNull().as(String::valueOf).toCall(() -> fail((String) null));
 	}
 
 	@Test
@@ -118,7 +118,7 @@ class PropertyMapperTests {
 
 	@Test
 	void whenTrueWhenValueIsFalseShouldNotMap() {
-		this.map.from(false).whenTrue().toCall(() -> fail(null));
+		this.map.from(false).whenTrue().toCall(() -> fail((String) null));
 	}
 
 	@Test
@@ -129,17 +129,17 @@ class PropertyMapperTests {
 
 	@Test
 	void whenFalseWhenValueIsTrueShouldNotMap() {
-		this.map.from(true).whenFalse().toCall(() -> fail(null));
+		this.map.from(true).whenFalse().toCall(() -> fail((String) null));
 	}
 
 	@Test
 	void whenHasTextWhenValueIsNullShouldNotMap() {
-		this.map.from(() -> null).whenHasText().toCall(() -> fail(null));
+		this.map.from(() -> null).whenHasText().toCall(() -> fail((String) null));
 	}
 
 	@Test
 	void whenHasTextWhenValueIsEmptyShouldNotMap() {
-		this.map.from("").whenHasText().toCall(() -> fail(null));
+		this.map.from("").whenHasText().toCall(() -> fail((String) null));
 	}
 
 	@Test
@@ -156,7 +156,7 @@ class PropertyMapperTests {
 
 	@Test
 	void whenEqualToWhenValueIsNotEqualShouldNotMatch() {
-		this.map.from("123").whenEqualTo("321").toCall(() -> fail(null));
+		this.map.from("123").whenEqualTo("321").toCall(() -> fail((String) null));
 	}
 
 	@Test
@@ -168,7 +168,7 @@ class PropertyMapperTests {
 	@Test
 	void whenInstanceOfWhenValueIsNotTargetTypeShouldNotMatch() {
 		Supplier<Number> supplier = () -> 123L;
-		this.map.from(supplier).whenInstanceOf(Double.class).toCall(() -> fail(null));
+		this.map.from(supplier).whenInstanceOf(Double.class).toCall(() -> fail((String) null));
 	}
 
 	@Test
@@ -179,7 +179,7 @@ class PropertyMapperTests {
 
 	@Test
 	void whenWhenValueDoesNotMatchShouldNotMap() {
-		this.map.from("123").when("321"::equals).toCall(() -> fail(null));
+		this.map.from("123").when("321"::equals).toCall(() -> fail((String) null));
 	}
 
 	@Test
@@ -197,12 +197,12 @@ class PropertyMapperTests {
 
 	@Test
 	void alwaysApplyingWhenNonNullShouldAlwaysApplyNonNullToSource() {
-		this.map.alwaysApplyingWhenNonNull().from(() -> null).toCall(() -> fail(null));
+		this.map.alwaysApplyingWhenNonNull().from(() -> null).toCall(() -> fail((String) null));
 	}
 
 	@Test
 	void whenWhenValueNotMatchesShouldSupportChainedCalls() {
-		this.map.from("123").when("456"::equals).when("123"::equals).toCall(() -> fail(null));
+		this.map.from("123").when("456"::equals).when("123"::equals).toCall(() -> fail((String) null));
 	}
 
 	@Test

@@ -64,6 +64,27 @@ allprojects {
 		resolutionStrategy.cacheChangingModulesFor 0, "minutes"
 
 		// ====================================================================
+		// 全局排除 commons-logging
+		// ====================================================================
+		// Spring Boot 使用 spring-jcl 替代 commons-logging。kafka_2.13:3.9.2
+		// 通过 commons-validator → commons-beanutils 传递引入了 commons-logging，
+		// BOM 级别的 exclude 无法完全阻断深层传递依赖，因此在此全局排除。
+		// ====================================================================
+		exclude group: 'commons-logging', module: 'commons-logging'
+
+		// ====================================================================
+		// lz4-java 依赖替换
+		// ====================================================================
+		// kafka-clients 3.9.2 迁移到 at.yawk.lz4:lz4-java（原 org.lz4:lz4-java 的
+		// 活跃 fork），而 elasticsearch 7.17.x 仍依赖旧 org.lz4:lz4-java。
+		// 两者声明了相同的 Gradle capability，产生冲突。
+		// 统一替换为新版 fork，同时修复 CVE-2025-12183 和 CVE-2025-66566。
+		// ====================================================================
+		resolutionStrategy.dependencySubstitution {
+			substitute module('org.lz4:lz4-java') using module('at.yawk.lz4:lz4-java:1.10.1')
+		}
+
+		// ====================================================================
 		// Fork GAV 自动映射规则
 		// ====================================================================
 		// 设计目的：透明地将上游 org.springframework / org.springframework.security

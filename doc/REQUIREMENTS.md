@@ -4,6 +4,77 @@
 
 ---
 
+## 📅 2026年03月10日
+
+### [需求-025] Spring Kafka / Kafka Clients 安全漏洞升级
+
+#### 背景与目的
+安全扫描发现 Kafka 生态组件存在 13 个已知 CVE，涵盖 kafka-clients 的 SASL JAAS RCE、SCRAM 重放攻击、ConfigProvider 提权，spring-kafka 的反序列化漏洞，以及传递依赖 snappy-java / lz4-java 的多个 DoS / 信息泄露漏洞。需升级至修复版本以消除安全风险。
+
+#### 修改内容
+
+##### 1. BOM 版本升级
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+- **改动**：
+  - `library("Kafka", "3.1.2")` → `library("Kafka", "3.9.2")`
+  - `library("Spring Kafka", "2.8.11")` → `library("Spring Kafka", "2.9.13")`
+- **传递依赖版本变化**：
+  - snappy-java：~1.1.8.x → **1.1.10.5**（修复 CVE-2023-34453/34454/34455、CVE-2023-43642）
+  - lz4-java：org.lz4 1.7.x → **at.yawk.lz4 1.10.1**（修复 CVE-2025-12183、CVE-2025-66566）
+
+##### 2. lz4-java 依赖冲突解决
+- **文件**：`build.gradle`（根项目）
+- **改动**：在 `configurations.all` 中添加 `resolutionStrategy.dependencySubstitution`，将 `org.lz4:lz4-java` 统一替换为 `at.yawk.lz4:lz4-java:1.10.1`
+- **原因**：kafka-clients 3.9.2 迁移到 `at.yawk.lz4:lz4-java`（原 `org.lz4:lz4-java` 的活跃 fork），与 elasticsearch 7.17.x 依赖的旧 `org.lz4:lz4-java` 声明了相同的 Gradle capability，产生冲突
+
+##### 3. commons-logging 全局排除
+- **文件**：`build.gradle`（根项目）
+- **改动**：在 `configurations.all` 中添加 `exclude group: 'commons-logging', module: 'commons-logging'`
+- **原因**：`kafka_2.13:3.9.2` 新增传递依赖 `commons-validator:1.10.1` → `commons-beanutils:1.11.0` → `commons-logging:1.3.5`，触发 Spring Boot 的 prohibited dependencies 检查（Spring Boot 使用 spring-jcl 替代 commons-logging）
+
+##### 4. json-smart 显式测试依赖
+- **文件**：`spring-boot-project/spring-boot-actuator/build.gradle`
+- **改动**：新增 `testImplementation("net.minidev:json-smart")`
+- **原因**：json-path 2.9.0（[需求-021] 升级）将 json-smart 从 compile 依赖改为 optional，导致测试代码中 `net.minidev.json.JSONArray` 编译失败
+
+##### 5. AssertJ fail() 方法歧义修复
+- **文件**：`spring-boot-project/spring-boot/src/test/java/org/springframework/boot/context/properties/PropertyMapperTests.java`
+- **改动**：12 处 `fail(null)` 改为 `fail((String) null)`
+- **原因**：AssertJ 3.27.7（[需求-021] 升级）新增 `fail(Throwable)` 重载，`fail(null)` 在 `fail(String)` 和 `fail(Throwable)` 之间产生歧义
+
+#### CVE 修复覆盖
+
+| CVE 编号 | 组件 | 漏洞类型 | 修复版本 |
+|---|---|---|---|
+| CVE-2023-25194 | kafka-clients | SASL JAAS JndiLoginModule RCE | 3.4.0 |
+| CVE-2025-27818 | kafka-clients | SASL JAAS LdapLoginModule RCE（绕过 CVE-2023-25194 修复） | 3.9.1 |
+| CVE-2025-27817 | kafka-clients | SASL/OAUTHBEARER 任意文件读取 / SSRF | 3.9.1 |
+| CVE-2025-27819 | kafka-clients | Broker 端 SASL JAAS JndiLoginModule RCE | 3.9.1 |
+| CVE-2024-31141 | kafka-clients | ConfigProvider 提权（文件系统 / 环境变量读取） | 3.7.1 |
+| CVE-2024-56128 | kafka-clients | SCRAM 认证 nonce 未校验导致重放攻击 | 3.9.0 |
+| CVE-2023-34040 | spring-kafka | 反序列化漏洞（checkDeserExWhenKeyNull 配置不当） | 2.9.11 |
+| CVE-2025-12183 | lz4-java | 快速解压越界读取导致 DoS / 信息泄露 | 1.8.1 |
+| CVE-2025-66566 | lz4-java | 解压器输出缓冲区未清理导致信息泄露 | 1.10.1 |
+| CVE-2023-34453 | snappy-java | BitShuffle 整数溢出导致 DoS | 1.1.10.1 |
+| CVE-2023-34454 | snappy-java | compress 函数整数溢出导致 DoS | 1.1.10.1 |
+| CVE-2023-34455 | snappy-java | chunk 长度未检查导致 OOM/DoS | 1.1.10.1 |
+| CVE-2023-43642 | snappy-java | chunk 长度上界缺失导致 OOM/DoS（CVE-2023-34455 不完整修复） | 1.1.10.4 |
+
+#### 兼容性说明
+- spring-kafka 2.9.13 依赖 Spring Framework **5.3.29**，与 Spring Boot 2.7.x 完全兼容
+- spring-kafka 2.9 中 `ErrorHandler` / `BatchErrorHandler` 仍存在（3.0 才移除），现有自动配置代码已有 `@SuppressWarnings("deprecation")`，无需修改
+- `RetryTopicConfiguration` bean 方式在 2.9 中仍受支持
+- 项目未使用 Kafka Streams，无需额外适配
+- kafka-clients 3.9.2 的所有 26 个 BOM 管理模块均在 Maven Central 存在，模块列表无需变更
+
+#### 涉及文件
+- `spring-boot-project/spring-boot-dependencies/build.gradle`（Kafka、Spring Kafka 版本）
+- `build.gradle`（lz4-java 依赖替换、commons-logging 全局排除）
+- `spring-boot-project/spring-boot-actuator/build.gradle`（json-smart 显式依赖）
+- `spring-boot-project/spring-boot/src/test/java/.../PropertyMapperTests.java`（fail() 歧义修复）
+
+---
+
 ## 📅 2026年03月09日
 
 ### [需求-024] Logback 依赖全局替换为 NES Fork 坐标

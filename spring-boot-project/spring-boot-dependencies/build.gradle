@@ -1115,7 +1115,7 @@ bom {
 			]
 		}
 	}
-	library("Kafka", "3.1.2") {
+	library("Kafka", "3.9.2") {
 		group("org.apache.kafka") {
 			modules = [
 				"connect",
@@ -1881,7 +1881,7 @@ bom {
 			]
 		}
 	}
-	library("Spring Kafka", "2.8.11") {
+	library("Spring Kafka", "2.9.13") {
 		considerSnapshots()
 		group("org.springframework.kafka") {
 			// [A 类排除] 未 fork 的 Spring 生态组件，传递依赖原始 Spring 坐标
