@@ -1,6 +1,6 @@
 # Spring Boot 2.7 Fork NES 改造 – APM Memory Root
 **Memory Strategy:** Dynamic-MD
-**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施 NES (Never-Ending Support) 改造。Phase 01-02 完成了 GAV 自动映射机制（resolutionStrategy、BOM 导入、文档完善）。Phase 03 实施传递依赖排除（spring-boot-dependencies BOM 中排除第三方组件对原始 Spring 坐标的传递依赖）与 NES GAV 映射文档编写（整合四个 fork 项目的完整 GAV 映射文档）。Phase 04 修复 Maven 发布时 artifactId 未使用 fork 前缀的问题（仅在 DeployedPlugin 发布阶段显式设置 artifactId），并同步更新 NES GAV 映射文档。Phase 05 升级 Netty 版本（4.1.118.Final → 4.1.131.Final）修复 4 个安全漏洞。Phase 06 升级 Jackson 版本（2.15.4 → 2.21.1）增强安全防御纵深，并维护需求文档。
+**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施 NES (Never-Ending Support) 改造。Phase 01-02 完成了 GAV 自动映射机制（resolutionStrategy、BOM 导入、文档完善）。Phase 03 实施传递依赖排除（spring-boot-dependencies BOM 中排除第三方组件对原始 Spring 坐标的传递依赖）与 NES GAV 映射文档编写（整合四个 fork 项目的完整 GAV 映射文档）。Phase 04 修复 Maven 发布时 artifactId 未使用 fork 前缀的问题（仅在 DeployedPlugin 发布阶段显式设置 artifactId），并同步更新 NES GAV 映射文档。Phase 05 升级 Netty 版本（4.1.118.Final → 4.1.131.Final）修复 4 个安全漏洞。Phase 06 升级 Jackson 版本（2.15.4 → 2.21.1）增强安全防御纵深，并维护需求文档。Phase 07 编写 A 类组件传递依赖排除影响文档（8 个 A 类库缺失的 Spring 传递依赖及下游 Maven 补偿方案）。
 
 ## Phase 01 – Gradle 构建基础设施改造 Summary
 * **结果**: BUILD SUCCESSFUL (4m29s, 1977 tasks)。全部 5 个任务完成，经过 5 轮迭代修复。
@@ -83,3 +83,14 @@
   - `.apm/Memory/Phase_06_Jackson_Version_Upgrade/Task_4_3_Build_Failure_Fix.md`
   - `.apm/Memory/Phase_06_Jackson_Version_Upgrade/Task_4_4_Build_Verification_2.md`
   - `.apm/Memory/Phase_06_Jackson_Version_Upgrade/Task_4_5_Requirements_Doc_Update.md`
+
+## Phase 07 – A 类组件传递依赖变化文档 Summary
+* **结果**: 全部 2 个任务完成，纯文档修改无需构建验证。
+* **核心交付**:
+  - `doc/NES_GAV_MAPPING.md`：新增 §9「A 类组件传递依赖排除说明」（约 270 行），覆盖 8 个 A 类库（Kafka、Batch、HATEOAS、LDAP、WS、AMQP、GraphQL、RESTDocs）的缺失 Spring 传递依赖详表、三类库影响分类（活跃 Starter / 已排除 Starter / 无 Starter）、4 个 Maven 配置示例；修复原文档 §8 重复编号问题
+  - `doc/REQUIREMENTS.md`：追加 [需求-028] A 类组件传递依赖排除影响文档
+* **关键发现**: Spring GraphQL 1.0.6 直接依赖 spring-context，传递依赖 spring-aop、spring-beans、spring-core、spring-expression（通过 POM 实际确认）。
+* **涉及 Agent**: Agent_Docs（Task 5.1、5.2）
+* **Memory Logs**:
+  - `.apm/Memory/Phase_07_A_Class_Transitive_Dependency_Docs/Task_5_1_NES_GAV_MAPPING_Transitive_Dependency_Chapter.md`
+  - `.apm/Memory/Phase_07_A_Class_Transitive_Dependency_Docs/Task_5_2_Requirements_Doc_Update.md`

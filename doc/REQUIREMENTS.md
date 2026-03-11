@@ -6,6 +6,33 @@
 
 ## 📅 2026年03月11日
 
+### [需求-028] A 类组件传递依赖排除影响文档
+
+#### 背景与目的
+[需求-019] 在 `spring-boot-dependencies` BOM 中对 8 个 A 类第三方组件执行了 `exclude group: "org.springframework"`，切断了原始 `org.springframework:spring-*` 的传递依赖链，防止官方坐标与 fork GAV（`cn.bjca.footstone.bpring:bjca-footstone-bpring-*`）共存导致的类路径冲突。然而，此排除操作使得下游 Maven 消费者在引入这些 A 类库时，可能缺失必要的 Spring Framework 依赖（如 `spring-context`、`spring-tx`、`spring-messaging` 等），导致编译或运行时错误。需在 `NES_GAV_MAPPING.md` 中详细记录变更前后差异和下游补偿方案，帮助下游消费者正确完成依赖配置。
+
+#### 修改内容
+
+##### 1. NES_GAV_MAPPING.md 新增 §9「A 类组件传递依赖排除说明」
+- **文件**：`doc/NES_GAV_MAPPING.md`
+- **新增内容**（约 270 行）：
+  - **§9.1 背景**：排除原因（防止双坐标冲突）、8 个 A 类库影响总览表、对下游消费者的影响说明
+  - **§9.2 三类库影响程度分类**：
+    - **活跃 Starter**（Spring Batch Core、Spring WS Core）：Starter 已包含必要依赖，使用 Starter 的用户无需额外操作
+    - **已排除 Starter**（Spring HATEOAS、Spring LDAP Core、Spring AMQP + Rabbit）：Starter 不可用，需手动配置全部缺失依赖
+    - **无 Starter 的库**（Spring Kafka、Spring GraphQL、Spring RESTDocs）：需显式添加所有缺失的 fork 依赖
+  - **§9.3 各库缺失依赖详表**（8 个子节）：逐库列出被排除的 Spring 传递依赖、对应的 fork ArtifactId 替代坐标、以及考虑传递依赖后的最小补充集
+  - **§9.4 Maven 配置示例**：提供 Spring Kafka、Spring Batch Core、Spring AMQP + Rabbit、Spring GraphQL 四个高频场景的完整 `<dependency>` 配置示例
+
+##### 2. 文档结构修正
+- 修复原文档 §8 重复编号问题（「已排除的 Starter 清单」和「注意事项」均为 §8），将「注意事项」及其子节（8.1~8.5）统一重编号为 §10（10.1~10.5）
+- 更新目录（TOC）：新增第 9 项，原第 9 项重编号为第 10 项
+
+#### 涉及文件
+- `doc/NES_GAV_MAPPING.md`
+
+---
+
 ### [需求-027] Jackson 版本升级
 
 #### 背景与目的

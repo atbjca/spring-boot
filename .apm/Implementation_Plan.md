@@ -1,7 +1,7 @@
 # Spring Boot 2.7 Fork 构建与 GAV 治理 – APM Implementation Plan
 **Memory Strategy:** Dynamic-MD
-**Last Modification:** Phase 4 全部完成（Task 4.1~4.5），Jackson 升级至 2.21.1，经 4 轮迭代修复构建通过，REQUIREMENTS.md 已追加 [需求-027]。
-**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施持续改造：Phase 1（已完成）在 BOM 中排除传递依赖并编写 NES GAV 映射文档；Phase 2（已完成）修复 Maven 发布时 artifactId 未使用 fork 前缀的问题；Phase 3（已完成）升级 Netty 版本修复安全漏洞；Phase 4 升级 Jackson 版本并维护需求文档。
+**Last Modification:** Phase 5 全部完成（Task 5.1~5.2），NES_GAV_MAPPING.md 新增 §9 A 类组件传递依赖排除说明，REQUIREMENTS.md 已追加 [需求-028]。
+**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施持续改造：Phase 1（已完成）在 BOM 中排除传递依赖并编写 NES GAV 映射文档；Phase 2（已完成）修复 Maven 发布时 artifactId 未使用 fork 前缀的问题；Phase 3（已完成）升级 Netty 版本修复安全漏洞；Phase 4（已完成）升级 Jackson 版本；Phase 5 编写 A 类组件传递依赖排除影响文档。
 
 ## Phase 1: 传递依赖排除与 NES GAV 映射文档编写
 
@@ -209,3 +209,33 @@
 - 编写「背景与目的」：说明将 Jackson 从 2.15.4 升级至 2.21.1，增强安全防御纵深（新增 token count 限制等），保持依赖版本活跃维护状态
 - 编写「修改内容」：记录版本变更（`gradle.properties` 中 `jacksonVersion=2.15.4` → `2.21.1`）；列出跨版本主要变更摘要（2.16~2.21 关键变化）；如有构建修复，记录所有修复内容和涉及文件；添加兼容性说明（Java 8 兼容、BOM 管理所有子模块）
 - 编写「涉及文件」：`gradle.properties`（jacksonVersion）及构建修复涉及的所有文件
+
+## Phase 5: A 类组件传递依赖变化文档
+
+### Task 5.1 – NES_GAV_MAPPING.md 新增 A 类组件传递依赖变化章节 - Agent_Docs
+**Objective:** 在 doc/NES_GAV_MAPPING.md 中新增章节，详细记录 BOM 中 8 个 A 类库 exclude 后缺失的 Spring 传递依赖，以及下游 Maven 消费者的补偿方案。
+**Output:** 更新后的 doc/NES_GAV_MAPPING.md。
+**Guidance:** 在现有章节后合适位置新增。语言中英混合、尽量中文。需覆盖全部 8 个 A 类库（Spring AMQP、Batch、GraphQL、HATEOAS、Kafka、LDAP、RESTDocs、WS）。对每个库列出 exclude 导致缺失的 Spring 传递依赖及对应 fork GAV 替代坐标。区分活跃 Starter（batch、web-services）、已排除 Starter（hateoas、data-ldap、amqp）、无 Starter 的库（kafka、graphql、restdocs、ws）。提供 Maven `<dependency>` 配置示例。以下为各 A 类库缺失的非 optional compile scope 的 Spring 传递依赖调研数据，供 Agent_Docs 编写时参考：
+
+**Spring Kafka 2.9.13**（无 Starter）：spring-context、spring-messaging、spring-tx
+**Spring Batch Core 4.3.10**（活跃 Starter: spring-boot-starter-batch）：spring-aop、spring-beans、spring-context、spring-core、spring-tx
+**Spring HATEOAS 1.5.6**（已排除 Starter: spring-boot-starter-hateoas）：spring-aop、spring-beans、spring-context、spring-core、spring-web
+**Spring LDAP Core 2.4.1**（已排除 Starter: spring-boot-starter-data-ldap）：spring-core、spring-beans、spring-tx
+**Spring WS Core 3.1.8**（活跃 Starter: spring-boot-starter-web-services）：spring-aop、spring-beans、spring-oxm、spring-web、spring-webmvc；spring-xml 额外依赖：spring-beans、spring-context
+**Spring AMQP 2.4.17 + Spring Rabbit 2.4.17**（已排除 Starter: spring-boot-starter-amqp）：spring-core（amqp）、spring-context、spring-messaging、spring-tx（rabbit）
+**Spring GraphQL 1.0.6**（无 Starter）：需从 POM 确认具体 Spring 传递依赖
+**Spring RESTDocs 2.0.8.RELEASE**（无 Starter，通常 test scope）：spring-restdocs-core 依赖 spring-web；spring-restdocs-mockmvc 依赖 spring-test、spring-webmvc
+
+- 在 NES_GAV_MAPPING.md 现有章节后新增章节，标题如「A 类组件传递依赖排除说明」
+- 编写背景说明：解释 exclude 的原因（防止原始 `org.springframework:spring-*` 与 fork GAV 冲突）、影响范围（BOM 中 8 个 A 类库）、对下游 Maven 消费者的影响（传递依赖链断裂，需显式补充 fork 依赖）
+- 编写各 A 类库的缺失依赖表格，按库分组列出：库名、被 exclude 的 Spring 传递依赖、对应的 fork GAV 替代坐标（groupId: `cn.bjca.footstone.bpring`，artifactId: `bjca-footstone-bpring-*`，version: `${springFrameworkVersion}`）
+- 提供下游 Maven 用户的补偿方案：对使用频率较高的库（如 spring-kafka、spring-batch-core）给出完整的 Maven `<dependency>` 配置示例
+
+### Task 5.2 – REQUIREMENTS.md 需求追加 - Agent_Docs
+**Objective:** 在 doc/REQUIREMENTS.md 中追加 [需求-028]，记录 A 类组件传递依赖排除影响文档的编写。
+**Output:** 更新后的 doc/REQUIREMENTS.md。
+**Guidance:** 沿用现有文档风格。语言中英混合、尽量中文。日期使用 2026年03月11日。**Depends on: Task 5.1 Output**
+
+- 在文件顶部（与 [需求-026]、[需求-027] 同日期区块）追加 `### [需求-028] A 类组件传递依赖排除影响文档`
+- 编写「背景与目的」：说明 BOM 中 A 类组件的 `exclude group: "org.springframework"` 切断了原始 Spring 传递依赖链，下游 Maven 消费者可能缺失必要的 Spring 依赖，需在 NES_GAV_MAPPING.md 中详细记录变更前后差异和补偿方案
+- 编写「修改内容」：记录在 NES_GAV_MAPPING.md 中新增的章节内容概要（8 个 A 类库传递依赖变化 + 下游 Maven 配置示例）；编写「涉及文件」：`doc/NES_GAV_MAPPING.md`

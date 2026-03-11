@@ -17,7 +17,8 @@
 6. [Spring Authorization Server GAV 映射表](#6-spring-authorization-server-gav-映射表)
 7. [Logback GAV 映射表](#7-logback-gav-映射表)
 8. [已排除的 Starter 清单](#8-已排除的-starter-清单)
-9. [注意事项](#9-注意事项)
+9. [A 类组件传递依赖排除说明](#9-a-类组件传递依赖排除说明)
+10. [注意事项](#10-注意事项)
 
 ---
 
@@ -517,9 +518,281 @@ implementation 'cn.bjca.footstone.bogback:bjca-footstone-bogback-core:1.2.13-nes
 
 ---
 
-## 8. 注意事项
+## 9. A 类组件传递依赖排除说明
 
-### 8.1 Java 包名保持不变
+### 9.1 背景
+
+NES BOM 对 8 个 **A 类第三方库** 执行了 `<exclusions>`，排除其对 `org.springframework:spring-*` 的传递依赖。
+
+**排除原因：** 这些第三方库（如 Spring Kafka、Spring Batch 等）在其 POM 中声明的传递依赖指向官方 `org.springframework:spring-*` 坐标。如果不排除，Maven/Gradle 会同时引入官方坐标和 NES fork 坐标（`cn.bjca.footstone.bpring:bjca-footstone-bpring-*`），导致类路径上存在两套 Spring Framework 实现，产生运行时冲突。
+
+**影响范围：** BOM 中以下 8 个 A 类库受到影响：
+
+| 序号 | A 类库 | 版本 | Starter 状态 |
+| :--- | :--- | :--- | :--- |
+| 1 | Spring Kafka | 2.9.13 | 无 Starter |
+| 2 | Spring Batch Core | 4.3.10 | 活跃 Starter（`spring-boot-starter-batch`） |
+| 3 | Spring HATEOAS | 1.5.6 | 已排除 Starter（`spring-boot-starter-hateoas`） |
+| 4 | Spring LDAP Core | 2.4.1 | 已排除 Starter（`spring-boot-starter-data-ldap`） |
+| 5 | Spring WS Core | 3.1.8 | 活跃 Starter（`spring-boot-starter-web-services`） |
+| 6 | Spring AMQP + Spring Rabbit | 2.4.17 | 已排除 Starter（`spring-boot-starter-amqp`） |
+| 7 | Spring GraphQL | 1.0.6 | 已排除 Starter（`spring-boot-starter-graphql`） |
+| 8 | Spring RESTDocs | 2.0.8.RELEASE | 无 Starter（通常 test scope） |
+
+**对下游 Maven 消费者的影响：** 排除操作会切断这些库到 Spring Framework 的传递依赖链。如果下游项目未通过其他途径（如 Starter）获得这些 Spring 模块，则需显式添加对应的 NES fork 依赖。
+
+### 9.2 三类库的影响程度
+
+#### 活跃 Starter（影响较小）
+
+适用于：**Spring Batch Core**、**Spring WS Core**
+
+这两个库有对应的活跃 Starter（`spring-boot-starter-batch`、`spring-boot-starter-web-services`）。Starter 内部已显式声明必要的 Spring Framework fork 依赖，**使用 Starter 的用户无需额外操作**。仅在不使用 Starter、直接引用底层库时需要手动补充缺失依赖。
+
+#### 已排除 Starter（需手动配置）
+
+适用于：**Spring HATEOAS**、**Spring LDAP Core**、**Spring AMQP + Spring Rabbit**
+
+这些库的对应 Starter 已从 NES 构建中排除（见第 8 章）。使用这些库时必须手动添加所有缺失的 Spring Framework fork 依赖。
+
+#### 无 Starter 的库（需显式添加全部依赖）
+
+适用于：**Spring Kafka**、**Spring GraphQL**、**Spring RESTDocs**
+
+这些库本身没有可用的 Starter，使用时必须显式添加所有缺失的 Spring Framework fork 依赖。
+
+### 9.3 各库缺失依赖详表
+
+以下按库分组列出被排除的 Spring 传递依赖及对应的 NES fork 替代坐标。
+
+> **说明：**
+> - 所有 fork 替代坐标的 GroupId 为 `cn.bjca.footstone.bpring`，版本由 BOM 统一管理，引入 BOM 后无需显式声明版本号。
+> - 表中列出各库 **直接缺失** 的 Spring 传递依赖；fork 制品自身的传递依赖会自动解析（例如添加 `bjca-footstone-bpring-context` 会自动传递引入 `bjca-footstone-bpring-core`、`bjca-footstone-bpring-beans` 等）。
+> - **最小补充集** 是考虑传递依赖后实际需要显式声明的最少依赖。
+
+---
+
+#### 9.3.1 Spring Kafka 2.9.13（无 Starter）
+
+| 缺失的原始依赖 | Fork 替代 ArtifactId |
+| :--- | :--- |
+| `spring-context` | `bjca-footstone-bpring-context` |
+| `spring-messaging` | `bjca-footstone-bpring-messaging` |
+| `spring-tx` | `bjca-footstone-bpring-tx` |
+
+**最小补充集：** `bjca-footstone-bpring-context`、`bjca-footstone-bpring-messaging`、`bjca-footstone-bpring-tx`
+
+---
+
+#### 9.3.2 Spring Batch Core 4.3.10（活跃 Starter: `spring-boot-starter-batch`）
+
+| 缺失的原始依赖 | Fork 替代 ArtifactId |
+| :--- | :--- |
+| `spring-aop` | `bjca-footstone-bpring-aop` |
+| `spring-beans` | `bjca-footstone-bpring-beans` |
+| `spring-context` | `bjca-footstone-bpring-context` |
+| `spring-core` | `bjca-footstone-bpring-core` |
+| `spring-tx` | `bjca-footstone-bpring-tx` |
+
+**最小补充集（不使用 Starter 时）：** `bjca-footstone-bpring-context`、`bjca-footstone-bpring-tx`（`spring-context` 会传递引入 `spring-aop`、`spring-beans`、`spring-core`）
+
+> **提示：** 使用 `bjca-footstone-bpring-boot-starter-batch` 的用户无需额外操作，Starter 已包含所有必要依赖。
+
+---
+
+#### 9.3.3 Spring HATEOAS 1.5.6（已排除 Starter: `spring-boot-starter-hateoas`）
+
+| 缺失的原始依赖 | Fork 替代 ArtifactId |
+| :--- | :--- |
+| `spring-aop` | `bjca-footstone-bpring-aop` |
+| `spring-beans` | `bjca-footstone-bpring-beans` |
+| `spring-context` | `bjca-footstone-bpring-context` |
+| `spring-core` | `bjca-footstone-bpring-core` |
+| `spring-web` | `bjca-footstone-bpring-web` |
+
+**最小补充集：** `bjca-footstone-bpring-context`、`bjca-footstone-bpring-web`
+
+---
+
+#### 9.3.4 Spring LDAP Core 2.4.1（已排除 Starter: `spring-boot-starter-data-ldap`）
+
+| 缺失的原始依赖 | Fork 替代 ArtifactId |
+| :--- | :--- |
+| `spring-core` | `bjca-footstone-bpring-core` |
+| `spring-beans` | `bjca-footstone-bpring-beans` |
+| `spring-tx` | `bjca-footstone-bpring-tx` |
+
+**最小补充集：** `bjca-footstone-bpring-tx`（`spring-tx` 会传递引入 `spring-core`、`spring-beans`）
+
+---
+
+#### 9.3.5 Spring WS Core 3.1.8（活跃 Starter: `spring-boot-starter-web-services`）
+
+Spring WS Core 及其依赖 `spring-xml` 的缺失依赖如下：
+
+| 来源模块 | 缺失的原始依赖 | Fork 替代 ArtifactId |
+| :--- | :--- | :--- |
+| `spring-ws-core` | `spring-aop` | `bjca-footstone-bpring-aop` |
+| `spring-ws-core` | `spring-beans` | `bjca-footstone-bpring-beans` |
+| `spring-ws-core` | `spring-oxm` | `bjca-footstone-bpring-oxm` |
+| `spring-ws-core` | `spring-web` | `bjca-footstone-bpring-web` |
+| `spring-ws-core` | `spring-webmvc` | `bjca-footstone-bpring-webmvc` |
+| `spring-xml` | `spring-beans` | `bjca-footstone-bpring-beans` |
+| `spring-xml` | `spring-context` | `bjca-footstone-bpring-context` |
+
+**去重后最小补充集（不使用 Starter 时）：** `bjca-footstone-bpring-webmvc`、`bjca-footstone-bpring-oxm`（`spring-webmvc` 会传递引入 `spring-web`、`spring-context`、`spring-aop`、`spring-beans`、`spring-core`）
+
+> **提示：** 使用 `bjca-footstone-bpring-boot-starter-web-services` 的用户无需额外操作，Starter 已包含所有必要依赖。
+
+---
+
+#### 9.3.6 Spring AMQP 2.4.17 + Spring Rabbit 2.4.17（已排除 Starter: `spring-boot-starter-amqp`）
+
+| 来源模块 | 缺失的原始依赖 | Fork 替代 ArtifactId |
+| :--- | :--- | :--- |
+| `spring-amqp` | `spring-core` | `bjca-footstone-bpring-core` |
+| `spring-rabbit` | `spring-context` | `bjca-footstone-bpring-context` |
+| `spring-rabbit` | `spring-messaging` | `bjca-footstone-bpring-messaging` |
+| `spring-rabbit` | `spring-tx` | `bjca-footstone-bpring-tx` |
+
+**最小补充集：** `bjca-footstone-bpring-context`、`bjca-footstone-bpring-messaging`、`bjca-footstone-bpring-tx`（`spring-context` 会传递引入 `spring-core`）
+
+---
+
+#### 9.3.7 Spring GraphQL 1.0.6（已排除 Starter: `spring-boot-starter-graphql`）
+
+| 缺失的原始依赖 | Fork 替代 ArtifactId | 说明 |
+| :--- | :--- | :--- |
+| `spring-context` | `bjca-footstone-bpring-context` | 直接依赖 |
+| `spring-aop` | `bjca-footstone-bpring-aop` | 经 `spring-context` 传递 |
+| `spring-beans` | `bjca-footstone-bpring-beans` | 经 `spring-context` 传递 |
+| `spring-core` | `bjca-footstone-bpring-core` | 经 `spring-context` 传递 |
+| `spring-expression` | `bjca-footstone-bpring-expression` | 经 `spring-context` 传递 |
+
+**最小补充集：** `bjca-footstone-bpring-context`
+
+> **注意：** Spring GraphQL 另需 `io.projectreactor:reactor-core` 和 `com.graphql-java:graphql-java`（非 Spring 依赖，BOM 已管理版本）。
+
+---
+
+#### 9.3.8 Spring RESTDocs 2.0.8.RELEASE（无 Starter，通常 test scope）
+
+| 来源模块 | 缺失的原始依赖 | Fork 替代 ArtifactId |
+| :--- | :--- | :--- |
+| `spring-restdocs-core` | `spring-web` | `bjca-footstone-bpring-web` |
+| `spring-restdocs-mockmvc` | `spring-test` | `bjca-footstone-bpring-test` |
+| `spring-restdocs-mockmvc` | `spring-webmvc` | `bjca-footstone-bpring-webmvc` |
+
+**最小补充集：** `bjca-footstone-bpring-webmvc`、`bjca-footstone-bpring-test`（scope: test）
+
+> **提示：** Spring RESTDocs 通常仅在测试中使用。如果项目已引入 `bjca-footstone-bpring-boot-starter-web` 和 `bjca-footstone-bpring-boot-starter-test`，则 `spring-web`、`spring-webmvc`、`spring-test` 已被 Starter 传递引入，无需额外添加。
+
+### 9.4 Maven 配置示例
+
+以下示例均假设已通过 Parent POM 或 BOM 导入引入了 `bjca-footstone-bpring-boot-dependencies`，因此 fork 依赖无需声明版本号。
+
+#### 9.4.1 Spring Kafka 使用示例
+
+```xml
+<!-- Spring Kafka -->
+<dependency>
+    <groupId>org.springframework.kafka</groupId>
+    <artifactId>spring-kafka</artifactId>
+</dependency>
+
+<!-- 补充被排除的 Spring Framework fork 依赖 -->
+<dependency>
+    <groupId>cn.bjca.footstone.bpring</groupId>
+    <artifactId>bjca-footstone-bpring-context</artifactId>
+</dependency>
+<dependency>
+    <groupId>cn.bjca.footstone.bpring</groupId>
+    <artifactId>bjca-footstone-bpring-messaging</artifactId>
+</dependency>
+<dependency>
+    <groupId>cn.bjca.footstone.bpring</groupId>
+    <artifactId>bjca-footstone-bpring-tx</artifactId>
+</dependency>
+```
+
+#### 9.4.2 Spring Batch Core 使用示例（不使用 Starter 时）
+
+```xml
+<!-- Spring Batch Core（直接引用底层库） -->
+<dependency>
+    <groupId>org.springframework.batch</groupId>
+    <artifactId>spring-batch-core</artifactId>
+</dependency>
+
+<!-- 补充被排除的 Spring Framework fork 依赖（最小集） -->
+<dependency>
+    <groupId>cn.bjca.footstone.bpring</groupId>
+    <artifactId>bjca-footstone-bpring-context</artifactId>
+</dependency>
+<dependency>
+    <groupId>cn.bjca.footstone.bpring</groupId>
+    <artifactId>bjca-footstone-bpring-tx</artifactId>
+</dependency>
+```
+
+> **推荐：** 如无特殊需求，建议直接使用 Starter 方式引入 Spring Batch，更简洁且无需手动补充依赖：
+>
+> ```xml
+> <dependency>
+>     <groupId>cn.bjca.footstone.bpring.boot</groupId>
+>     <artifactId>bjca-footstone-bpring-boot-starter-batch</artifactId>
+> </dependency>
+> ```
+
+#### 9.4.3 Spring AMQP + Spring Rabbit 使用示例
+
+```xml
+<!-- Spring AMQP -->
+<dependency>
+    <groupId>org.springframework.amqp</groupId>
+    <artifactId>spring-amqp</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.amqp</groupId>
+    <artifactId>spring-rabbit</artifactId>
+</dependency>
+
+<!-- 补充被排除的 Spring Framework fork 依赖 -->
+<dependency>
+    <groupId>cn.bjca.footstone.bpring</groupId>
+    <artifactId>bjca-footstone-bpring-context</artifactId>
+</dependency>
+<dependency>
+    <groupId>cn.bjca.footstone.bpring</groupId>
+    <artifactId>bjca-footstone-bpring-messaging</artifactId>
+</dependency>
+<dependency>
+    <groupId>cn.bjca.footstone.bpring</groupId>
+    <artifactId>bjca-footstone-bpring-tx</artifactId>
+</dependency>
+```
+
+#### 9.4.4 Spring GraphQL 使用示例
+
+```xml
+<!-- Spring GraphQL -->
+<dependency>
+    <groupId>org.springframework.graphql</groupId>
+    <artifactId>spring-graphql</artifactId>
+</dependency>
+
+<!-- 补充被排除的 Spring Framework fork 依赖 -->
+<dependency>
+    <groupId>cn.bjca.footstone.bpring</groupId>
+    <artifactId>bjca-footstone-bpring-context</artifactId>
+</dependency>
+```
+
+---
+
+## 10. 注意事项
+
+### 10.1 Java 包名保持不变
 
 NES fork 项目**仅修改了 Maven/Gradle 制品坐标（GAV）**，**不修改任何 Java 包名**。所有源码中的包名依然是：
 
@@ -535,7 +808,7 @@ NES fork 项目**仅修改了 Maven/Gradle 制品坐标（GAV）**，**不修改
 - **`SpringApplication.run()` 等 API 调用方式不变**
 - **`META-INF/spring.factories` 自动装配机制完全兼容**
 
-### 8.2 NES 命名含义
+### 10.2 NES 命名含义
 
 **NES = Never-Ending Support**（永续支持）
 
@@ -550,7 +823,7 @@ NES 的定位：
 - 保证与官方基线版本的**完全 API 兼容性**
 - 适用于无法升级到新大版本但仍需安全合规的生产系统
 
-### 8.3 迁移检查清单
+### 10.3 迁移检查清单
 
 从官方 Spring 依赖迁移到 NES 版本时，请按以下清单逐项确认：
 
@@ -564,7 +837,7 @@ NES 的定位：
 | 6 | 确认 Java import 无需修改 | 包名不变，无需任何 import 调整 |
 | 7 | 运行完整测试套件 | 迁移后执行全量测试确保兼容性 |
 
-### 8.4 常见问题
+### 10.4 常见问题
 
 **Q: 引入 NES BOM 后，是否还需要单独引入 Spring Framework BOM 和 Spring Security BOM？**
 
@@ -582,7 +855,7 @@ A: 返回 `2.7.18`（官方基线版本号），不包含 NES 补丁后缀。这
 
 A: Spring Authorization Server 是独立项目，官方原版在 Spring Boot 2.7.x 时代尚未纳入 BOM 统一管理。NES fork 保持了这一独立性，使用者需显式声明其版本号 `0.4.5-nes.patch.1-SNAPSHOT`。
 
-### 8.5 常用依赖坐标速查
+### 10.5 常用依赖坐标速查
 
 以下是最常用的 NES 依赖坐标，可直接复制使用：
 
