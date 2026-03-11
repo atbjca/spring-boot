@@ -1,7 +1,7 @@
 # Spring Boot 2.7 Fork 构建与 GAV 治理 – APM Implementation Plan
 **Memory Strategy:** Dynamic-MD
-**Last Modification:** 新增 Task 2.6~2.8（BOM artifactId 全局替换 + Maven 插件描述符修复），修复方案 B 系统性缺陷。
-**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施持续改造：Phase 1（已完成）在 BOM 中排除传递依赖并编写 NES GAV 映射文档；Phase 2 修复 Maven 发布时 artifactId 未使用 fork 前缀的问题（仅在 DeployedPlugin 发布阶段替换，不改内部项目名），并同步更新 GAV 映射文档。
+**Last Modification:** Phase 3 全部完成（Task 3.1~3.3），Netty BOM 升级至 4.1.131.Final，构建验证通过，REQUIREMENTS.md 已追加 [需求-026]。
+**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施持续改造：Phase 1（已完成）在 BOM 中排除传递依赖并编写 NES GAV 映射文档；Phase 2（已完成）修复 Maven 发布时 artifactId 未使用 fork 前缀的问题；Phase 3 升级 Netty 版本修复安全漏洞并维护需求文档。
 
 ## Phase 1: 传递依赖排除与 NES GAV 映射文档编写
 
@@ -141,3 +141,29 @@
 - 检查 `bjca-footstone-bpring-boot-dependencies` POM：所有 Spring Boot 模块 artifactId 应为 `bjca-footstone-bpring-boot-*`，pluginManagement 中应为 `bjca-footstone-bpring-boot-maven-plugin`
 - 检查 Maven 插件 JAR 内 `META-INF/maven/plugin.xml`：artifactId 应为 `bjca-footstone-bpring-boot-maven-plugin`
 - 使用 `bjca-footstone-bpring-boot-starter-parent` 创建测试 Maven 项目，执行 `mvn clean package` 确认不报错
+
+## Phase 3: Netty 安全漏洞版本升级
+
+### Task 3.1 – Netty BOM 版本升级 - Agent_Build
+**Objective:** 将 spring-boot-dependencies 中 Netty 版本从 4.1.118.Final 升级至 4.1.131.Final，修复 4 个安全漏洞。
+**Output:** 修改后的 spring-boot-dependencies/build.gradle。
+**Guidance:** 单行版本号修改，Netty 通过 BOM 导入（`netty-bom`）管理所有子模块，升级 BOM 版本即覆盖全部 Netty 组件。4.1.x 分支内升级，Java 8 兼容。
+
+- 将 `library("Netty", "4.1.118.Final")` 改为 `library("Netty", "4.1.131.Final")`
+
+### Task 3.2 – 构建验证 - User
+**Objective:** 验证 Task 3.1 的版本升级后项目构建是否通过。
+**Output:** 构建日志（成功或失败信息）。
+**Guidance:** 由用户手动执行。如有失败，提供完整错误日志供 Agent_Build 分析修复。**Depends on: Task 3.1 Output**
+
+- 用户执行 `make build-thin`，验证 Netty 版本升级不破坏现有构建。如有失败，提供完整错误日志供 Agent_Build 分析修复
+
+### Task 3.3 – REQUIREMENTS.md 需求追加 - Agent_Docs
+**Objective:** 在 doc/REQUIREMENTS.md 中追加 [需求-026]，记录 Netty 安全漏洞版本升级的完整信息。
+**Output:** 更新后的 doc/REQUIREMENTS.md。
+**Guidance:** 沿用现有文档风格（日期标题 + 需求编号 + 背景/修改内容/CVE表格/涉及文件）。语言中英混合、尽量中文。日期使用 2026年03月11日。**Depends on: Task 3.2 Output by User**
+
+- 在文件顶部（`---` 分隔线之后、现有最新需求之前）追加日期标题 `## 📅 2026年03月11日` 和需求标题 `### [需求-026] Netty 安全漏洞版本升级`
+- 编写「背景与目的」：说明安全扫描发现 Netty 存在 4 个已知 CVE（CVE-2025-55163 HTTP/2 DDoS、CVE-2025-58057 Zip Bomb DoS、CVE-2025-58056 HTTP 请求走私、CVE-2025-67735 CRLF 注入请求走私），需升级至修复版本以消除安全风险
+- 编写「修改内容」：记录版本变更 `library("Netty", "4.1.118.Final")` → `library("Netty", "4.1.131.Final")`；添加 CVE 修复覆盖表格（CVE 编号、组件模块、漏洞类型、CVSS、修复版本）；添加兼容性说明（4.1.x 分支内升级、BOM 管理所有 Netty 子模块、Java 8 兼容）
+- 编写「涉及文件」：`spring-boot-project/spring-boot-dependencies/build.gradle`（Netty 版本）

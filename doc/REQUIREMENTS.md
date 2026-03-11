@@ -4,6 +4,39 @@
 
 ---
 
+## 📅 2026年03月11日
+
+### [需求-026] Netty 安全漏洞版本升级
+
+#### 背景与目的
+安全扫描发现 Netty 存在 4 个已知 CVE（CVE-2025-55163 HTTP/2 DDoS、CVE-2025-58057 Zip Bomb DoS、CVE-2025-58056 HTTP 请求走私、CVE-2025-67735 CRLF 注入请求走私），需升级至修复版本以消除安全风险。
+
+#### 修改内容
+
+##### 1. BOM 版本升级
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+- **改动**：`library("Netty", "4.1.118.Final")` → `library("Netty", "4.1.131.Final")`
+- **BOM 管理**：通过 `netty-bom` BOM 导入管理所有 Netty 子模块版本，单一版本变更即覆盖全部 Netty 组件
+
+#### CVE 修复覆盖
+
+| CVE 编号 | 组件模块 | 漏洞类型 | CVSS | 修复版本 |
+|---|---|---|---|---|
+| CVE-2025-55163 | netty-codec-http2 | HTTP/2 HEADERS 帧处理不当，可绕过最大并发流限制导致 DDoS | 7.5 | 4.1.131.Final |
+| CVE-2025-58057 | netty-codec-compression | Zip Bomb 解压缩分配过量缓冲区导致 OOM/DoS | 7.5 | 4.1.131.Final |
+| CVE-2025-58056 | netty-codec-http | HTTP/1.1 Chunk 编码中 LF 与 CRLF 解析差异导致请求走私 | 7.5 | 4.1.131.Final |
+| CVE-2025-67735 | netty-codec-http | HttpRequestEncoder CRLF 注入导致 HTTP 请求走私 | 6.5 | 4.1.131.Final |
+
+#### 兼容性说明
+- 4.1.x 分支内升级，API 完全向后兼容
+- 通过 `netty-bom` BOM 管理所有 Netty 子模块，无需逐个修改模块版本
+- Java 8 兼容
+
+#### 涉及文件
+- `spring-boot-project/spring-boot-dependencies/build.gradle`（Netty 版本）
+
+---
+
 ## 📅 2026年03月10日
 
 ### [需求-025] Spring Kafka / Kafka Clients 安全漏洞升级
