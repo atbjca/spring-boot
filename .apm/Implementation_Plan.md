@@ -1,7 +1,7 @@
 # Spring Boot 2.7 Fork 构建与 GAV 治理 – APM Implementation Plan
 **Memory Strategy:** Dynamic-MD
-**Last Modification:** Phase 3 全部完成（Task 3.1~3.3），Netty BOM 升级至 4.1.131.Final，构建验证通过，REQUIREMENTS.md 已追加 [需求-026]。
-**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施持续改造：Phase 1（已完成）在 BOM 中排除传递依赖并编写 NES GAV 映射文档；Phase 2（已完成）修复 Maven 发布时 artifactId 未使用 fork 前缀的问题；Phase 3 升级 Netty 版本修复安全漏洞并维护需求文档。
+**Last Modification:** Phase 4 全部完成（Task 4.1~4.5），Jackson 升级至 2.21.1，经 4 轮迭代修复构建通过，REQUIREMENTS.md 已追加 [需求-027]。
+**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施持续改造：Phase 1（已完成）在 BOM 中排除传递依赖并编写 NES GAV 映射文档；Phase 2（已完成）修复 Maven 发布时 artifactId 未使用 fork 前缀的问题；Phase 3（已完成）升级 Netty 版本修复安全漏洞；Phase 4 升级 Jackson 版本并维护需求文档。
 
 ## Phase 1: 传递依赖排除与 NES GAV 映射文档编写
 
@@ -167,3 +167,45 @@
 - 编写「背景与目的」：说明安全扫描发现 Netty 存在 4 个已知 CVE（CVE-2025-55163 HTTP/2 DDoS、CVE-2025-58057 Zip Bomb DoS、CVE-2025-58056 HTTP 请求走私、CVE-2025-67735 CRLF 注入请求走私），需升级至修复版本以消除安全风险
 - 编写「修改内容」：记录版本变更 `library("Netty", "4.1.118.Final")` → `library("Netty", "4.1.131.Final")`；添加 CVE 修复覆盖表格（CVE 编号、组件模块、漏洞类型、CVSS、修复版本）；添加兼容性说明（4.1.x 分支内升级、BOM 管理所有 Netty 子模块、Java 8 兼容）
 - 编写「涉及文件」：`spring-boot-project/spring-boot-dependencies/build.gradle`（Netty 版本）
+
+## Phase 4: Jackson 版本升级
+
+### Task 4.1 – Jackson BOM 版本升级 - Agent_Build
+**Objective:** 将 gradle.properties 中 Jackson 版本从 2.15.4 升级至 2.21.1。
+**Output:** 修改后的 gradle.properties。
+**Guidance:** 单行版本号修改。Jackson 通过 BOM 导入（`jackson-bom`）管理所有子模块，`spring-boot-dependencies/build.gradle` 中 `library("Jackson Bom", "${jacksonVersion}")` 引用该变量，无需修改 build.gradle。
+
+- 将 `gradle.properties` 中 `jacksonVersion=2.15.4` 改为 `jacksonVersion=2.21.1`
+
+### Task 4.2 – 构建验证 - User
+**Objective:** 验证 Task 4.1 的版本升级后项目构建是否通过。
+**Output:** 构建日志（成功或失败信息）。
+**Guidance:** 由用户手动执行。Jackson 跨多个小版本升级（2.15→2.21），已知风险包括 PropertyNamingStrategy 常量移除（2.20）、POJO 属性内省重写（2.18）、StreamReadConstraints 新限制（2.18）。如有失败，提供完整错误日志供 Agent_Build 分析修复。**Depends on: Task 4.1 Output**
+
+- 用户执行 `make build-thin`，验证 Jackson 版本升级不破坏现有构建。如有失败，提供完整错误日志供 Agent_Build 分析修复
+
+### Task 4.3 – 构建失败分析与修复 - Agent_Build
+**Objective:** 分析 Task 4.2 构建失败的错误日志，修复 Jackson 2.21.1 引入的不兼容问题。
+**Output:** 修复后的源代码文件，附中文注释说明修复原因。
+**Guidance:** 条件性任务——仅在 Task 4.2 构建失败时执行。重点关注已知风险：(1) PropertyNamingStrategy 旧常量/内部类被移除（2.20），项目 JacksonAutoConfiguration 中有 fallback 路径可能受影响；(2) POJO 属性内省重写（2.18）导致序列化/反序列化行为变化；(3) jackson-annotations 版本号格式变化（2.20+）。**Depends on: Task 4.2 Output by User**
+
+1. 分析用户提供的构建错误日志，识别 Jackson 2.21.1 引入的不兼容问题（重点关注：`PropertyNamingStrategy` 常量移除、POJO 属性内省变化、`StreamReadConstraints` 新限制）
+2. 针对每个错误定位源文件并实施修复，为每处修改添加中文注释说明修复原因
+3. 确认所有已知错误均已修复，列出修改文件清单供 User 执行二次构建验证
+
+### Task 4.4 – 二次构建验证 - User
+**Objective:** 验证 Task 4.3 修复后项目构建是否通过。
+**Output:** 构建日志（成功或失败信息）。
+**Guidance:** 条件性任务——仅在 Task 4.3 执行后需要。由用户手动执行。**Depends on: Task 4.3 Output**
+
+- 用户执行 `make build-thin`，验证修复后构建通过。如仍有失败，提供错误日志供 Agent_Build 继续修复（迭代直到通过）
+
+### Task 4.5 – REQUIREMENTS.md 需求追加 - Agent_Docs
+**Objective:** 在 doc/REQUIREMENTS.md 中追加 [需求-027]，记录 Jackson 版本升级的完整信息。
+**Output:** 更新后的 doc/REQUIREMENTS.md。
+**Guidance:** 沿用现有文档风格（日期标题 + 需求编号 + 背景/修改内容/涉及文件）。语言中英混合、尽量中文。日期使用 2026年03月11日。如 Task 4.2 构建成功则无修复内容记录；如经过 Task 4.3 修复则需包含所有修复详情。**Depends on: Task 4.2 Output by User 或 Task 4.4 Output by User**
+
+- 在文件顶部（现有最新需求之前，与 [需求-026] 同日期区块或新建日期区块）追加需求标题 `### [需求-027] Jackson 版本升级`
+- 编写「背景与目的」：说明将 Jackson 从 2.15.4 升级至 2.21.1，增强安全防御纵深（新增 token count 限制等），保持依赖版本活跃维护状态
+- 编写「修改内容」：记录版本变更（`gradle.properties` 中 `jacksonVersion=2.15.4` → `2.21.1`）；列出跨版本主要变更摘要（2.16~2.21 关键变化）；如有构建修复，记录所有修复内容和涉及文件；添加兼容性说明（Java 8 兼容、BOM 管理所有子模块）
+- 编写「涉及文件」：`gradle.properties`（jacksonVersion）及构建修复涉及的所有文件

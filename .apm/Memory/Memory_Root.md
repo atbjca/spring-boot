@@ -1,6 +1,6 @@
 # Spring Boot 2.7 Fork NES 改造 – APM Memory Root
 **Memory Strategy:** Dynamic-MD
-**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施 NES (Never-Ending Support) 改造。Phase 01-02 完成了 GAV 自动映射机制（resolutionStrategy、BOM 导入、文档完善）。Phase 03 实施传递依赖排除（spring-boot-dependencies BOM 中排除第三方组件对原始 Spring 坐标的传递依赖）与 NES GAV 映射文档编写（整合四个 fork 项目的完整 GAV 映射文档）。Phase 04 修复 Maven 发布时 artifactId 未使用 fork 前缀的问题（仅在 DeployedPlugin 发布阶段显式设置 artifactId），并同步更新 NES GAV 映射文档。Phase 05 升级 Netty 版本（4.1.118.Final → 4.1.131.Final）修复 4 个安全漏洞（CVE-2025-55163、CVE-2025-58057、CVE-2025-67735、CVE-2025-58056），并维护需求文档。
+**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施 NES (Never-Ending Support) 改造。Phase 01-02 完成了 GAV 自动映射机制（resolutionStrategy、BOM 导入、文档完善）。Phase 03 实施传递依赖排除（spring-boot-dependencies BOM 中排除第三方组件对原始 Spring 坐标的传递依赖）与 NES GAV 映射文档编写（整合四个 fork 项目的完整 GAV 映射文档）。Phase 04 修复 Maven 发布时 artifactId 未使用 fork 前缀的问题（仅在 DeployedPlugin 发布阶段显式设置 artifactId），并同步更新 NES GAV 映射文档。Phase 05 升级 Netty 版本（4.1.118.Final → 4.1.131.Final）修复 4 个安全漏洞。Phase 06 升级 Jackson 版本（2.15.4 → 2.21.1）增强安全防御纵深，并维护需求文档。
 
 ## Phase 01 – Gradle 构建基础设施改造 Summary
 * **结果**: BUILD SUCCESSFUL (4m29s, 1977 tasks)。全部 5 个任务完成，经过 5 轮迭代修复。
@@ -67,3 +67,19 @@
   - `.apm/Memory/Phase_05_Netty_Security_Upgrade/Task_3_1_Netty_BOM_Version_Upgrade.md`
   - `.apm/Memory/Phase_05_Netty_Security_Upgrade/Task_3_2_Build_Verification.md`
   - `.apm/Memory/Phase_05_Netty_Security_Upgrade/Task_3_3_Requirements_Doc_Update.md`
+
+## Phase 06 – Jackson 版本升级 Summary
+* **结果**: BUILD SUCCESSFUL (5m 31s)。全部 5 个任务完成（含 2 个条件性任务均执行），经过 4 轮迭代修复。
+* **核心交付**:
+  - `gradle.properties`：Jackson 版本从 `2.15.4` 升级至 `2.21.1`
+  - `spring-boot-dependencies/build.gradle`：Jackson BOM 中 `jackson-module-jaxb-annotations` 排除 `jaxb-api`；`jackson-module-kotlin` 使用 `strictly "2.16.2"` 约束固定（Kotlin 1.6.21 兼容）
+  - `buildSrc/JavaConventions.java`：新增 `configureProhibitedTransitiveExclusions()` 方法，全局排除 `javax.activation-api` 和 `jaxb-api`
+  - `doc/REQUIREMENTS.md`：追加 [需求-027] Jackson 版本升级条目，含构建修复详情
+* **关键发现**: BOM 插件的 module exclusion DSL 仅影响 Maven POM 发布，不影响 Gradle 本地依赖解析，需两层修复（BOM + Gradle）；bomrCheck 验证排除时仅检查直接传递依赖，不检查子传递依赖；`jackson-module-kotlin` 从 2.17.x 起使用 Kotlin 1.7+ 编译，与项目 Kotlin 1.6.21 不兼容需固定版本；Gradle `strictly` 约束可覆盖 BOM 管理版本。
+* **涉及 Agent**: Agent_Build（Task 4.1、4.3 含 4 次迭代）、User（Task 4.2、4.4 构建验证）、Agent_Docs（Task 4.5）
+* **Memory Logs**:
+  - `.apm/Memory/Phase_06_Jackson_Version_Upgrade/Task_4_1_Jackson_BOM_Version_Upgrade.md`
+  - `.apm/Memory/Phase_06_Jackson_Version_Upgrade/Task_4_2_Build_Verification.md`
+  - `.apm/Memory/Phase_06_Jackson_Version_Upgrade/Task_4_3_Build_Failure_Fix.md`
+  - `.apm/Memory/Phase_06_Jackson_Version_Upgrade/Task_4_4_Build_Verification_2.md`
+  - `.apm/Memory/Phase_06_Jackson_Version_Upgrade/Task_4_5_Requirements_Doc_Update.md`

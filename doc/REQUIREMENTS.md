@@ -6,6 +6,48 @@
 
 ## 📅 2026年03月11日
 
+### [需求-027] Jackson 版本升级
+
+#### 背景与目的
+将 Jackson 从 2.15.4 升级至 2.21.1，增强安全防御纵深并保持依赖版本处于活跃维护状态。Jackson 2.16~2.21 引入了多项安全强化特性（如 `StreamReadConstraints` 新增 token count 限制、`StreamWriteConstraints` 嵌套深度限制等），同时修复了多个已知安全问题。此外，2.15.x 已进入维护末期，升级至 2.21.x 可持续获得上游安全补丁。
+
+#### 修改内容
+
+##### 1. BOM 版本升级
+- **文件**：`gradle.properties`
+- **改动**：`jacksonVersion=2.15.4` → `jacksonVersion=2.21.1`
+- **BOM 管理**：通过 `jackson-bom` BOM 导入管理所有 Jackson 子模块版本，单一版本变更即覆盖全部 Jackson 组件
+
+##### 2. 跨版本主要变更摘要（2.16 ~ 2.21）
+- **2.16**：`StreamReadConstraints` 新增 token count 限制（默认 20M），防止超大 JSON 文档导致资源耗尽；`StreamWriteConstraints` 新增嵌套深度限制
+- **2.17**：引入 `java.time` 模块的改进默认序列化行为；`@JsonIgnoreProperties` 增强对 Creator 参数的支持
+- **2.18**：`@JsonCreator` 行为优化，改进多 Creator 构造器的冲突解析规则
+- **2.19**：性能优化和 Fail-on-trailing-tokens 改进；增强 JsonNode 的 equality 语义
+- **2.20~2.21**：持续安全修复和序列化/反序列化稳定性增强
+
+##### 3. 构建修复 — 禁止依赖排除
+- **问题**：`jackson-module-jaxb-annotations:2.21.1` 传递依赖 `javax.xml.bind:jaxb-api`，后者又传递依赖 `javax.activation:javax.activation-api`，这些 `javax.*` 依赖被项目禁止依赖检查拦截
+- **修复**：
+  - **BOM 层面排除**（`spring-boot-dependencies/build.gradle`）：在 `jackson-module-jaxb-annotations` 模块声明中排除 `javax.xml.bind:jaxb-api`，阻断其传递依赖链
+  - **Gradle 全局排除**（`JavaConventions.java`）：在 `configureProhibitedTransitiveExclusions()` 方法中，对所有 `*Classpath` 配置全局排除 `javax.activation:javax.activation-api` 和 `javax.xml.bind:jaxb-api`，确保所有模块的所有类路径均不含这些禁止的传递依赖
+
+##### 4. 构建修复 — jackson-module-kotlin 二进制不兼容
+- **问题**：`jackson-module-kotlin:2.21.1` 使用 Kotlin 2.1.0 编译，与项目 Kotlin 1.6.21 二进制不兼容
+- **修复**（`spring-boot-dependencies/build.gradle`）：使用 `strictly "2.16.2"` 版本约束将 `jackson-module-kotlin` 固定到最后一个使用 Kotlin 1.6.21 编译的版本，覆盖 `jackson-bom:2.21.1` 的版本管理，其余 Jackson 模块保持 2.21.1 不变
+
+#### 兼容性说明
+- Jackson 2.21.1 保持 Java 8 兼容
+- 通过 `jackson-bom` BOM 管理所有 Jackson 子模块（`jackson-core`、`jackson-databind`、`jackson-annotations` 及各 Module），单一版本变更即覆盖全部组件
+- `jackson-module-kotlin` 因 Kotlin 编译器版本限制固定为 2.16.2，与其余 Jackson 2.21.1 模块存在版本差异；2.16.2 的 API 与 2.21.1 核心模块完全兼容，不影响运行时功能
+- 构建验证：`make build-thin` BUILD SUCCESSFUL（5m 31s）
+
+#### 涉及文件
+- `gradle.properties`（jacksonVersion 版本号）
+- `spring-boot-project/spring-boot-dependencies/build.gradle`（Jackson BOM `jaxb-api` 排除 + `jackson-module-kotlin` strictly 约束）
+- `buildSrc/src/main/java/org/springframework/boot/build/JavaConventions.java`（Gradle 全局 `javax.*` 排除）
+
+---
+
 ### [需求-026] Netty 安全漏洞版本升级
 
 #### 背景与目的
