@@ -1,7 +1,7 @@
 # Spring Boot 2.7 Fork 构建与 GAV 治理 – APM Implementation Plan
 **Memory Strategy:** Dynamic-MD
-**Last Modification:** Phase 5 全部完成（Task 5.1~5.2），NES_GAV_MAPPING.md 新增 §9 A 类组件传递依赖排除说明，REQUIREMENTS.md 已追加 [需求-028]。
-**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施持续改造：Phase 1（已完成）在 BOM 中排除传递依赖并编写 NES GAV 映射文档；Phase 2（已完成）修复 Maven 发布时 artifactId 未使用 fork 前缀的问题；Phase 3（已完成）升级 Netty 版本修复安全漏洞；Phase 4（已完成）升级 Jackson 版本；Phase 5 编写 A 类组件传递依赖排除影响文档。
+**Last Modification:** Phase 6 全部完成（Manager Agent 1）——Quartz 2.3.2→2.4.1、Commons Lang3 3.12.0→3.20.0 升级完毕，bomrCheck 修复（移除 c3p0/HikariCP exclude），3 个 CVE 文档已创建，[需求-029] 已追加。
+**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施持续改造：Phase 1（已完成）在 BOM 中排除传递依赖并编写 NES GAV 映射文档；Phase 2（已完成）修复 Maven 发布时 artifactId 未使用 fork 前缀的问题；Phase 3（已完成）升级 Netty 版本修复安全漏洞；Phase 4（已完成）升级 Jackson 版本；Phase 5（已完成）编写 A 类组件传递依赖排除影响文档；Phase 6 升级 Quartz 与 Commons Lang3 修复安全漏洞并编写 CVE 文档。
 
 ## Phase 1: 传递依赖排除与 NES GAV 映射文档编写
 
@@ -239,3 +239,56 @@
 - 在文件顶部（与 [需求-026]、[需求-027] 同日期区块）追加 `### [需求-028] A 类组件传递依赖排除影响文档`
 - 编写「背景与目的」：说明 BOM 中 A 类组件的 `exclude group: "org.springframework"` 切断了原始 Spring 传递依赖链，下游 Maven 消费者可能缺失必要的 Spring 依赖，需在 NES_GAV_MAPPING.md 中详细记录变更前后差异和补偿方案
 - 编写「修改内容」：记录在 NES_GAV_MAPPING.md 中新增的章节内容概要（8 个 A 类库传递依赖变化 + 下游 Maven 配置示例）；编写「涉及文件」：`doc/NES_GAV_MAPPING.md`
+
+## Phase 6: Quartz 与 Commons Lang3 安全漏洞版本升级
+
+### Task 6.1 – BOM 版本升级（Quartz + Commons Lang3） - Agent_Build
+**Objective:** 将 spring-boot-dependencies 中 Quartz 版本从 2.3.2 升级至 2.4.1，Commons Lang3 版本从 3.12.0 升级至 3.20.0，修复 CVE-2023-39017 和 CVE-2025-48924。
+**Output:** 修改后的 spring-boot-dependencies/build.gradle。
+**Guidance:** 两处单行版本号修改。Quartz 2.4.1 要求 Java 8+（与 Spring Boot 2.7 兼容），主要变更为移除 NativeJob 类、c3p0/HikariCP 改为 provided scope（BOM 已 exclude 不受影响）。Commons Lang3 3.20.0 保持 Java 8 兼容。
+
+- 将 `library("Quartz", "2.3.2")` 改为 `library("Quartz", "2.4.1")`
+- 将 `library("Commons Lang3", "3.12.0")` 改为 `library("Commons Lang3", "3.20.0")`
+
+### Task 6.2 – 构建验证 - User
+**Objective:** 验证 Task 6.1 的版本升级后项目构建是否通过。
+**Output:** 构建日志（成功或失败信息）。
+**Guidance:** 由用户手动执行。如有失败，提供完整错误日志供 Agent_Build 分析修复。**Depends on: Task 6.1 Output**
+
+- 用户执行 `make build-thin`，验证版本升级不破坏现有构建。如有失败，提供完整错误日志供 Agent_Build 分析修复
+
+### Task 6.3 – 构建失败分析与修复 - Agent_Build
+**Objective:** 分析 Task 6.2 构建失败的错误日志，修复 Quartz 2.4.1 或 Commons Lang3 3.20.0 引入的不兼容问题。
+**Output:** 修复后的源代码文件，附中文注释说明修复原因。
+**Guidance:** 条件性任务——仅在 Task 6.2 构建失败时执行。已知风险：(1) Quartz 2.4.1 移除 NativeJob 类（Spring Boot QuartzAutoConfiguration 未引用，风险低）；(2) Commons Lang3 3.20.0 跨 8 个小版本（3.12→3.20），可能存在 API 行为变化。**Depends on: Task 6.2 Output by User**
+
+1. 分析用户提供的构建错误日志，识别 Quartz 2.4.1 或 Commons Lang3 3.20.0 引入的不兼容问题（重点关注：`NativeJob` 类移除影响、Commons Lang3 API 行为变化）
+2. 针对每个错误定位源文件并实施修复，为每处修改添加中文注释说明修复原因
+3. 确认所有已知错误均已修复，列出修改文件清单供 User 执行二次构建验证
+
+### Task 6.4 – 二次构建验证 - User
+**Objective:** 验证 Task 6.3 修复后项目构建是否通过。
+**Output:** 构建日志（成功或失败信息）。
+**Guidance:** 条件性任务——仅在 Task 6.3 执行后需要。由用户手动执行。**Depends on: Task 6.3 Output**
+
+- 用户执行 `make build-thin`，验证修复后构建通过。如仍有失败，提供错误日志供 Agent_Build 继续修复（迭代直到通过）
+
+### Task 6.5 – CVE 文档编写 - Agent_Docs
+**Objective:** 新建 doc/CVE/ 目录，为 CVE-2023-39017、CVE-2026-27727、CVE-2025-48924 各创建一个独立的 CVE 文档。
+**Output:** `doc/CVE/CVE-2023-39017.md`、`doc/CVE/CVE-2026-27727.md`、`doc/CVE/CVE-2025-48924.md`。
+**Guidance:** 每个文件包含：CVE 编号、组件、漏洞描述、CVSS/CWE、受影响版本、修复版本、官方修复 commit、参考链接。语言中英混合、尽量中文。CVE-2023-39017 需标注 disputed。CVE-2026-27727 需注明当前 BOM 已 exclude c3p0 作为缓解措施。**Depends on: Task 6.2 Output by User 或 Task 6.4 Output by User**
+
+- 创建 `doc/CVE/` 目录
+- 创建 `doc/CVE/CVE-2023-39017.md`：quartz-jobs ≤ 2.3.2 代码注入（`SendQueueMessageJob.execute`），CVSS 9.8 CRITICAL，CWE-94，**disputed**，Quartz 2.4.0 修复（移除 `NativeJob` 类，Issue quartz-scheduler/quartz#943），参考链接
+- 创建 `doc/CVE/CVE-2026-27727.md`：mchange-commons-java < 0.4.0 JNDI RCE，CVSS 9.8 CRITICAL（v3.1）/ 8.9 HIGH（v4.0），CWE-74，修复 commit `a433b28e4d1172049840472c5e361cf4c658626f`（swaldman/mchange-commons-java），注明当前 BOM 已 exclude `com.mchange:c3p0` 作为缓解措施
+- 创建 `doc/CVE/CVE-2025-48924.md`：commons-lang3 < 3.18.0 `ClassUtils.getClass()` 不受控递归 DoS，CVSS 5.3 MEDIUM，CWE-674，修复 commit `b424803abdb2bec818e4fbcb251ce031c22aca53`（apache/commons-lang），参考链接
+
+### Task 6.6 – REQUIREMENTS.md 需求追加 - Agent_Docs
+**Objective:** 在 doc/REQUIREMENTS.md 中追加 [需求-029]，记录 Quartz 与 Commons Lang3 安全漏洞版本升级及 CVE 文档编写的完整信息。
+**Output:** 更新后的 doc/REQUIREMENTS.md。
+**Guidance:** 沿用现有文档风格（日期标题 + 需求编号 + 背景/修改内容/CVE表格/兼容性说明/涉及文件）。语言中英混合、尽量中文。日期使用 2026年03月13日。如 Task 6.2 构建成功则无修复内容记录；如经过 Task 6.3 修复则需包含所有修复详情。**Depends on: Task 6.5 Output**
+
+- 在文件顶部（`---` 分隔线之后、现有最新需求之前）追加日期标题 `## 📅 2026年03月13日` 和需求标题 `### [需求-029] Quartz 与 Commons Lang3 安全漏洞版本升级`
+- 编写「背景与目的」：说明安全扫描发现 Quartz 存在 CVE-2023-39017（代码注入，disputed）和 CVE-2026-27727（JNDI RCE，通过 c3p0/mchange-commons-java 传递），Commons Lang3 存在 CVE-2025-48924（不受控递归 DoS），需升级至修复版本以消除安全风险
+- 编写「修改内容」：记录版本变更 Quartz 2.3.2 → 2.4.1、Commons Lang3 3.12.0 → 3.20.0；添加 CVE 修复覆盖表格（CVE 编号、组件、漏洞类型、CVSS、修复版本）；添加兼容性说明（Quartz 2.4.x Java 8 兼容、NativeJob 移除不影响 Spring Boot AutoConfiguration；Commons Lang3 3.20.0 Java 8 兼容）；记录新建 doc/CVE/ 目录及 3 个 CVE 文档；如经过 Task 6.3 修复则需包含所有修复详情
+- 编写「涉及文件」：`spring-boot-project/spring-boot-dependencies/build.gradle`、`doc/CVE/CVE-2023-39017.md`、`doc/CVE/CVE-2026-27727.md`、`doc/CVE/CVE-2025-48924.md` 及构建修复涉及的所有文件

@@ -1,6 +1,6 @@
 # Spring Boot 2.7 Fork NES 改造 – APM Memory Root
 **Memory Strategy:** Dynamic-MD
-**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施 NES (Never-Ending Support) 改造。Phase 01-02 完成了 GAV 自动映射机制（resolutionStrategy、BOM 导入、文档完善）。Phase 03 实施传递依赖排除（spring-boot-dependencies BOM 中排除第三方组件对原始 Spring 坐标的传递依赖）与 NES GAV 映射文档编写（整合四个 fork 项目的完整 GAV 映射文档）。Phase 04 修复 Maven 发布时 artifactId 未使用 fork 前缀的问题（仅在 DeployedPlugin 发布阶段显式设置 artifactId），并同步更新 NES GAV 映射文档。Phase 05 升级 Netty 版本（4.1.118.Final → 4.1.131.Final）修复 4 个安全漏洞。Phase 06 升级 Jackson 版本（2.15.4 → 2.21.1）增强安全防御纵深，并维护需求文档。Phase 07 编写 A 类组件传递依赖排除影响文档（8 个 A 类库缺失的 Spring 传递依赖及下游 Maven 补偿方案）。
+**Project Overview:** 对 Spring Boot 2.7.18 fork 项目实施 NES (Never-Ending Support) 改造。Phase 01-02 完成了 GAV 自动映射机制（resolutionStrategy、BOM 导入、文档完善）。Phase 03 实施传递依赖排除（spring-boot-dependencies BOM 中排除第三方组件对原始 Spring 坐标的传递依赖）与 NES GAV 映射文档编写（整合四个 fork 项目的完整 GAV 映射文档）。Phase 04 修复 Maven 发布时 artifactId 未使用 fork 前缀的问题（仅在 DeployedPlugin 发布阶段显式设置 artifactId），并同步更新 NES GAV 映射文档。Phase 05 升级 Netty 版本（4.1.118.Final → 4.1.131.Final）修复 4 个安全漏洞。Phase 06 升级 Jackson 版本（2.15.4 → 2.21.1）增强安全防御纵深，并维护需求文档。Phase 07 编写 A 类组件传递依赖排除影响文档（8 个 A 类库缺失的 Spring 传递依赖及下游 Maven 补偿方案）。Phase 08 升级 Quartz（2.3.2 → 2.4.1）与 Commons Lang3（3.12.0 → 3.20.0）修复 3 个 CVE，并新建 CVE 文档目录。
 
 ## Phase 01 – Gradle 构建基础设施改造 Summary
 * **结果**: BUILD SUCCESSFUL (4m29s, 1977 tasks)。全部 5 个任务完成，经过 5 轮迭代修复。
@@ -94,3 +94,19 @@
 * **Memory Logs**:
   - `.apm/Memory/Phase_07_A_Class_Transitive_Dependency_Docs/Task_5_1_NES_GAV_MAPPING_Transitive_Dependency_Chapter.md`
   - `.apm/Memory/Phase_07_A_Class_Transitive_Dependency_Docs/Task_5_2_Requirements_Doc_Update.md`
+
+## Phase 08 – Quartz 与 Commons Lang3 安全漏洞版本升级 Summary
+* **结果**: BUILD SUCCESSFUL (7m 52s)。全部 6 个任务完成（含 2 个条件性任务均执行），经过 1 轮迭代修复。
+* **核心交付**:
+  - `spring-boot-dependencies/build.gradle`：Quartz 版本从 `2.3.2` 升级至 `2.4.1`，修复 CVE-2023-39017（disputed）和 CVE-2026-27727；Commons Lang3 版本从 `3.12.0` 升级至 `3.20.0`，修复 CVE-2025-48924；移除 Quartz 的 c3p0/HikariCP exclude（2.4.1 改为 provided scope）
+  - `doc/CVE/CVE-2023-39017.md`、`doc/CVE/CVE-2026-27727.md`、`doc/CVE/CVE-2025-48924.md`：3 个独立 CVE 文档，含官方修复 commit/Issue、CVSS、本项目应对措施
+  - `doc/REQUIREMENTS.md`：追加 [需求-029] Quartz 与 Commons Lang3 安全漏洞版本升级
+* **关键发现**: Quartz 2.4.1 将 c3p0/HikariCP 改为 provided scope，原 BOM 中的 exclude 声明变为 Unnecessary，需移除以通过 bomrCheck。
+* **涉及 Agent**: Agent_Build（Task 6.1、6.3）、User（Task 6.2、6.4 构建验证）、Agent_Docs（Task 6.5、6.6）
+* **Memory Logs**:
+  - `.apm/Memory/Phase_08_Quartz_Commons_Lang3_Security_Upgrade/Task_6_1_BOM_Version_Upgrade.md`
+  - `.apm/Memory/Phase_08_Quartz_Commons_Lang3_Security_Upgrade/Task_6_2_Build_Verification.md`
+  - `.apm/Memory/Phase_08_Quartz_Commons_Lang3_Security_Upgrade/Task_6_3_Build_Failure_Fix.md`
+  - `.apm/Memory/Phase_08_Quartz_Commons_Lang3_Security_Upgrade/Task_6_4_Build_Verification_2.md`
+  - `.apm/Memory/Phase_08_Quartz_Commons_Lang3_Security_Upgrade/Task_6_5_CVE_Documentation.md`
+  - `.apm/Memory/Phase_08_Quartz_Commons_Lang3_Security_Upgrade/Task_6_6_Requirements_Doc_Update.md`

@@ -4,6 +4,52 @@
 
 ---
 
+## 📅 2026年03月13日
+
+### [需求-029] Quartz 与 Commons Lang3 安全漏洞版本升级
+
+#### 背景与目的
+安全扫描发现 Quartz 存在 CVE-2023-39017（代码注入，**DISPUTED**）和 CVE-2026-27727（JNDI 注入远程代码执行，通过 c3p0/mchange-commons-java 传递依赖引入），Commons Lang3 存在 CVE-2025-48924（`ClassUtils.getClass()` 不受控递归导致拒绝服务）。需升级至修复版本以消除安全风险，并建立 CVE 文档归档机制。
+
+#### 修改内容
+
+##### 1. BOM 版本升级
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+- **改动**：
+  - `library("Quartz", "2.3.2")` → `library("Quartz", "2.4.1")`
+  - `library("Commons Lang3", "3.12.0")` → `library("Commons Lang3", "3.20.0")`
+
+##### 2. CVE 修复覆盖
+
+| CVE 编号 | 组件 | 漏洞类型 | CVSS | 修复版本 | 备注 |
+|---|---|---|---|---|---|
+| CVE-2023-39017 | quartz-jobs ≤ 2.3.2 | 代码注入（CWE-94） | 9.8 CRITICAL | Quartz 2.4.0 | **DISPUTED** |
+| CVE-2026-27727 | mchange-commons-java < 0.4.0 | JNDI 注入 RCE（CWE-74） | 9.8 CRITICAL / 8.9 HIGH | mchange-commons-java 0.4.0 | BOM 已 exclude c3p0 |
+| CVE-2025-48924 | commons-lang3 < 3.18.0 | 不受控递归 DoS（CWE-674） | 5.3 MEDIUM | Commons Lang3 3.18.0 | — |
+
+##### 3. 兼容性说明
+- Quartz 2.4.x 保持 Java 8 兼容；`NativeJob` 类已移除，不影响 Spring Boot AutoConfiguration
+- Commons Lang3 3.20.0 保持 Java 8 兼容
+- 构建验证：`make build-thin` BUILD SUCCESSFUL（7m 52s）
+
+##### 4. 构建修复 — Quartz exclude 声明清理
+- **问题**：Quartz 2.4.1 将 c3p0/HikariCP 改为 `provided` scope，BOM 中原有的 `exclude com.mchange:c3p0` 和 `exclude com.zaxxer:*` 被 bomrCheck 报告为 Unnecessary
+- **修复**：移除 Quartz library 声明中对 `com.mchange:c3p0` 和 `com.zaxxer:*` 的 exclude，将 Quartz 声明简化为 plain string 格式
+
+##### 5. CVE 文档归档
+- 新建 `doc/CVE/` 目录，为本次涉及的 3 个 CVE 各创建独立文档：
+  - `doc/CVE/CVE-2023-39017.md` — Quartz 代码注入（**DISPUTED**）
+  - `doc/CVE/CVE-2026-27727.md` — mchange-commons-java JNDI 注入 RCE
+  - `doc/CVE/CVE-2025-48924.md` — Commons Lang3 不受控递归 DoS
+
+#### 涉及文件
+- `spring-boot-project/spring-boot-dependencies/build.gradle`（Quartz、Commons Lang3 版本）
+- `doc/CVE/CVE-2023-39017.md`
+- `doc/CVE/CVE-2026-27727.md`
+- `doc/CVE/CVE-2025-48924.md`
+
+---
+
 ## 📅 2026年03月11日
 
 ### [需求-028] A 类组件传递依赖排除影响文档
