@@ -4,6 +4,38 @@
 
 ---
 
+## 📅 2026年04月16日
+
+### [需求-030] Netty 与 Tomcat 安全漏洞升级
+
+#### 背景与目的
+安全扫描发现 Netty 和 Tomcat 存在多个高危安全漏洞，需升级至修复版本以确保系统安全。
+- **Netty**: 修复 CVE-2026-33871 (HTTP/2 DoS) 和 CVE-2026-33870 (HTTP/1.1 请求走私)。需升级至 **4.1.132.Final**。
+- **Tomcat**: 修复包括 CVE-2026-24880 (请求走私)、CVE-2026-29146/34486 (EncryptInterceptor 绕过) 在内的 9 个已知漏洞。需升级至 **9.0.117**。
+
+#### 修改内容
+
+##### 1. BOM 与版本属性升级
+- **文件**：`gradle.properties`
+    - `tomcatVersion=9.0.115` → `tomcatVersion=9.0.117`
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+    - `library("Netty", "4.1.131.Final")` → `library("Netty", "4.1.132.Final")`
+
+##### 2. CVE 文档归档
+- 新建多个 CVE 说明文档于 `doc/CVE/` 目录下，记录漏洞详情及修复方案。
+
+#### 涉及文件
+- `gradle.properties`
+- `spring-boot-project/spring-boot-dependencies/build.gradle`
+- `doc/CVE/CVE-2026-33871.md`
+- `doc/CVE/CVE-2026-33870.md`
+- `doc/CVE/CVE-2026-24880.md`
+- `doc/CVE/CVE-2026-29146.md`
+- `doc/CVE/CVE-2026-34486.md`
+
+---
+
+
 ## 📅 2026年03月13日
 
 ### [需求-029] Quartz 与 Commons Lang3 安全漏洞版本升级

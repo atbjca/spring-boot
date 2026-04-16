@@ -7,6 +7,8 @@
 
 | 升级日期 | 组件名称 | 升级前版本 | 升级后版本 | 修复漏洞 / 原因 | 兼容性说明 |
 | :---: | :--- | :---: | :---: | :--- | :--- |
+| 2026-04-16 | `io.netty:netty-bom` 等 | 4.1.131.Final | **4.1.132.Final** | CVE-2026-33871, CVE-2026-33870 | HTTP/2 DoS 及请求走私修复 |
+| 2026-04-16 | `tomcat-embed-core` 等 | 9.0.115 | **9.0.117** | CVE-2026-24880, CVE-2026-29146 等 | 完善 EncryptInterceptor 修复，Java 8 兼容 |
 | 2026-02-25 | `org.springframework:spring-core` 等 | 5.3.31 | **5.3.39** | CVE-2024-22243 URI解析漏洞等 | Maven Central 公开的 5.3.x 最终版 |
 | 2026-03-04 | `org.springframework.security:*` | 5.7.14 | **5.8.16** | 5.8.x 分支最终维稳版，CVE相关修复 | 通往 6.x 的桥接版本，Java 8 最终版 |
 | 2026-02-25 | `tomcat-embed-core` 等 | 9.0.83 | **9.0.115** | HTTP/2 DoS 等多项高危修复 | *需同步修复 `getAllowLinking()`/`setAllowLinking()` 新接口* |
