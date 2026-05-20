@@ -29,8 +29,8 @@
 
 ## 5. 归档准备
 
-- [ ] 5.1 通知后续 `/opsx:archive`：本变更完成后归档至 `openspec/changes/archive/`
-- [ ] 5.2 在归档时记录尚未解决的失败分类（D / G / E / S），作为下一轮 change 的输入：
+- [x] 5.1 通知后续 `/opsx:archive`：本变更完成后归档至 `openspec/changes/archive/`
+- [x] 5.2 在归档时记录尚未解决的失败分类（D / G / E / S），作为下一轮 change 的输入：
   - "启用 JPMS open"（修 D 类 ~369 条，需改 build.gradle）
   - "配 gradle distribution"（修 G 类 963 条，需改 build.gradle 或排除测试类）
   - "按模块逐一定位 E 类"（~130 条）
