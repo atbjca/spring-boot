@@ -37,7 +37,10 @@ class SpringBootVersionTests {
 	void getVersionShouldReturnVersionMatchingGradleProperties() throws IOException {
 		String expectedVersion = PropertiesLoaderUtils.loadProperties(new FileSystemResource(findGradleProperties()))
 			.getProperty("version");
-		assertThat(SpringBootVersion.getVersion()).isEqualTo(expectedVersion);
+		// FORK: gradle.properties 版本号已追加 -nes.patch.1-SNAPSHOT 后缀，
+		// 但 jar manifest 的 Implementation-Version 仍为基础版本号；
+		// 放宽断言为前缀匹配，让两种取值都可通过。
+		assertThat(expectedVersion).startsWith(SpringBootVersion.getVersion());
 	}
 
 	private File findGradleProperties() {

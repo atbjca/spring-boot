@@ -65,14 +65,16 @@ class BannerTests {
 	void testDefaultBanner(CapturedOutput output) {
 		SpringApplication application = createSpringApplication();
 		this.context = application.run();
-		assertThat(output).contains(":: Spring Boot ::");
+		// FORK: SpringBootBanner.SPRING_BOOT 已被改为 " :: Bpring Boot :: "
+		assertThat(output).contains(":: Bpring Boot ::");
 	}
 
 	@Test
 	void testDefaultBannerInLog(CapturedOutput output) {
 		SpringApplication application = createSpringApplication();
 		this.context = application.run();
-		assertThat(output).contains(":: Spring Boot ::");
+		// FORK: SpringBootBanner.SPRING_BOOT 已被改为 " :: Bpring Boot :: "
+		assertThat(output).contains(":: Bpring Boot ::");
 	}
 
 	@Test
