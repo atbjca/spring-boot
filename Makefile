@@ -72,9 +72,6 @@ projects: ## 查看有效的项目
 #       Docker。
 #
 # 当前承诺：完整反馈面优先，非"全绿"。本目标范围内已知仍有失败的模块大致分类：
-#   (D) JVM/JPMS 类（约 369 条）：spring-boot 模块的 *ServletWebServerFactoryTests
-#       整组因 Java 17 模块系统拒绝访问 java.net.URLStreamHandlerFactory 而失败，
-#       需给 build.gradle 加 --add-opens=java.base/java.net=ALL-UNNAMED，本次未做。
 #   (G) gradle-plugin 的 *DocumentationTests（约 963 条）：Gradle Tooling API 起子
 #       构建时 ZipException，需在 build.gradle 配 distribution 或排除测试类，本次未做。
 #   (E) 其它少量未逐一定位的失败（约 130 条）：Liquibase / Quartz / CloudFoundry SSL /

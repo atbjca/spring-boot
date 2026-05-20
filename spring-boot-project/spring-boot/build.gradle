@@ -195,3 +195,10 @@ sourceSets {
 toolchain {
 	testJvmArgs.add("--add-opens=java.base/java.net=ALL-UNNAMED")
 }
+
+// FORK: 直接给默认 ./gradlew test 任务加 --add-opens，绕过 ToolchainPlugin 仅在
+// -PtoolchainVersion=X 场景下激活上方 testJvmArgs 的限制。原 toolchain {} 块保留
+// 以兼容传入 -PtoolchainVersion 的场景（JVM 接受重复 --add-opens，无副作用）。
+tasks.named('test').configure {
+	jvmArgs '--add-opens=java.base/java.net=ALL-UNNAMED'
+}
