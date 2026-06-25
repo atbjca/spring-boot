@@ -628,7 +628,7 @@ bom {
 				"jackson-bom"
 			]
 		}
-		// Jackson 2.21.1 的 jackson-module-jaxb-annotations 模块传递依赖了
+		// Jackson 2.21.x 的 jackson-module-jaxb-annotations 模块传递依赖了
 		// javax.xml.bind:jaxb-api（其又传递依赖 javax.activation:javax.activation-api），
 		// 这些 javax.* 依赖在项目禁止依赖检查中被拦截。排除 jaxb-api 即可同时
 		// 阻断其传递依赖 javax.activation-api，无需单独排除后者。
@@ -1439,7 +1439,7 @@ bom {
 			]
 		}
 	}
-	library("Netty", "4.1.132.Final") {
+	library("Netty", "4.1.135.Final") {
 		group("io.netty") {
 			imports = [
 				"netty-bom"
@@ -2171,7 +2171,7 @@ bom {
 
 // jackson-module-kotlin 2.17+ 使用 Kotlin 1.7+ 编译，与项目 Kotlin 1.6.21 不兼容。
 // 使用 strictly 约束将其固定到 2.16.2（最后一个使用 Kotlin 1.6.21 编译的版本），
-// 覆盖 jackson-bom:2.21.1 的版本管理，其余 Jackson 模块保持 2.21.1 不变。
+// 覆盖 jackson-bom 的版本管理，其余 Jackson 模块跟随 gradle.properties 中的 jacksonVersion 不变。
 dependencies {
 	constraints {
 		api("com.fasterxml.jackson.module:jackson-module-kotlin") {

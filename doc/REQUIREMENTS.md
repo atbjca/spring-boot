@@ -4,6 +4,81 @@
 
 ---
 
+## 📅 2026年06月25日
+
+### [需求-031] P0 安全漏洞升级（Netty / Tomcat / Jackson）
+
+#### 背景与目的
+2026 年 4 月 [需求-030] 将 Netty 升至 4.1.132、Tomcat 升至 9.0.117 后，上游在 5–6 月又披露了多批新 CVE。本次按 P0 优先级同步升级三个核心 BOM 组件，消除已知安全风险。
+
+- **Netty**: 4.1.132 之后 4.1.133（2026-05-05）与 4.1.135（2026-06-02）两轮安全发布，含 HTTP 请求走私、CRLF 注入、DNS 缓存投毒、Redis/HTTP2 codec 内存耗尽等。需升级至 **4.1.135.Final**。
+- **Tomcat**: 9.0.118（2026-05-10）修复 7 个 CVE（含 security-constraint 未生效、Digest 认证绕过、HTTP/2 header 未校验等）。需升级至 **9.0.119**（当前 9.0.x 最新稳定版）。
+- **Jackson**: 2.21.4（2026-06-16）修复 PTV 白名单绕过、@JsonView/@JsonIgnore 授权绕过等。需自 **2.21.1** 升至 **2.21.4**。
+
+#### 修改内容
+
+##### 1. BOM 与版本属性升级
+- **文件**：`gradle.properties`
+    - `jacksonVersion=2.21.1` → `jacksonVersion=2.21.4`
+    - `tomcatVersion=9.0.117` → `tomcatVersion=9.0.119`
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+    - `library("Netty", "4.1.132.Final")` → `library("Netty", "4.1.135.Final")`
+    - Jackson / Netty 相关注释同步为泛化表述（不再硬编码 2.21.1）
+
+##### 2. 构建基础设施注释同步
+- **文件**：`buildSrc/src/main/java/org/springframework/boot/build/JavaConventions.java`
+    - Jackson 2.21.1 注释 → Jackson 2.21.x
+- **文件**：`spring-boot-project/spring-boot/src/main/java/org/springframework/boot/web/embedded/tomcat/TldPatterns.java`
+    - 补回 `tomcat-coyote-ffm.jar`（Tomcat 9.0.119 `catalina.properties` 默认值，`TldPatternsTests` 对齐校验）
+
+##### 3. CVE 文档归档
+- **新建**（Netty 4.1.133/135 代表 CVE）：
+    - `doc/CVE/CVE-2026-42580.md` — chunk size 解析溢出请求走私
+    - `doc/CVE/CVE-2026-42581.md` — HTTP/1.0 TE+CL 走私绕过
+    - `doc/CVE/CVE-2026-50020.md` — HTTP 请求走私（4.1.135）
+    - `doc/CVE/CVE-2026-47691.md` — DNS 缓存投毒（4.1.135）
+- **新建**（Tomcat 9.0.118 代表 CVE）：
+    - `doc/CVE/CVE-2026-43515.md` — security-constraint 未正确应用
+    - `doc/CVE/CVE-2026-43512.md` — Digest 认证未知用户绕过
+    - `doc/CVE/CVE-2026-41293.md` — HTTP/2 请求头未校验
+- **新建**（Jackson 2.21.4）：
+    - `doc/CVE/CVE-2026-54513.md` — PTV 数组子类型白名单绕过
+    - `doc/CVE/CVE-2026-54512.md` — PTV 泛型参数未校验
+    - `doc/CVE/CVE-2026-54516.md` — @JsonIgnore setter 绕过
+- **更新**（历史 CVE 文档「本项目应对措施」指向当前版本）：
+    - `doc/CVE/CVE-2026-33870.md`、`CVE-2026-33871.md`
+    - `doc/CVE/CVE-2026-24880.md`、`CVE-2026-29146.md`、`CVE-2026-34486.md`
+
+##### 4. 升级历史同步
+- **文件**：`doc/COMPONENTS_UPGRADE_HISTORY.md`
+    - 追加三条升级记录
+    - 修正「Jackson 版本上限 2.15.4」过时说明（项目已于 [需求-027] 升至 2.21.x）
+
+#### CVE 修复覆盖摘要
+
+| 组件 | 自 | 至 | 代表 CVE |
+|------|----|----|---------|
+| Netty | 4.1.132.Final | 4.1.135.Final | CVE-2026-42580, CVE-2026-42581, CVE-2026-50020, CVE-2026-47691 等 |
+| Tomcat | 9.0.117 | 9.0.119 | CVE-2026-43515, CVE-2026-43512, CVE-2026-41293 等 7 项 |
+| Jackson | 2.21.1 | 2.21.4 | CVE-2026-54513, CVE-2026-54512, CVE-2026-54516 等 |
+
+#### 兼容性说明
+- Netty 4.1.135、Tomcat 9.0.119、Jackson 2.21.4 均保持 Java 8 兼容
+- `jackson-module-kotlin` 仍固定为 `strictly 2.16.2`，与其余 Jackson 2.21.4 模块并存
+- Tomcat `TldPatterns.TOMCAT_SKIP` 已补回 `tomcat-coyote-ffm.jar`，由 `TldPatternsTests` 对照 9.0.119 `catalina.properties` 校验通过
+- 构建验证：`TldPatternsTests` + `JacksonJsonParserTests` 通过（2026-06-25）；完整回归建议本地执行 `make build-thin` + `make test-unit`
+
+#### 涉及文件
+- `gradle.properties`
+- `spring-boot-project/spring-boot-dependencies/build.gradle`
+- `buildSrc/src/main/java/org/springframework/boot/build/JavaConventions.java`
+- `spring-boot-project/spring-boot/src/main/java/org/springframework/boot/web/embedded/tomcat/TldPatterns.java`
+- `doc/REQUIREMENTS.md`
+- `doc/COMPONENTS_UPGRADE_HISTORY.md`
+- `doc/CVE/CVE-2026-*.md`（新建 9 个 + 更新 5 个）
+
+---
+
 ## 📅 2026年04月16日
 
 ### [需求-030] Netty 与 Tomcat 安全漏洞升级

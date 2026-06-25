@@ -292,7 +292,7 @@ class JavaConventions {
 		project.getTasks().getByName(JavaBasePlugin.CHECK_TASK_NAME).dependsOn(checkClasspathForProhibitedDependencies);
 	}
 
-	// Jackson 2.21.1 的 jackson-module-jaxb-annotations 模块传递引入了
+	// Jackson 2.21.x 的 jackson-module-jaxb-annotations 模块传递引入了
 	// javax.xml.bind:jaxb-api 和 javax.activation:javax.activation-api，
 	// 这些 javax.* 依赖在禁止依赖检查中被拦截。在所有 classpath 配置中
 	// 全局排除，确保所有模块的所有类路径均不含这些禁止的传递依赖。

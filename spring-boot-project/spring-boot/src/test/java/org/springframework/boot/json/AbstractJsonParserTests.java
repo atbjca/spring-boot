@@ -197,7 +197,8 @@ abstract class AbstractJsonParserTests {
 		assertThatExceptionOfType(JsonParseException.class).isThrownBy(() -> this.parser.parseList(input))
 			.havingCause()
 			// FORK: Jackson 2.15.4 -> 2.21.1 错误文案改为
-			// "Document nesting depth (N) exceeds the maximum allowed (M, from `StreamReadConstraints.getMaxNestingDepth()`)"
+			// "Document nesting depth (N) exceeds the maximum allowed (M, from
+			// `StreamReadConstraints.getMaxNestingDepth()`)"
 			.withMessageContaining("nesting depth");
 	}
 

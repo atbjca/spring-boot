@@ -7,6 +7,9 @@
 
 | 升级日期 | 组件名称 | 升级前版本 | 升级后版本 | 修复漏洞 / 原因 | 兼容性说明 |
 | :---: | :--- | :---: | :---: | :--- | :--- |
+| 2026-06-25 | `com.fasterxml.jackson.core:jackson-databind` 等 | 2.21.1 | **2.21.4** | CVE-2026-54513, CVE-2026-54512, CVE-2026-54516 等 | PTV / @JsonView 安全修复；`jackson-module-kotlin` 仍 strictly 2.16.2 |
+| 2026-06-25 | `tomcat-embed-core` 等 | 9.0.117 | **9.0.119** | CVE-2026-43515, CVE-2026-43512, CVE-2026-41293 等 | Tomcat 9.0.118 安全发布 + 9.0.119 最新稳定版 |
+| 2026-06-25 | `io.netty:netty-bom` 等 | 4.1.132.Final | **4.1.135.Final** | CVE-2026-42580, CVE-2026-42581, CVE-2026-50020, CVE-2026-47691 等 | 4.1.133 + 4.1.135 两轮安全发布合并 |
 | 2026-04-16 | `io.netty:netty-bom` 等 | 4.1.131.Final | **4.1.132.Final** | CVE-2026-33871, CVE-2026-33870 | HTTP/2 DoS 及请求走私修复 |
 | 2026-04-16 | `tomcat-embed-core` 等 | 9.0.115 | **9.0.117** | CVE-2026-24880, CVE-2026-29146 等 | 完善 EncryptInterceptor 修复，Java 8 兼容 |
 | 2026-02-25 | `org.springframework:spring-core` 等 | 5.3.31 | **5.3.39** | CVE-2024-22243 URI解析漏洞等 | Maven Central 公开的 5.3.x 最终版 |
@@ -21,10 +24,11 @@
 
 ## 技术决策说明
 
-### Jackson 版本上限（2.15.4）
-- Jackson **2.16+** 的 BOM 引入了 `javax.xml.bind:jaxb-api` 和 `javax.activation-api` 作为传递依赖
-- Spring Boot 2.7 的 `spring-boot-autoconfigure` 模块明确禁止这两个库出现在编译 classpath
-- 因此 Jackson 版本上限为 **2.15.4**（`2.15.x` 终版）
+### Jackson 版本策略（当前 2.21.4）
+- 项目已于 [需求-027] 将 Jackson 从 2.15.4 升级至 2.21.x，并于 [需求-031] 跟进至 **2.21.4**
+- Jackson **2.16+** 的 BOM 会传递 `javax.xml.bind:jaxb-api`，已在 BOM 层 exclude + Gradle 全局 exclude 处理
+- `jackson-module-kotlin` 因 Kotlin 1.6.21 二进制兼容限制，使用 `strictly 2.16.2` 约束，与其余 2.21.4 核心模块并存
+- 小版本升级（2.21.1 → 2.21.4）为安全补丁，API 兼容，无需源码改动
 
 ### Spring Framework 版本上限（5.3.39）
 - 5.3.40 及以后为 Spring 商业支持专属版本，**未发布至 Maven Central**
