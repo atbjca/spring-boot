@@ -52,7 +52,7 @@ nexusPassword=your-password
 
 | 字段 | 内容 |
 |------|------|
-| 状态 | 已完成 |
+| 状态 | 已完成（待本地 `make build-thin` + `make test` 最终确认） |
 | 基线 | Phase B 完成后的 `3.5.x-bjca-patch` |
 | 范围 | BOM 中对 GraphQL / HATEOAS / Kafka / LDAP / Retry 添加 `exclude org.springframework` |
 | 非目标 | Spring Data / Integration / Session BOM import 条目、Logback fork |
