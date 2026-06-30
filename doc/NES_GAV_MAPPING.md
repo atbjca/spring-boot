@@ -1,6 +1,21 @@
 # NES GAV 映射（Spring Boot 3.5 兼容链）
 
-## Phase B（当前）
+## Phase C（当前）
+
+在 Phase B 基础上，对仍使用官方 groupId 的 A 类生态组件（GraphQL、HATEOAS、Kafka、LDAP、Retry）在 BOM 中排除传递的 `org.springframework:*`，Framework 由 `resolutionStrategy` 提供 fork 坐标。
+
+| 组件 | 官方 groupId | Fork | BOM 排除 org.springframework |
+|------|-------------|------|------------------------------|
+| Spring GraphQL | `org.springframework.graphql` | 官方 | ✅ |
+| Spring HATEOAS | `org.springframework.hateoas` | 官方 | ✅ |
+| Spring Kafka | `org.springframework.kafka` | 官方 | ✅ |
+| Spring LDAP | `org.springframework.ldap` | 官方 | ✅ |
+| Spring Retry | `org.springframework.retry` | 官方 | ✅ |
+| Spring Data / Integration / Session 等 | 各官方 groupId | 官方 BOM import | ⏳ 待后续 change |
+
+Logback 仍用官方 `ch.qos.logback:1.5.34`（不 fork bogback）。
+
+## Phase B（已完成）
 
 | 组件 | 官方坐标 | Fork 坐标 | 版本 |
 |------|----------|-----------|------|
@@ -31,9 +46,9 @@
 
 ### SCA 规避说明
 
-Phase B 完成后，Boot 构建传递依赖中的 `org.springframework` / `org.springframework.security` groupId 均被 `resolutionStrategy.eachDependency` 透明替换为 fork 坐标。以下 A 类生态组件仍可能传递官方 Spring 坐标（待后续 change 处理）：
+Phase B 完成后，显式声明的 `org.springframework:*` / `org.springframework.security:*` 由 `resolutionStrategy` 替换为 fork 坐标。Phase C 对 GraphQL / Kafka 等 A 类模块在 BOM 中排除传递的官方 Spring 依赖。
 
-- Spring Data / Session / GraphQL / Kafka / Integration 等
+仍使用 BOM import、尚未添加 exclusion 的组件（Spring Data、Integration、Session、AMQP、Batch、Pulsar、WS 等）可能仍被 SCA 扫描到官方 Spring 传递链，待后续 change 处理。
 
 ## Phase A（已完成）
 

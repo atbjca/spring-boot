@@ -2320,9 +2320,14 @@ bom {
 	library("Spring GraphQL", "1.4.6") {
 		considerSnapshots()
 		group("org.springframework.graphql") {
+			// [A 类排除] 未 fork 的生态组件，排除传递的官方 Spring 坐标；Framework 由 resolutionStrategy 提供
 			modules = [
-					"spring-graphql",
-					"spring-graphql-test"
+					"spring-graphql" {
+						exclude group: "org.springframework", module: "*"
+					},
+					"spring-graphql-test" {
+						exclude group: "org.springframework", module: "*"
+					}
 			]
 		}
 		links {
@@ -2342,8 +2347,11 @@ bom {
 		}
 		considerSnapshots()
 		group("org.springframework.hateoas") {
+			// [A 类排除] 未 fork 的生态组件，排除传递的官方 Spring 坐标
 			modules = [
-				"spring-hateoas"
+				"spring-hateoas" {
+					exclude group: "org.springframework", module: "*"
+				}
 			]
 		}
 		links {
@@ -2374,9 +2382,14 @@ bom {
 	library("Spring Kafka", "3.3.16") {
 		considerSnapshots()
 		group("org.springframework.kafka") {
+			// [A 类排除] 未 fork 的生态组件，排除传递的官方 Spring 坐标
 			modules = [
-				"spring-kafka",
-				"spring-kafka-test"
+				"spring-kafka" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-kafka-test" {
+					exclude group: "org.springframework", module: "*"
+				}
 			]
 		}
 		links {
@@ -2392,11 +2405,20 @@ bom {
 	library("Spring LDAP", "3.3.8") {
 		considerSnapshots()
 		group("org.springframework.ldap") {
+			// [A 类排除] 未 fork 的生态组件，排除传递的官方 Spring 坐标
 			modules = [
-				"spring-ldap-core",
-				"spring-ldap-ldif-core",
-				"spring-ldap-odm",
-				"spring-ldap-test"
+				"spring-ldap-core" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-ldap-ldif-core" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-ldap-odm" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-ldap-test" {
+					exclude group: "org.springframework", module: "*"
+				}
 			]
 		}
 		links {
@@ -2442,8 +2464,11 @@ bom {
 	library("Spring Retry", "2.0.13") {
 		considerSnapshots()
 		group("org.springframework.retry") {
+			// [A 类排除] 未 fork 的生态组件，排除传递的官方 Spring 坐标
 			modules = [
-				"spring-retry"
+				"spring-retry" {
+					exclude group: "org.springframework", module: "*"
+				}
 			]
 		}
 		links {
