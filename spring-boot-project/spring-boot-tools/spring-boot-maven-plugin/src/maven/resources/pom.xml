@@ -2,8 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.springframework.boot</groupId>
-	<artifactId>spring-boot-maven-plugin</artifactId>
+	<!-- groupId / artifactId 由 syncPluginPomCoordinates 任务在构建时与 project 坐标同步 -->
+	<groupId>cn.bjca.footstone.bpring.boot</groupId>
+	<artifactId>bjca-footstone-bpring-boot-maven-plugin</artifactId>
 	<version>{{version}}</version>
 	<packaging>maven-plugin</packaging>
 	<name>Spring Boot Maven Plugin</name>
@@ -33,7 +34,7 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
+				<groupId>cn.bjca.footstone.bpring.boot</groupId>
 				<artifactId>maven-plugin-plugin</artifactId>
 				<version>3.6.0</version>
 				<configuration>

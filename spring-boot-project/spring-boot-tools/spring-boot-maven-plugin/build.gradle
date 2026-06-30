@@ -190,3 +190,31 @@ tasks.named("generateAntoraPlaybook") {
 tasks.named("dockerTest").configure {
 	dependsOn tasks.named("prepareMavenBinaries")
 }
+
+def syncPluginPomCoordinates = tasks.register("syncPluginPomCoordinates") {
+	doLast {
+		def pomFile = file("src/maven/resources/pom.xml")
+		if (pomFile.exists()) {
+			def content = pomFile.text
+			def updatedContent = content.replaceAll(
+				'<groupId>.*</groupId>',
+				"<groupId>${project.group}</groupId>"
+			)
+			def forkPrefix = project.findProperty("forkArtifactPrefix")
+			if (forkPrefix) {
+				def forkArtifactId = project.name.replace("spring-boot", "${forkPrefix}-boot")
+				updatedContent = updatedContent.replaceFirst(
+					'<artifactId>[^<]+</artifactId>',
+					"<artifactId>${forkArtifactId}</artifactId>"
+				)
+			}
+			if (content != updatedContent) {
+				pomFile.text = updatedContent
+			}
+		}
+	}
+}
+
+tasks.matching { it.name.startsWith("sync") && it.name.contains("Inputs") }.configureEach {
+	dependsOn syncPluginPomCoordinates
+}

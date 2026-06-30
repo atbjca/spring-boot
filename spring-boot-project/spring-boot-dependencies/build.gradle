@@ -2071,7 +2071,7 @@ bom {
 		}
 	}
 	library("Spring Boot", "${version}") {
-		group("org.springframework.boot") {
+		group(project.group) {
 			modules = [
 				"spring-boot",
 				"spring-boot-actuator",

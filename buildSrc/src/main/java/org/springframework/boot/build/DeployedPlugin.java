@@ -44,6 +44,11 @@ public class DeployedPlugin implements Plugin<Project> {
 		project.getPlugins().apply(MavenRepositoryPlugin.class);
 		PublishingExtension publishing = project.getExtensions().getByType(PublishingExtension.class);
 		MavenPublication mavenPublication = publishing.getPublications().create("maven", MavenPublication.class);
+		Object forkArtifactPrefix = project.findProperty("forkArtifactPrefix");
+		if (forkArtifactPrefix != null && !forkArtifactPrefix.toString().isEmpty()) {
+			mavenPublication
+				.setArtifactId(project.getName().replace("spring-boot", forkArtifactPrefix.toString() + "-boot"));
+		}
 		project.afterEvaluate((evaluated) -> project.getPlugins().withType(JavaPlugin.class).all((javaPlugin) -> {
 			if (((Jar) project.getTasks().getByName(JavaPlugin.JAR_TASK_NAME)).isEnabled()) {
 				project.getComponents()

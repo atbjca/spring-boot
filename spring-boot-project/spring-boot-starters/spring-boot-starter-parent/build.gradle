@@ -24,10 +24,13 @@ description = "Parent pom providing dependency and plugin management for applica
 publishing.publications.withType(MavenPublication) {
 	pom.withXml { xml ->
 		def root = xml.asNode()
+		def forkPrefix = project.findProperty("forkArtifactPrefix")
+		def depArtifactId = forkPrefix ? "spring-boot-dependencies".replace("spring-boot", "${forkPrefix}-boot") : "spring-boot-dependencies"
+		def pluginArtifactId = forkPrefix ? "spring-boot-maven-plugin".replace("spring-boot", "${forkPrefix}-boot") : "spring-boot-maven-plugin"
 		root.groupId.replaceNode {
 			parent {
 				delegate.groupId("${project.group}")
-				delegate.artifactId("spring-boot-dependencies")
+				delegate.artifactId(depArtifactId)
 				delegate.version("${project.version}")
 			}
 		}
@@ -187,8 +190,8 @@ publishing.publications.withType(MavenPublication) {
 							}
 						}
 						plugin {
-							delegate.groupId('org.springframework.boot')
-							delegate.artifactId('spring-boot-maven-plugin')
+							delegate.groupId("${project.group}")
+							delegate.artifactId(pluginArtifactId)
 							executions {
 								execution {
 									delegate.id('repackage')
@@ -220,8 +223,8 @@ publishing.publications.withType(MavenPublication) {
 							}
 							delegate.dependencies {
 								dependency {
-									delegate.groupId('org.springframework.boot')
-									delegate.artifactId('spring-boot-maven-plugin')
+									delegate.groupId("${project.group}")
+									delegate.artifactId(pluginArtifactId)
 									delegate.version("${project.version}")
 								}
 							}
@@ -281,8 +284,8 @@ publishing.publications.withType(MavenPublication) {
 									}
 								}
 								plugin {
-									delegate.groupId('org.springframework.boot')
-									delegate.artifactId('spring-boot-maven-plugin')
+									delegate.groupId("${project.group}")
+									delegate.artifactId(pluginArtifactId)
 									executions {
 										execution {
 											delegate.id('process-aot')
@@ -325,8 +328,8 @@ publishing.publications.withType(MavenPublication) {
 						pluginManagement {
 							plugins {
 								plugin {
-									delegate.groupId('org.springframework.boot')
-									delegate.artifactId('spring-boot-maven-plugin')
+									delegate.groupId("${project.group}")
+									delegate.artifactId(pluginArtifactId)
 									executions {
 										execution {
 											delegate.id('process-test-aot')

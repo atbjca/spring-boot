@@ -1,11 +1,13 @@
-.PHONY: clean format build build-thin stop projects help test
+.PHONY: clean format build build-thin install deploy stop projects help test
 
 help: ## 显示帮助信息
 	@echo ""
 	@echo "可用命令:"
 	@echo "  make clean      - 清理构建产物"
 	@echo "  make format     - 格式化代码"
-	@echo "  make build-thin - 编译打包（跳过 test、文档、部分 checkstyle）"
+	@echo "  make build-thin - 编译打包（跳过 test、文档、部分 checkstyle），耗时约 30-60 分钟"
+	@echo "  make install    - 发布到本地 Maven 仓库（~/.m2/repository）"
+	@echo "  make deploy     - 发布到 Nexus 私服"
 	@echo "  make test       - Phase 1 过渡（spring-boot + spring-boot-test，已全绿）"
 	@echo "                  目标门槛见 doc/TESTING.md §10 Tier B（make test-gate，待实施）"
 	@echo "  make stop       - 停止 Gradle Daemon"
@@ -24,7 +26,17 @@ build: ## 全量 build（含 test，本地不推荐）
 	./gradlew build
 
 build-thin: ## 编译打包，跳过 test / intTest / 文档 / 部分 checkstyle
-	./gradlew build -x test -x intTest -x checkstyleMain -x checkstyleTest -x asciidoctor -x javadoc
+	./gradlew assemble -x test -x intTest -x checkstyleMain -x checkstyleTest \
+		-x :spring-boot-project:spring-boot-docs:assemble \
+		-x :spring-boot-project:spring-boot-tools:spring-boot-cli:assemble \
+		-x :spring-boot-system-tests:spring-boot-deployment-tests:assemble \
+		-x :spring-boot-system-tests:spring-boot-image-tests:assemble
+
+install: ## 发布到本地 Maven 仓库
+	./gradlew publishToMavenLocal -x test
+
+deploy: ## 发布到 Nexus 私服
+	./gradlew publish -x test
 
 stop: ## 停止 Gradle Daemon
 	./gradlew --stop

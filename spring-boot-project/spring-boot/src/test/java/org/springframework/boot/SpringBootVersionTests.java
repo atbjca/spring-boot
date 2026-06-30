@@ -37,7 +37,8 @@ class SpringBootVersionTests {
 	void getVersionShouldReturnVersionMatchingGradleProperties() throws IOException {
 		String expectedVersion = PropertiesLoaderUtils.loadProperties(new FileSystemResource(findGradleProperties()))
 			.getProperty("version");
-		assertThat(SpringBootVersion.getVersion()).isEqualTo(expectedVersion);
+		// FORK: version 含 -nes.patch 后缀，SpringBootVersion 返回 springBootVersion 基线号
+		assertThat(expectedVersion).startsWith(SpringBootVersion.getVersion());
 	}
 
 	private File findGradleProperties() {

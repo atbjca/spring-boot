@@ -129,7 +129,33 @@ public class BomPlugin implements Plugin<Project> {
 					projectNode.children().add(properties);
 				}
 				addPluginManagement(projectNode);
+				Object forkArtifactPrefix = this.project.findProperty("forkArtifactPrefix");
+				if (forkArtifactPrefix != null && !forkArtifactPrefix.toString().isEmpty()) {
+					String prefix = forkArtifactPrefix.toString();
+					if (dependencyManagement != null) {
+						replaceSpringBootArtifactIds(findChild(dependencyManagement, "dependencies"), "dependency",
+								prefix);
+					}
+					Node build = findChild(projectNode, "build");
+					if (build != null) {
+						Node pluginMgmt = findChild(build, "pluginManagement");
+						replaceSpringBootArtifactIds((pluginMgmt != null) ? findChild(pluginMgmt, "plugins") : null,
+								"plugin", prefix);
+					}
+				}
 			});
+		}
+
+		private void replaceSpringBootArtifactIds(Node container, String childTag, String prefix) {
+			if (container == null) {
+				return;
+			}
+			for (Node child : findChildren(container, childTag)) {
+				Node aidNode = findChild(child, "artifactId");
+				if (aidNode != null && aidNode.text().startsWith("spring-boot")) {
+					aidNode.setValue(aidNode.text().replace("spring-boot", prefix + "-boot"));
+				}
+			}
 		}
 
 		@SuppressWarnings("unchecked")

@@ -16,6 +16,7 @@
 
 plugins {
 	id "base"
+	id "maven-publish"
 }
 
 description = "Spring Boot Build"
@@ -23,18 +24,60 @@ description = "Spring Boot Build"
 defaultTasks 'build'
 
 allprojects {
-	group = "org.springframework.boot"
+	group = "${forkGroupIdBase}.boot"
+
+	repositories {
+		maven {
+			name = 'nexus'
+			url = nexusPublicUrl
+			allowInsecureProtocol = true
+			credentials {
+				username = nexusUsername
+				password = nexusPassword
+			}
+			content {
+				includeGroupByRegex('cn\\.bjca\\.footstone\\.bpring(\\..+)?')
+			}
+		}
+		mavenLocal()
+		mavenCentral()
+		if (version.endsWith('-SNAPSHOT')) {
+			maven {
+				name = 'nexusSnapshot'
+				url = nexusSnapshotUrl
+				allowInsecureProtocol = true
+				credentials {
+					username = nexusUsername
+					password = nexusPassword
+				}
+				content {
+					includeGroupByRegex('cn\\.bjca\\.footstone\\.bpring(\\..+)?')
+				}
+			}
+		}
+	}
+
+	configurations.all {
+		resolutionStrategy.cacheChangingModulesFor 0, "minutes"
+	}
 }
 
 subprojects {
 	apply plugin: "org.springframework.boot.conventions"
 
-	repositories {
-		mavenCentral()
-		spring.mavenRepositories()
-	}
-
-	configurations.all {
-		resolutionStrategy.cacheChangingModulesFor 0, "minutes"
+	afterEvaluate { project ->
+		publishing {
+			repositories {
+				maven {
+					name = 'nexus'
+					url = project.version.toString().endsWith('-SNAPSHOT') ? nexusSnapshotUrl : nexusReleaseUrl
+					allowInsecureProtocol = true
+					credentials {
+						username = nexusUsername
+						password = nexusPassword
+					}
+				}
+			}
+		}
 	}
 }

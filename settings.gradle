@@ -17,9 +17,35 @@
 pluginManagement {
 	evaluate(new File("${rootDir}/buildSrc/SpringRepositorySupport.groovy")).apply(this)
 	repositories {
+		maven {
+			name = 'nexus'
+			url = nexusPublicUrl
+			allowInsecureProtocol = true
+			credentials {
+				username = nexusUsername
+				password = nexusPassword
+			}
+			content {
+				includeGroupByRegex('cn\\.bjca\\.footstone\\.bpring(\\..+)?')
+			}
+		}
+		mavenLocal()
 		mavenCentral()
 		gradlePluginPortal()
-		spring.mavenRepositories()
+		if (version.endsWith('-SNAPSHOT')) {
+			maven {
+				name = 'nexusSnapshot'
+				url = nexusSnapshotUrl
+				allowInsecureProtocol = true
+				credentials {
+					username = nexusUsername
+					password = nexusPassword
+				}
+				content {
+					includeGroupByRegex('cn\\.bjca\\.footstone\\.bpring(\\..+)?')
+				}
+			}
+		}
 	}
 	resolutionStrategy {
 		eachPlugin {
@@ -37,7 +63,7 @@ plugins {
 	id "io.spring.develocity.conventions" version "0.0.25"
 }
 
-rootProject.name="spring-boot-build"
+rootProject.name="${forkArtifactPrefix}-boot-build"
 
 enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
 

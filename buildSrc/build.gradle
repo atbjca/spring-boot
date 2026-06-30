@@ -22,9 +22,36 @@ plugins {
 }
 
 repositories {
+	maven {
+		name = 'nexus'
+		url = nexusPublicUrl
+		allowInsecureProtocol = true
+		credentials {
+			username = nexusUsername
+			password = nexusPassword
+		}
+		content {
+			includeGroupByRegex('cn\\.bjca\\.footstone\\.bpring(\\..+)?')
+		}
+	}
+	mavenLocal()
 	mavenCentral()
-	spring.mavenRepositoriesFor("${springFrameworkVersion}")
 	gradlePluginPortal()
+	if (version.endsWith('-SNAPSHOT')) {
+		maven {
+			name = 'nexusSnapshot'
+			url = nexusSnapshotUrl
+			allowInsecureProtocol = true
+			credentials {
+				username = nexusUsername
+				password = nexusPassword
+			}
+			content {
+				includeGroupByRegex('cn\\.bjca\\.footstone\\.bpring(\\..+)?')
+			}
+		}
+	}
+	spring.mavenRepositoriesFor("${springFrameworkVersion}")
 }
 
 java {
