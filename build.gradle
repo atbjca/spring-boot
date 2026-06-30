@@ -59,6 +59,22 @@ allprojects {
 
 	configurations.all {
 		resolutionStrategy.cacheChangingModulesFor 0, "minutes"
+
+		resolutionStrategy.eachDependency { details ->
+			def requested = details.requested
+			if (requested.group == 'org.springframework' && requested.name.startsWith('spring-')) {
+				def newArtifactId = requested.name.replaceFirst(/^spring-/, "${forkArtifactPrefix}-")
+				details.useTarget("${forkGroupIdBase}:${newArtifactId}:${springFrameworkVersion}")
+			}
+			else if (requested.group == 'org.springframework.security'
+					&& requested.name == 'spring-security-oauth2-authorization-server') {
+				details.useTarget("${forkGroupIdBase}.security:${forkArtifactPrefix}-security-oauth2-authorization-server:${springAuthorizationServerVersion}")
+			}
+			else if (requested.group == 'org.springframework.security' && requested.name.startsWith('spring-security-')) {
+				def newArtifactId = requested.name.replaceFirst(/^spring-security-/, "${forkArtifactPrefix}-security-")
+				details.useTarget("${forkGroupIdBase}.security:${newArtifactId}:${springSecurityVersion}")
+			}
+		}
 	}
 }
 

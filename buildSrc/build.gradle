@@ -51,7 +51,6 @@ repositories {
 			}
 		}
 	}
-	spring.mavenRepositoriesFor("${springFrameworkVersion}")
 }
 
 java {
@@ -68,7 +67,7 @@ dependencies {
 	checkstyle("io.spring.javaformat:spring-javaformat-checkstyle:${javaFormatVersion}")
 
 	implementation(platform("com.fasterxml.jackson:jackson-bom:${jacksonVersion}"))
-	implementation(platform("org.springframework:spring-framework-bom:${springFrameworkVersion}"))
+	implementation(platform("${forkGroupIdBase}:${forkArtifactPrefix}-framework-bom:${springFrameworkVersion}"))
 	implementation("com.fasterxml.jackson.core:jackson-databind")
 	implementation("com.github.node-gradle:gradle-node-plugin:7.1.0")
 	implementation("com.gradle:develocity-gradle-plugin:4.2.2")
@@ -85,9 +84,9 @@ dependencies {
 	implementation("org.antora:gradle-antora-plugin:1.0.0")
 	implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
 	implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:${kotlinVersion}")
-	implementation("org.springframework:spring-context")
-	implementation("org.springframework:spring-core")
-	implementation("org.springframework:spring-web")
+	implementation("${forkGroupIdBase}:${forkArtifactPrefix}-context")
+	implementation("${forkGroupIdBase}:${forkArtifactPrefix}-core")
+	implementation("${forkGroupIdBase}:${forkArtifactPrefix}-web")
 	implementation("org.yaml:snakeyaml:${snakeYamlVersion}")
 
 	testImplementation(platform("org.junit:junit-bom:${junitJupiterVersion}"))
@@ -95,7 +94,7 @@ dependencies {
 	testImplementation("org.hamcrest:hamcrest:${hamcrestVersion}")
 	testImplementation("org.junit.jupiter:junit-jupiter")
 	testImplementation("org.mockito:mockito-core:${mockitoVersion}")
-	testImplementation("org.springframework:spring-test")
+	testImplementation("${forkGroupIdBase}:${forkArtifactPrefix}-test")
 
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

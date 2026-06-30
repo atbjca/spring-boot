@@ -2247,11 +2247,11 @@ bom {
 			releaseNotes("https://github.com/spring-projects/spring-amqp/releases/tag/v{version}")
 		}
 	}
-	library("Spring Authorization Server", "1.5.8") {
+	library("Spring Authorization Server", "${springAuthorizationServerVersion}") {
 		considerSnapshots()
-		group("org.springframework.security") {
+		group(forkGroupIdBase + ".security") {
 			modules = [
-					"spring-security-oauth2-authorization-server"
+					forkArtifactPrefix + "-security-oauth2-authorization-server"
 			]
 		}
 		links {
@@ -2301,8 +2301,8 @@ bom {
 			because "it exceeds our baseline"
 		}
 		considerSnapshots()
-		group("org.springframework") {
-			bom("spring-framework-bom")
+		group(forkGroupIdBase) {
+			bom(forkArtifactPrefix + "-framework-bom")
 		}
 		links {
 			site("https://spring.io/projects/spring-framework")
@@ -2452,10 +2452,10 @@ bom {
 			releaseNotes("https://github.com/spring-projects/spring-retry/releases/tag/v{version}")
 		}
 	}
-	library("Spring Security", "6.5.11") {
+	library("Spring Security", "${springSecurityVersion}") {
 		considerSnapshots()
-		group("org.springframework.security") {
-			bom("spring-security-bom")
+		group(forkGroupIdBase + ".security") {
+			bom(forkArtifactPrefix + "-security-bom")
 		}
 		links {
 			site("https://spring.io/projects/spring-security")
