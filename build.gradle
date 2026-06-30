@@ -118,6 +118,18 @@ allprojects {
 				def newArtifactId = requested.name.replaceFirst(/^spring-security-/, "${forkArtifactPrefix}-security-")
 				details.useTarget("${forkGroupIdBase}.security:${newArtifactId}:${springSecurityVersion}")
 			}
+
+			// 规则三：ch.qos.logback 组映射
+			// 将 ch.qos.logback:logback-{classic,core} 替换为
+			//   cn.bjca.footstone.bogback:bjca-footstone-bogback-{classic,core}:1.2.13-nes.patch.1
+			// Logback fork 仓库仅发布了 bjca-footstone-bogback-* 制品，
+			// 原始 ch.qos.logback 坐标在私有仓库中不存在，必须通过此规则透明替换。
+			else if (requested.group == 'ch.qos.logback') {
+				if (requested.name == 'logback-classic' || requested.name == 'logback-core') {
+					def artifactSuffix = requested.name.replace('logback-', '')
+					details.useTarget("cn.bjca.footstone.bogback:bjca-footstone-bogback-${artifactSuffix}:1.2.13-nes.patch.1")
+				}
+			}
 		}
 	}
 }

@@ -1,4 +1,4 @@
-.PHONY: clean install deploy build run tree help test test-feedback
+.PHONY: clean install deploy build run tree help test test-feedback setup-gradle
 
 help: ## 显示帮助信息
 	@echo ""
@@ -14,35 +14,42 @@ help: ## 显示帮助信息
 	@echo "  make build          - 编译打包（不安装、不发布）"
 	@echo "  make test           - Tier A 核心模块测试（spring-boot + spring-boot-test，承诺全绿）"
 	@echo "  make test-feedback  - Tier C 扩大反馈（--continue，含已知失败，详见 doc/TESTING.md）"
+	@echo "  make setup-gradle   - 安装并解压 LOCAL_GRADLE_DIR 下全部 gradle-*-zip 到 wrapper 缓存"
 	@echo ""
 	@echo "测试策略详见 doc/TESTING.md"
 	@echo ""
 
+# LOCAL_GRADLE_DIR: 本地 Gradle zip 所在目录，默认 ~/dev，可通过环境变量覆盖
+SETUP_GRADLE := ./scripts/setup-gradle-local.sh
+
+setup-gradle: ## 安装并解压 LOCAL_GRADLE_DIR 下全部 Gradle zip（默认 ~/dev）到 wrapper 缓存
+	@./scripts/setup-gradle-local.sh
+
 clean: ## 清理构建产物
 	./gradlew clean
 
-format: ## 格式化代码
+format: setup-gradle ## 格式化代码
 	./gradlew format
 
-build: clean format ## 编译打包
+build: setup-gradle clean format ## 编译打包
 	./gradlew build
 
-build-thin: clean format ## 编译打包 -x checkstyleNohttp
+build-thin: setup-gradle clean format ## 编译打包 -x checkstyleNohttp
 	./gradlew build -x test -x intTest -x checkstyleMain -x checkstyleTest -x asciidoctor -x javadoc
 
-install: clean ## 编译并安装到本地 Maven 仓库 # ./gradlew clean build publishToMavenLocal
+install: setup-gradle clean ## 编译并安装到本地 Maven 仓库 # ./gradlew clean build publishToMavenLocal
 	./gradlew publishToMavenLocal -x test
 
-deploy: clean ## 发布到 Nexus 私服
+deploy: setup-gradle clean ## 发布到 Nexus 私服
 	./gradlew publish -x test
 
 stop: ## 停止所有 Gradle Daemon ; 释放所有锁
 	./gradlew --stop
 
-tree: ## 查看依赖树
+tree: setup-gradle ## 查看依赖树
 	./gradlew dependencies --configuration compileClasspath
 
-projects: ## 查看有效的项目
+projects: setup-gradle ## 查看有效的项目
 	./gradlew projects
 
 # ----------------------------------------------------------------------------
@@ -57,7 +64,7 @@ projects: ## 查看有效的项目
 #
 # 策略与模块选择对齐 3.5 fork Phase 1；完整说明见 doc/TESTING.md
 # ----------------------------------------------------------------------------
-test: ## Tier A 核心模块测试（spring-boot + spring-boot-test）
+test: setup-gradle ## Tier A 核心模块测试（spring-boot + spring-boot-test）
 	./gradlew \
 		:spring-boot-project:spring-boot:test \
 		:spring-boot-project:spring-boot-test:test \
@@ -95,7 +102,7 @@ test: ## Tier A 核心模块测试（spring-boot + spring-boot-test）
 #   (E) 少量未定位：Liquibase / Quartz / Jersey* / WebTestClient 等
 #   (S) smoke-tests 需 H2/Kafka 等外部组件
 # ----------------------------------------------------------------------------
-test-feedback: ## Tier C 扩大反馈（--continue，含已知失败）
+test-feedback: setup-gradle ## Tier C 扩大反馈（--continue，含已知失败）
 	./gradlew test --continue \
 		-x :spring-boot-project:spring-boot-autoconfigure:test \
 		-x :spring-boot-project:spring-boot-autoconfigure:compileTestJava \
