@@ -30,7 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Stephane Nicoll
  */
-@ClassPathExclusions("spring-web*.jar")
+// FORK: spring-web 已重映射为 bjca-footstone-bpring-web，原 Ant 模式无法排除
+@ClassPathExclusions({ "spring-web*.jar", "bjca-footstone-bpring-web*.jar" })
 class SpringApplicationNoWebTests {
 
 	@Test

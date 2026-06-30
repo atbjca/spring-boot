@@ -28,7 +28,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Andy Wilkinson
  */
-@ClassPathExclusions({ "log4j-*.jar", "logback-*.jar" })
+// FORK: logback 已重映射为 bjca-footstone-bogback，原 Ant 模式无法排除
+@ClassPathExclusions({ "log4j-*.jar", "logback-*.jar", "bjca-footstone-bogback-*.jar" })
 class LogbackAndLog4J2ExcludedLoggingSystemTests {
 
 	@Test

@@ -44,7 +44,8 @@ class SpringBootTestContextHierarchyTests {
 
 	@Test
 	void contextLoads(CapturedOutput capturedOutput) {
-		assertThat(capturedOutput).containsOnlyOnce(":: Spring Boot ::");
+		// FORK: SpringBootBanner.SPRING_BOOT 已被改为 " :: Bpring Boot :: "
+		assertThat(capturedOutput).containsOnlyOnce(":: Bpring Boot ::");
 	}
 
 	@Configuration(proxyBeanMethods = false)

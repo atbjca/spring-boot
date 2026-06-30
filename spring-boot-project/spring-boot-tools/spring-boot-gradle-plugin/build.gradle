@@ -13,6 +13,20 @@ configurations {
 	documentation
 }
 
+// FORK: Gradle TestKit 通过 withPluginClasspath 重新打包测试 classpath 中的 JAR。
+// Jackson 2.14+ 含 module-info.class；2.21+ 为 Java 17 字节码——Gradle 6.8～7.6
+// 在 repackaging 阶段会失败（Unsupported class file major version 61 / ZipException）。
+// 与 buildSrc 策略一致：测试 classpath 锁定 Jackson 2.13.5，不影响运行时 BOM 版本。
+def testkitJacksonVersion = '2.13.5'
+configurations.testRuntimeClasspath {
+	resolutionStrategy {
+		force "com.fasterxml.jackson.core:jackson-core:${testkitJacksonVersion}"
+		force "com.fasterxml.jackson.core:jackson-databind:${testkitJacksonVersion}"
+		force "com.fasterxml.jackson.core:jackson-annotations:${testkitJacksonVersion}"
+		force "com.fasterxml.jackson.module:jackson-module-parameter-names:${testkitJacksonVersion}"
+	}
+}
+
 dependencies {
 	asciidoctorExtensions("io.spring.asciidoctor:spring-asciidoctor-extensions-section-ids")
 

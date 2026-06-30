@@ -33,7 +33,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Tobias Gesellchen
  * @author Stephane Nicoll
  */
-@ClassPathExclusions("spring-webflux*.jar")
+// FORK: spring-webflux 已重映射为 bjca-footstone-bpring-webflux，原 Ant 模式无法排除
+@ClassPathExclusions({ "spring-webflux*.jar", "bjca-footstone-bpring-webflux*.jar" })
 class WebTestClientContextCustomizerWithoutWebfluxIntegrationTests {
 
 	@Test

@@ -196,10 +196,10 @@ abstract class AbstractJsonParserTests {
 				AbstractJsonParserTests.class.getResourceAsStream("repeated-open-array.txt"), StandardCharsets.UTF_8);
 		assertThatExceptionOfType(JsonParseException.class).isThrownBy(() -> this.parser.parseList(input))
 			.havingCause()
-			// FORK: Jackson 2.15.4 -> 2.21.1 错误文案改为
-			// "Document nesting depth (N) exceeds the maximum allowed (M, from
-			// `StreamReadConstraints.getMaxNestingDepth()`)"
-			.withMessageContaining("nesting depth");
+			// FORK: Jackson 2.21 报 "nesting depth"；BasicJsonParser 报 "too deeply nested"
+			.satisfies((cause) -> assertThat(cause.getMessage()).satisfiesAnyOf(
+					(message) -> assertThat(message).containsIgnoringCase("nesting depth"),
+					(message) -> assertThat(message).containsIgnoringCase("too deeply nested")));
 	}
 
 	@Test // gh-31869

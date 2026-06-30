@@ -108,8 +108,14 @@ public class GradleBuild {
 	}
 
 	private List<File> pluginClasspath() {
-		return Arrays.asList(new File("bin/main"), new File("build/classes/java/main"),
-				new File("build/resources/main"), new File(pathOfJarContaining(LaunchScript.class)),
+		// FORK: 优先使用 Gradle 编译产物 build/classes/java/main。Eclipse 默认输出到 bin/main，
+		// 若 IDE 增量编译失败会留下含 "Unresolved compilation problem" 的 .class，TestKit 加载后
+		// 会在 bootJar 等任务运行时抛出 java.lang.Error（Assert cannot be resolved 等）。
+		File mainClasses = new File("build/classes/java/main");
+		if (!mainClasses.isDirectory()) {
+			mainClasses = new File("bin/main");
+		}
+		return Arrays.asList(mainClasses, new File("build/resources/main"), new File(pathOfJarContaining(LaunchScript.class)),
 				new File(pathOfJarContaining(ClassVisitor.class)),
 				new File(pathOfJarContaining(DependencyManagementPlugin.class)),
 				new File(pathOfJarContaining("org.jetbrains.kotlin.cli.common.PropertiesKt")),
@@ -221,7 +227,17 @@ public class GradleBuild {
 			gradleRunner.withDebug(true);
 		}
 		if (this.gradleVersion != null) {
-			gradleRunner.withGradleVersion(this.gradleVersion);
+			GradleDistributionLocator.ResolvedGradleDistribution distribution = GradleDistributionLocator
+				.resolve(this.gradleVersion);
+			if (distribution.hasInstallation()) {
+				gradleRunner.withGradleInstallation(distribution.getInstallation());
+			}
+			else if (distribution.hasDistribution()) {
+				gradleRunner.withGradleDistribution(distribution.getDistribution());
+			}
+			else {
+				gradleRunner.withGradleVersion(distribution.getVersion());
+			}
 		}
 		gradleRunner.withTestKitDir(getTestKitDir());
 		List<String> allArguments = new ArrayList<>();

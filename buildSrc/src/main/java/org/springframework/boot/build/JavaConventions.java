@@ -221,7 +221,7 @@ class JavaConventions {
 			}
 			else if (buildingWithJava8(project)) {
 				args.addAll(Arrays.asList("-Werror", "-Xlint:unchecked", "-Xlint:deprecation", "-Xlint:rawtypes",
-						"-Xlint:varargs"));
+						"-Xlint:varargs", "-Xlint:-classfile"));
 			}
 		});
 	}

@@ -202,3 +202,16 @@ toolchain {
 tasks.named('test').configure {
 	jvmArgs '--add-opens=java.base/java.net=ALL-UNNAMED'
 }
+
+// FORK: Log4j 2.21+ GraalVmProcessor 在 Java 8 + -Werror 下会输出缺少推荐选项的警告；
+// 依赖 JAR 中 ElementType.MODULE 会在注解处理阶段触发无法被 -Xlint:-classfile 抑制的警告。
+// 此处补齐 GraalVM 处理器参数，并在 Java 8 主机上对本模块 compileJava 关闭 -Werror。
+tasks.named('compileJava').configure {
+	options.compilerArgs += [
+		'-Alog4j.graalvm.groupId=org.apache.logging.log4j',
+		'-Alog4j.graalvm.artifactId=log4j-core'
+	]
+	if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
+		options.compilerArgs.removeAll { it == '-Werror' }
+	}
+}
