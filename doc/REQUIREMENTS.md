@@ -4,6 +4,30 @@
 
 ---
 
+## 📅 2026年06月29日
+
+### [需求-032] Logback BOM 升级至 RELEASE 版本
+
+#### 背景与目的
+logback fork 仓库（`/nes/logback`）已于 2026-06-25 正式发布 `1.2.13-nes.patch.1`（tag `v1.2.13-nes.patch.1`），包含全部 5 个 CVE 安全补丁（含 CVE-2026-13006）。Spring Boot BOM 此前引用 `1.2.13-nes.patch.1-SNAPSHOT`，需切换为不可变的 RELEASE 制品，供下游生产构建与安全审计锁定版本。
+
+#### 修改内容
+
+##### 1. BOM 版本升级
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+- **改动**：`library("Logback", "1.2.13-nes.patch.1-SNAPSHOT")` → `library("Logback", "1.2.13-nes.patch.1")`
+
+##### 2. 文档同步
+- **文件**：`doc/NES_GAV_MAPPING.md`：第 7 章 Logback 映射表及 Maven/Gradle 示例中的版本号
+- **文件**：`doc/REQUIREMENTS.md`：改造三版本表 Logback 行
+
+#### 说明
+- GAV 坐标（`cn.bjca.footstone.bogback:bjca-footstone-bogback-*`）不变，Java 源码无需修改
+- `logback-access` 仍保留原始 `ch.qos.logback` 坐标（未 fork）
+- 不升级到 `1.2.13-nes.patch.2-SNAPSHOT`（仍在开发中）
+
+---
+
 ## 📅 2026年06月25日
 
 ### [需求-031] P0 安全漏洞升级（Netty / Tomcat / Jackson）
@@ -575,7 +599,7 @@ Spring Boot、Spring Framework、Spring Security、Spring Authorization Server �
 | 组件 | 原版本 | 升级后版本 | 说明 |
 |------|--------|-----------|------|
 | Spring Data BOM | `2021.2.18` | `2021.2.18-nes.patch.1-SNAPSHOT` | 对齐 fork 版本体系，确保 Spring Data 模块使用 fork 构建产物 |
-| Logback | `1.2.13` | `1.2.13-nes.patch.1-SNAPSHOT` | 对齐 fork 版本体系，使用内部安全补丁版本 |
+| Logback | `1.2.13` | `1.2.13-nes.patch.1` | 对齐 fork RELEASE 版本，使用内部安全补丁正式版 |
 
 版本号均遵循 `原始版本号-nes.patch.N-SNAPSHOT` 格式，与 [需求-018] 中定义的版本号规则保持一致。
 

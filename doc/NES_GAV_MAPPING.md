@@ -460,8 +460,8 @@ implementation 'cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security
 
 | 原始 GroupId | 原始 ArtifactId | NES Fork GroupId | NES Fork ArtifactId | NES Fork Version |
 | :--- | :--- | :--- | :--- | :--- |
-| `ch.qos.logback` | `logback-core` | `cn.bjca.footstone.bogback` | `bjca-footstone-bogback-core` | `1.2.13-nes.patch.1-SNAPSHOT` |
-| `ch.qos.logback` | `logback-classic` | `cn.bjca.footstone.bogback` | `bjca-footstone-bogback-classic` | `1.2.13-nes.patch.1-SNAPSHOT` |
+| `ch.qos.logback` | `logback-core` | `cn.bjca.footstone.bogback` | `bjca-footstone-bogback-core` | `1.2.13-nes.patch.1` |
+| `ch.qos.logback` | `logback-classic` | `cn.bjca.footstone.bogback` | `bjca-footstone-bogback-classic` | `1.2.13-nes.patch.1` |
 
 > **说明**：`logback-access` 暂未 fork，如需使用请继续引用原始坐标 `ch.qos.logback:logback-access`。
 
@@ -471,20 +471,20 @@ implementation 'cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security
 <dependency>
   <groupId>cn.bjca.footstone.bogback</groupId>
   <artifactId>bjca-footstone-bogback-classic</artifactId>
-  <version>1.2.13-nes.patch.1-SNAPSHOT</version>
+  <version>1.2.13-nes.patch.1</version>
 </dependency>
 <dependency>
   <groupId>cn.bjca.footstone.bogback</groupId>
   <artifactId>bjca-footstone-bogback-core</artifactId>
-  <version>1.2.13-nes.patch.1-SNAPSHOT</version>
+  <version>1.2.13-nes.patch.1</version>
 </dependency>
 ```
 
 ### Gradle 依赖声明
 
 ```groovy
-implementation 'cn.bjca.footstone.bogback:bjca-footstone-bogback-classic:1.2.13-nes.patch.1-SNAPSHOT'
-implementation 'cn.bjca.footstone.bogback:bjca-footstone-bogback-core:1.2.13-nes.patch.1-SNAPSHOT'
+implementation 'cn.bjca.footstone.bogback:bjca-footstone-bogback-classic:1.2.13-nes.patch.1'
+implementation 'cn.bjca.footstone.bogback:bjca-footstone-bogback-core:1.2.13-nes.patch.1'
 ```
 
 > **提示**：引入 `bjca-footstone-bpring-boot-dependencies` BOM 后，版本号可省略，由 BOM 统一管理。Java 包名保持不变（`ch.qos.logback.*`），import 语句无需修改。

@@ -1216,7 +1216,7 @@ bom {
 			]
 		}
 	}
-	library("Logback", "1.2.13-nes.patch.1-SNAPSHOT") {
+	library("Logback", "1.2.13-nes.patch.1") {
 		group("cn.bjca.footstone.bogback") {
 			modules = [
 				"bjca-footstone-bogback-classic",
