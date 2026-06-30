@@ -8,6 +8,9 @@
 |------|-----|
 | `version` | `3.5.15-nes.patch.1-SNAPSHOT` |
 | `springBootVersion` | `3.5.15` |
+| `springFrameworkVersion` | `6.2.19-nes.patch.1-SNAPSHOT` |
+| `springSecurityVersion` | `6.5.11-nes.patch.1-SNAPSHOT` |
+| `springAuthorizationServerVersion` | `1.5.8-nes.patch.1-SNAPSHOT` |
 | `forkArtifactPrefix` | `bjca-footstone-bpring` |
 | `forkGroupIdBase` | `cn.bjca.footstone.bpring` |
 
@@ -23,14 +26,18 @@
 - **WHEN** 构建并运行 `SpringBootVersion.getVersion()`
 - **THEN** 返回值等于 `3.5.15`（不含 `-nes.patch` 后缀）
 
-### Requirement: Phase A 第三方依赖保持官方坐标
+### Requirement: Phase B 第三方依赖使用 fork 坐标
 
-Phase A 中 `springFrameworkVersion` MUST 保持官方值 `6.2.19`，Security BOM 版本 MUST 保持官方 `6.5.11`。Logback MUST 保持官方 `ch.qos.logback` 坐标（1.5.34），不替换为 bogback fork。
+Phase B 中 `springFrameworkVersion` MUST 更新为 `6.2.19-nes.patch.1-SNAPSHOT`，Security BOM 版本 MUST 更新为 `6.5.11-nes.patch.1-SNAPSHOT`（通过 `springSecurityVersion` 参数）。Logback MUST 保持官方 `ch.qos.logback` 坐标（1.5.34），不替换为 bogback fork。
 
-#### Scenario: Framework 依赖解析为官方 GAV
+#### Scenario: Framework 依赖解析为 fork GAV
 - **WHEN** 任意子模块声明 `org.springframework:spring-context`
-- **THEN** Gradle 解析结果为 `org.springframework:spring-context:6.2.19`
-- **AND** 不替换为 `cn.bjca.footstone.bpring:*`
+- **THEN** Gradle 解析结果为 `cn.bjca.footstone.bpring:bjca-footstone-bpring-context:6.2.19-nes.patch.1-SNAPSHOT`
+- **AND** 不保留 `org.springframework:spring-context:6.2.19`
+
+#### Scenario: Security 依赖解析为 fork GAV
+- **WHEN** 任意子模块声明 `org.springframework.security:spring-security-core`
+- **THEN** Gradle 解析结果为 `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-core:6.5.11-nes.patch.1-SNAPSHOT`
 
 #### Scenario: Logback 依赖保持官方
 - **WHEN** BOM 中声明 Logback library
