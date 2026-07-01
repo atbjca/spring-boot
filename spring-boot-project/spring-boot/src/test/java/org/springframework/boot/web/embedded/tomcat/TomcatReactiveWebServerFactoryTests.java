@@ -35,6 +35,7 @@ import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
@@ -44,8 +45,16 @@ import org.springframework.boot.web.reactive.server.AbstractReactiveWebServerFac
 import org.springframework.boot.web.server.PortInUseException;
 import org.springframework.boot.web.server.Shutdown;
 import org.springframework.boot.web.server.WebServerException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.HttpHandler;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -234,6 +243,35 @@ class TomcatReactiveWebServerFactoryTests extends AbstractReactiveWebServerFacto
 		assertThatExceptionOfType(WebServerException.class).isThrownBy(call);
 	}
 
+	@RepeatedTest(10)
+	void sslWithValidAlias() {
+		String keyStore = "classpath:test.jks";
+		String keyPassword = "password";
+		AbstractReactiveWebServerFactory factory = getFactory();
+		org.springframework.boot.web.server.Ssl ssl = new org.springframework.boot.web.server.Ssl();
+		ssl.setKeyStore(keyStore);
+		ssl.setKeyStorePassword("secret");
+		ssl.setKeyPassword(keyPassword);
+		ssl.setKeyAlias("test-alias");
+		factory.setSsl(ssl);
+		this.webServer = factory.getWebServer(new EchoHandler());
+		this.webServer.start();
+		ReactorClientHttpConnector connector = buildTrustAllSslConnector();
+		WebClient client = WebClient.builder()
+			.baseUrl("https://localhost:" + this.webServer.getPort())
+			.clientConnector(connector)
+			.build();
+
+		Mono<String> result = client.post()
+			.uri("/test")
+			.contentType(MediaType.TEXT_PLAIN)
+			.body(BodyInserters.fromValue("Hello World"))
+			.retrieve()
+			.bodyToMono(String.class);
+
+		StepVerifier.create(result).expectNext("Hello World").expectComplete().verify(Duration.ofSeconds(30));
+	}
+
 	@Test
 	void whenServerIsShuttingDownGracefullyThenNewConnectionsCannotBeMade() {
 		TomcatReactiveWebServerFactory factory = getFactory();
@@ -275,6 +313,19 @@ class TomcatReactiveWebServerFactoryTests extends AbstractReactiveWebServerFacto
 	private void handleExceptionCausedByBlockedPortOnPrimaryConnector(RuntimeException ex, int blockedPort) {
 		assertThat(ex).isInstanceOf(PortInUseException.class);
 		assertThat(((PortInUseException) ex).getPort()).isEqualTo(blockedPort);
+	}
+
+	static class EchoHandler implements HttpHandler {
+
+		EchoHandler() {
+		}
+
+		@Override
+		public Mono<Void> handle(ServerHttpRequest request, ServerHttpResponse response) {
+			response.setStatusCode(HttpStatus.OK);
+			return response.writeWith(request.getBody());
+		}
+
 	}
 
 }

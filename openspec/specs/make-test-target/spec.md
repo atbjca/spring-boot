@@ -92,12 +92,25 @@ TBD - created by archiving change add-makefile-test-target. Update Purpose after
 - 当前目标的范围（三个子树）；
 - 7 条 `-x` 排除项各自的单行原因；
 - 当前承诺的语义（"完整反馈面优先"，非"全绿"）；
-- 已知失败模块的归类提示（gradle-plugin DocumentationTests / E 类未定位 / smoke-tests 外部依赖）。
+- 已知 flaky/E 类失败的归类说明（E 类未定位 / smoke-tests 外部依赖 / 已定位但偶发的 flaky 如 `TomcatReactiveWebServerFactoryTests.sslWithValidAlias`）。
 
-#### Scenario: 阅读 Makefile 即可理解取舍
+#### Scenario: 阅读 Makefile 即可理解 E 类 flaky 现状
 - **WHEN** 任意贡献者在不查阅 design.md 的情况下阅读 `Makefile`
 - **THEN** 该贡献者能从 `test` 目标周围注释中获知范围、排除项与"已知红"清单的存在
+- **AND** 注释中明确列出 `TomcatReactiveWebServerFactoryTests.sslWithValidAlias` 为已知偶发 flaky（已通过 `@RepeatedTest(10)` 处置）
 - **AND** 注释中不再提及"D 类 JPMS"（该类失败已在 `add-jpms-open-for-tests` 中通过 `--add-opens=java.base/java.net=ALL-UNNAMED` 修复）
+- **AND** 注释中不再将 gradle-plugin DocumentationTests 列为已知失败（已通过 `NES_GRADLE_DISTRIBUTIONS_DIR` 配置解决）
+- **AND** 注释中列出 `spring-boot-smoke-test-kafka` 为 S 类——`testVanillaExchange` 因 fork Kafka 3.9.2 与 spring-kafka-test 2.9.x 不兼容已被 `@Disabled`，test-feedback 保持 -x 排除
+
+### Requirement: smoke-test-kafka @Disabled 处置
+
+`spring-boot-smoke-tests:spring-boot-smoke-test-kafka:test` 的 `SampleKafkaApplicationTests` 已被 `@Disabled` 标注，原因是 fork Kafka 升级到 3.9.2 后 `EmbeddedKafkaBroker`（spring-kafka-test 2.9.x）无法启动（`NoClassDefFoundError: MockTime/KafkaMetricsGroup`）。`test-feedback` 保持 `-x` 排除。根因修复需 Spring Boot 3.x + spring-kafka 3.x。
+
+#### Scenario: smoke-test-kafka 被 @Disabled 并保持排除
+- **WHEN** `make test-feedback` 执行
+- **AND** `spring-boot-smoke-test-kafka` 未被 `-x` 排除
+- **THEN** `SampleKafkaApplicationTests.testVanillaExchange` 被跳过（`@Disabled`）
+- **AND** `make test-feedback` 不因 kafka 而失败
 
 ### Requirement: spring-boot 模块 Test 任务获得 `--add-opens=java.base/java.net=ALL-UNNAMED`
 

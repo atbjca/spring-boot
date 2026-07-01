@@ -67,7 +67,7 @@ final class GradleDistributionLocator {
 			configured = System.getenv(LOCAL_DIR_ENV);
 		}
 		if (configured == null || configured.isEmpty()) {
-			configured = Paths.get(System.getProperty("user.home"), "dev").toString();
+			configured = Paths.get(System.getProperty("user.home"), ".gradle", "gradle-distributions").toString();
 		}
 		return Paths.get(configured);
 	}

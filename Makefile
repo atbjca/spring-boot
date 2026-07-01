@@ -26,31 +26,31 @@ setup-gradle: ## 安装并解压 LOCAL_GRADLE_DIR 下全部 Gradle zip（默认 
 	@./scripts/setup-gradle-local.sh
 
 clean: ## 清理构建产物
-	./gradlew clean
+	./gradlew -Dorg.gradle.caching=false clean
 
 format: setup-gradle ## 格式化代码
-	./gradlew format
+	./gradlew -Dorg.gradle.caching=false format
 
 build: setup-gradle clean format ## 编译打包
-	./gradlew build
+	./gradlew -Dorg.gradle.caching=false build
 
 build-thin: setup-gradle clean format ## 编译打包 -x checkstyleNohttp
-	./gradlew build -x test -x intTest -x checkstyleMain -x checkstyleTest -x asciidoctor -x javadoc
+	./gradlew -Dorg.gradle.caching=false build -x test -x intTest -x checkstyleMain -x checkstyleTest -x asciidoctor -x javadoc
 
-install: setup-gradle clean ## 编译并安装到本地 Maven 仓库 # ./gradlew clean build publishToMavenLocal
-	./gradlew publishToMavenLocal -x test
+install: setup-gradle clean ## 编译并安装到本地 Maven 仓库 # ./gradlew -Dorg.gradle.caching=false clean build publishToMavenLocal
+	./gradlew -Dorg.gradle.caching=false publishToMavenLocal -x test
 
 deploy: setup-gradle clean ## 发布到 Nexus 私服
-	./gradlew publish -x test
+	./gradlew -Dorg.gradle.caching=false publish -x test
 
 stop: ## 停止所有 Gradle Daemon ; 释放所有锁
-	./gradlew --stop
+	./gradlew -Dorg.gradle.caching=false --stop
 
 tree: setup-gradle ## 查看依赖树
-	./gradlew dependencies --configuration compileClasspath
+	./gradlew -Dorg.gradle.caching=false dependencies --configuration compileClasspath
 
 projects: setup-gradle ## 查看有效的项目
-	./gradlew projects
+	./gradlew -Dorg.gradle.caching=false projects
 
 # ----------------------------------------------------------------------------
 # test —— Tier A 核心测试入口（承诺全绿）
@@ -65,7 +65,7 @@ projects: setup-gradle ## 查看有效的项目
 # 策略与模块选择对齐 3.5 fork Phase 1；完整说明见 doc/TESTING.md
 # ----------------------------------------------------------------------------
 test: setup-gradle ## Tier A 核心模块测试（spring-boot + spring-boot-test）
-	./gradlew \
+	./gradlew -Dorg.gradle.caching=false \
 		:spring-boot-project:spring-boot:test \
 		:spring-boot-project:spring-boot-test:test \
 		-x checkstyleMain -x checkstyleTest
@@ -73,7 +73,7 @@ test: setup-gradle ## Tier A 核心模块测试（spring-boot + spring-boot-test
 # ----------------------------------------------------------------------------
 # test-feedback —— Tier C 扩大反馈面（非全绿承诺）
 #
-# 范围：./gradlew test --continue，覆盖三子树：
+# 范围：./gradlew -Dorg.gradle.caching=false test --continue，覆盖三子树：
 #   - spring-boot-project（核心库 + tools，除下方 -x）
 #   - spring-boot-tests/spring-boot-integration-tests
 #   - spring-boot-tests/spring-boot-smoke-tests（settings.gradle ignoredSmokeTests 已排除 18 个）
@@ -100,14 +100,16 @@ test: setup-gradle ## Tier A 核心模块测试（spring-boot + spring-boot-test
 # 已知失败分类（完整表见 doc/TESTING.md §8）：
 #   (G) gradle-plugin TestKit / DocumentationTests（修复中：Jackson、bin/main、离线 zip）
 #   (E) 少量未定位：Liquibase / Quartz / Jersey* / WebTestClient 等
-#   (S) smoke-tests 需 H2/Kafka 等外部组件
+#       sslWithValidAlias（已定位为 flaky，处置：@RepeatedTest(10)，非真实 SSL 缺陷）
+#   (S) smoke-tests 需外部组件：spring-boot-smoke-test-kafka（@Disabled — fork Kafka 3.9.2 与 spring-kafka-test 2.9.x 不兼容，EmbeddedKafka 无法启动）
 # ----------------------------------------------------------------------------
 test-feedback: setup-gradle ## Tier C 扩大反馈（--continue，含已知失败）
-	./gradlew test --continue \
+	./gradlew -Dorg.gradle.caching=false test --continue \
 		-x :spring-boot-project:spring-boot-autoconfigure:test \
 		-x :spring-boot-project:spring-boot-autoconfigure:compileTestJava \
 		-x :spring-boot-project:spring-boot-tools:spring-boot-buildpack-platform:test \
 		-x :spring-boot-tests:spring-boot-integration-tests:spring-boot-launch-script-tests:test \
 		-x :spring-boot-tests:spring-boot-integration-tests:spring-boot-loader-tests:test \
+		-x :spring-boot-tests:spring-boot-smoke-tests:spring-boot-smoke-test-kafka:test \
 		-x :spring-boot-system-tests:spring-boot-deployment-tests:test \
 		-x :spring-boot-system-tests:spring-boot-image-tests:test
