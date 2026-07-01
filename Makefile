@@ -1,8 +1,12 @@
-.PHONY: clean format build build-thin install deploy stop projects help test
+.PHONY: clean format build build-thin install deploy stop projects help test setup-gradle
+
+LOCAL_GRADLE_DIR ?= $(HOME)/dev
+SETUP_GRADLE := ./scripts/setup-gradle-local.sh
 
 help: ## 显示帮助信息
 	@echo ""
 	@echo "可用命令:"
+	@echo "  make setup-gradle - 安装并解压 $(LOCAL_GRADLE_DIR) 下全部 gradle-*-zip 到 wrapper 缓存"
 	@echo "  make clean      - 清理构建产物"
 	@echo "  make format     - 格式化代码"
 	@echo "  make build-thin - 编译打包（跳过 test、文档、部分 checkstyle），耗时约 30-60 分钟"
@@ -16,32 +20,31 @@ help: ## 显示帮助信息
 	@echo "测试策略详见 doc/TESTING.md"
 	@echo ""
 
-clean: ## 清理构建产物
+setup-gradle: ## 安装并解压 LOCAL_GRADLE_DIR 下全部 Gradle zip（默认 ~/dev）
+	LOCAL_GRADLE_DIR="$(LOCAL_GRADLE_DIR)" UNPACK=1 "$(SETUP_GRADLE)"
+
+clean: setup-gradle ## 清理构建产物
 	./gradlew clean
 
-format: ## 格式化代码
+format: setup-gradle ## 格式化代码
 	./gradlew format
 
-build: ## 全量 build（含 test，本地不推荐）
+build: setup-gradle ## 全量 build（含 test，本地不推荐）
 	./gradlew build
 
-build-thin: ## 编译打包，跳过 test / intTest / 文档 / 部分 checkstyle
-	./gradlew assemble -x test -x intTest -x checkstyleMain -x checkstyleTest \
-		-x :spring-boot-project:spring-boot-docs:assemble \
-		-x :spring-boot-project:spring-boot-tools:spring-boot-cli:assemble \
-		-x :spring-boot-system-tests:spring-boot-deployment-tests:assemble \
-		-x :spring-boot-system-tests:spring-boot-image-tests:assemble
+build-thin: setup-gradle ## 编译打包，跳过 test / intTest / 部分 checkstyle
+	./gradlew assemble -x test -x intTest -x checkstyleMain -x checkstyleTest
 
-install: ## 发布到本地 Maven 仓库
+install: setup-gradle ## 发布到本地 Maven 仓库
 	./gradlew publishToMavenLocal -x test
 
-deploy: ## 发布到 Nexus 私服
+deploy: setup-gradle ## 发布到 Nexus 私服
 	./gradlew publish -x test
 
 stop: ## 停止 Gradle Daemon
 	./gradlew --stop
 
-projects: ## 查看子项目列表
+projects: setup-gradle ## 查看子项目列表
 	./gradlew projects
 
 # ----------------------------------------------------------------------------
@@ -58,7 +61,7 @@ projects: ## 查看子项目列表
 # 定稿范围（Kafka starter 保留等）：见 doc/TESTING.md §10。
 # Tier B（make test-gate）待摸底后实施；当前 make test 仅为 Phase 1 过渡。
 # ----------------------------------------------------------------------------
-test: ## Phase 1 核心模块测试（spring-boot + spring-boot-test）
+test: setup-gradle ## Phase 1 核心模块测试（spring-boot + spring-boot-test）
 	./gradlew \
 		:spring-boot-project:spring-boot:test \
 		:spring-boot-project:spring-boot-test:test \

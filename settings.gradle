@@ -85,17 +85,21 @@ include "spring-boot-project:spring-boot-autoconfigure"
 include "spring-boot-project:spring-boot-dependencies"
 include "spring-boot-project:spring-boot-devtools"
 include "spring-boot-project:spring-boot-docker-compose"
-include "spring-boot-project:spring-boot-docs"
+// NES: 不发布
+// include "spring-boot-project:spring-boot-docs"
 include "spring-boot-project:spring-boot-parent"
 include "spring-boot-project:spring-boot-test"
 include "spring-boot-project:spring-boot-test-autoconfigure"
 include "spring-boot-project:spring-boot-testcontainers"
-include "spring-boot-project:spring-boot-tools:spring-boot-antlib"
+// NES: 不发布
+// include "spring-boot-project:spring-boot-tools:spring-boot-antlib"
 include "spring-boot-project:spring-boot-tools:spring-boot-autoconfigure-processor"
 include "spring-boot-project:spring-boot-tools:spring-boot-buildpack-platform"
-include "spring-boot-project:spring-boot-tools:spring-boot-cli"
+// NES: 不发布
+// include "spring-boot-project:spring-boot-tools:spring-boot-cli"
 include "spring-boot-project:spring-boot-tools:spring-boot-configuration-metadata"
-include "spring-boot-project:spring-boot-tools:spring-boot-configuration-metadata-changelog-generator"
+// NES: 不发布
+// include "spring-boot-project:spring-boot-tools:spring-boot-configuration-metadata-changelog-generator"
 include "spring-boot-project:spring-boot-tools:spring-boot-configuration-processor"
 include "spring-boot-project:spring-boot-tools:spring-boot-gradle-plugin"
 include "spring-boot-project:spring-boot-tools:spring-boot-gradle-test-support"
@@ -104,22 +108,83 @@ include "spring-boot-project:spring-boot-tools:spring-boot-loader"
 include "spring-boot-project:spring-boot-tools:spring-boot-loader-classic"
 include "spring-boot-project:spring-boot-tools:spring-boot-loader-tools"
 include "spring-boot-project:spring-boot-tools:spring-boot-maven-plugin"
-include "spring-boot-project:spring-boot-tools:spring-boot-properties-migrator"
+// NES: 不发布
+// include "spring-boot-project:spring-boot-tools:spring-boot-properties-migrator"
 include "spring-boot-project:spring-boot-tools:spring-boot-test-support"
 include "spring-boot-project:spring-boot-tools:spring-boot-test-support-docker"
-include "spring-boot-system-tests:spring-boot-deployment-tests"
-include "spring-boot-system-tests:spring-boot-image-tests"
+// NES: 需 Docker，不跑
+// include "spring-boot-system-tests:spring-boot-deployment-tests"
+// include "spring-boot-system-tests:spring-boot-image-tests"
 include "spring-boot-tests:spring-boot-integration-tests:spring-boot-configuration-processor-tests"
-include "spring-boot-tests:spring-boot-integration-tests:spring-boot-launch-script-tests"
-include "spring-boot-tests:spring-boot-integration-tests:spring-boot-loader-classic-tests"
-include "spring-boot-tests:spring-boot-integration-tests:spring-boot-loader-tests"
+// NES: 需特殊环境，不跑
+// include "spring-boot-tests:spring-boot-integration-tests:spring-boot-launch-script-tests"
+// include "spring-boot-tests:spring-boot-integration-tests:spring-boot-loader-classic-tests"
+// include "spring-boot-tests:spring-boot-integration-tests:spring-boot-loader-tests"
 include "spring-boot-tests:spring-boot-integration-tests:spring-boot-server-tests"
-include "spring-boot-tests:spring-boot-integration-tests:spring-boot-sni-tests"
+// NES: 需特殊环境，不跑
+// include "spring-boot-tests:spring-boot-integration-tests:spring-boot-sni-tests"
+
+def ignoredStarters = [
+	"spring-boot-starter-activemq",
+	"spring-boot-starter-amqp",
+	"spring-boot-starter-artemis",
+	"spring-boot-starter-pulsar",
+	"spring-boot-starter-pulsar-reactive",
+	"spring-boot-starter-data-cassandra",
+	"spring-boot-starter-data-cassandra-reactive",
+	"spring-boot-starter-data-couchbase",
+	"spring-boot-starter-data-couchbase-reactive",
+	"spring-boot-starter-data-neo4j",
+	"spring-boot-starter-data-r2dbc",
+	"spring-boot-starter-data-rest",
+	"spring-boot-starter-data-ldap",
+	"spring-boot-starter-graphql",
+	"spring-boot-starter-hateoas",
+	"spring-boot-starter-integration",
+	"spring-boot-starter-jersey",
+	"spring-boot-starter-jooq",
+	"spring-boot-starter-rsocket",
+] as Set
+
+def ignoredSmokeTests = [
+	"spring-boot-smoke-test-activemq",
+	"spring-boot-smoke-test-activemq-embedded",
+	"spring-boot-smoke-test-amqp",
+	"spring-boot-smoke-test-ant",
+	"spring-boot-smoke-test-cache",
+	"spring-boot-smoke-test-data-ldap",
+	"spring-boot-smoke-test-data-r2dbc",
+	"spring-boot-smoke-test-data-r2dbc-flyway",
+	"spring-boot-smoke-test-data-r2dbc-liquibase",
+	"spring-boot-smoke-test-data-rest",
+	"spring-boot-smoke-test-graphql",
+	"spring-boot-smoke-test-hateoas",
+	"spring-boot-smoke-test-integration",
+	"spring-boot-smoke-test-jersey",
+	"spring-boot-smoke-test-parent-context",
+	"spring-boot-smoke-test-rsocket",
+	"spring-boot-smoke-test-secure-jersey",
+	"spring-boot-smoke-test-artemis",
+	"spring-boot-smoke-test-pulsar",
+	"spring-boot-smoke-test-data-cassandra",
+	"spring-boot-smoke-test-data-couchbase",
+	"spring-boot-smoke-test-data-mongo",
+	"spring-boot-smoke-test-data-redis",
+	"spring-boot-smoke-test-data-elasticsearch",
+	"spring-boot-smoke-test-session-redis",
+	"spring-boot-smoke-test-session-mongo",
+	"spring-boot-smoke-test-session-webflux-redis",
+	"spring-boot-smoke-test-session-webflux-mongo",
+] as Set
 
 file("${rootDir}/spring-boot-project/spring-boot-starters").eachDirMatch(~/spring-boot-starter.*/) {
-	include "spring-boot-project:spring-boot-starters:${it.name}"
+	if (!ignoredStarters.contains(it.name)) {
+		include "spring-boot-project:spring-boot-starters:${it.name}"
+	}
 }
 
 file("${rootDir}/spring-boot-tests/spring-boot-smoke-tests").eachDirMatch(~/spring-boot-smoke-test.*/) {
-	include "spring-boot-tests:spring-boot-smoke-tests:${it.name}"
+	if (!ignoredSmokeTests.contains(it.name)) {
+		include "spring-boot-tests:spring-boot-smoke-tests:${it.name}"
+	}
 }
