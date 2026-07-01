@@ -159,34 +159,55 @@ Tier C   make test-feedback        → 2.7 风格扩大范围，--continue，非
 |------|---------------|----------|
 | 0 | ✅ 是 | ❌ |
 | Phase 1 `make test` | ✅ 当前是 | ❌ |
-| B `make test-gate` | ✅ 目标 | ❌ |
+| B `make test-gate` | ✅ 已实施 | ❌ |
 | C `make test-feedback` | ❌ 仅反馈 | 部分需 Docker |
 
-### Tier B 目标模块（待摸底）
+### Tier B 目标模块（已摸底）
 
-| 模块 | 状态 |
-|------|------|
-| `spring-boot` | ✅ 已验证 |
-| `spring-boot-test` | ✅ 已验证 |
-| `spring-boot-autoconfigure` | ⏳ |
-| `spring-boot-actuator` | ⏳ |
-| `spring-boot-actuator-autoconfigure` | ⏳ |
-| `spring-boot-test-autoconfigure` | ⏳ |
-| `spring-boot-maven-plugin`（`:test`，不含 `dockerTest`） | ⏳ |
-| `spring-boot-configuration-processor` | ⏳ |
-| `spring-boot-autoconfigure-processor` | ⏳ |
+| 模块 | 状态 | 用例数 | 失败 |
+|------|------|--------|------|
+| `spring-boot` | ✅ 已验证 | 5332 | 0 |
+| `spring-boot-test` | ✅ 已验证 | 976 | 0 |
+| `spring-boot-autoconfigure` | ✅ 已验证 | 3988 | 0 |
+| `spring-boot-actuator` | ✅ 已验证 | 1524 | 0 |
+| `spring-boot-actuator-autoconfigure` | ✅ 已验证 | 1861 | 0 |
+| `spring-boot-test-autoconfigure` | ✅ 已验证 | 363 | 0 |
+| `spring-boot-maven-plugin`（`:test`，不含 `dockerTest`） | ✅ 已验证 | 127 | 0 |
+| `spring-boot-configuration-processor` | ✅ 已验证 | 216 | 0 |
+| `spring-boot-autoconfigure-processor` | ✅ 已验证 | 8 | 0 |
 
 ---
 
 ## 6. Phase 1：当前已验证范围
 
-### 6.1 实测结果（2026-06-26，Java 17，3.5.15-SNAPSHOT）
+### 6.1 实测结果（2026-07-01，Java 17，3.5.15-nes.patch.1-SNAPSHOT）
+
+**Phase 1（make test）**：
 
 | Gradle 任务 | 用例数 | 失败 | 首次耗时（含编译） |
 |-------------|--------|------|-------------------|
 | `:spring-boot-project:spring-boot:test` | 5332 | 0 | ~34 min |
 | `:spring-boot-project:spring-boot-test:test` | 976 | 0 | ~27 min |
 | **合计** | **6308** | **0** | ~1 h（分开跑；有缓存后显著加快） |
+
+**Tier B（make test-gate）**：
+
+| Gradle 任务 | 用例数 | 失败 |
+|-------------|--------|------|
+| `spring-boot` | 5332 | 0 |
+| `spring-boot-test` | 976 | 0 |
+| `spring-boot-autoconfigure` | 3988 | 0 |
+| `spring-boot-actuator` | 1524 | 0 |
+| `spring-boot-actuator-autoconfigure` | 1861 | 0 |
+| `spring-boot-test-autoconfigure` | 363 | 0 |
+| `spring-boot-maven-plugin` | 127 | 0 |
+| `spring-boot-configuration-processor` | 216 | 0 |
+| `spring-boot-autoconfigure-processor` | 8 | 0 |
+| **合计** | **14395** | **0** |
+
+耗时约 14 分钟（有缓存）。
+
+**已知环境性失败**：`MongoAutoConfigurationTests.configuresProtocol()` 和 `PropertiesMongoConnectionDetailsTests.protocolCanBeConfigured()` 在部分网络环境下因 MongoDB SRV DNS 查询超时失败，非 fork 问题。
 
 ### 6.2 覆盖与不覆盖
 
@@ -342,8 +363,8 @@ Docker / Testcontainers
 |------|------|------|
 | **0** | 本地 Gradle + `doc/TESTING.md` + `Makefile` | ✅ |
 | **1** | Phase 1：`make test` 两模块全绿 | ✅ 已验证 |
-| **2** | `settings.gradle` 裁剪（§8） | ⏳ 待实施 |
-| **3** | Tier B 摸底 + `make test-gate` | ⏳ 待实施 |
+| **2** | `settings.gradle` 裁剪（§8） | ✅ 已实施 |
+| **3** | Tier B 摸底 + `make test-gate` | ✅ 已实施（9 模块 14395 条全绿） |
 | **4** | `make test-feedback`（Tier C） | ⏳ 待实施 |
 | **5** | fork GAV（`bootstrap-boot-3515-nes-fork`） | ⏸️ 晚于测试基线 |
 

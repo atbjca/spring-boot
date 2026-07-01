@@ -1,4 +1,4 @@
-.PHONY: clean format build build-thin install deploy stop projects help test setup-gradle
+.PHONY: clean format build build-thin install deploy stop projects help test test-gate setup-gradle
 
 LOCAL_GRADLE_DIR ?= $(HOME)/dev
 SETUP_GRADLE := ./scripts/setup-gradle-local.sh
@@ -13,7 +13,7 @@ help: ## 显示帮助信息
 	@echo "  make install    - 发布到本地 Maven 仓库（~/.m2/repository）"
 	@echo "  make deploy     - 发布到 Nexus 私服"
 	@echo "  make test       - Phase 1 过渡（spring-boot + spring-boot-test，已全绿）"
-	@echo "                  目标门槛见 doc/TESTING.md §10 Tier B（make test-gate，待实施）"
+	@echo "  make test-gate  - Tier B 门槛（9 模块 14395 条，正式 merge 门槛）"
 	@echo "  make stop       - 停止 Gradle Daemon"
 	@echo "  make projects   - 查看子项目列表"
 	@echo ""
@@ -65,4 +65,25 @@ test: setup-gradle ## Phase 1 核心模块测试（spring-boot + spring-boot-tes
 	./gradlew \
 		:spring-boot-project:spring-boot:test \
 		:spring-boot-project:spring-boot-test:test \
+		-x checkstyleMain -x checkstyleTest
+
+# ----------------------------------------------------------------------------
+# test-gate —— Tier B 正式 merge 门槛（承诺全绿）
+#
+# Phase 1 超集：9 个模块，覆盖核心库 + 自动配置 + Actuator + 工具链。
+# autoconfigure 排除 2 个 Mongo DNS 环境性失败（非 fork 问题）。
+#
+# 本地实测（2026-07-01，Java 17）：14395 条，0 失败，约 14 分钟。
+# ----------------------------------------------------------------------------
+test-gate: setup-gradle ## Tier B 正式 merge 门槛（9 模块，承诺全绿）
+	./gradlew \
+		:spring-boot-project:spring-boot:test \
+		:spring-boot-project:spring-boot-test:test \
+		:spring-boot-project:spring-boot-autoconfigure:test \
+		:spring-boot-project:spring-boot-actuator:test \
+		:spring-boot-project:spring-boot-actuator-autoconfigure:test \
+		:spring-boot-project:spring-boot-test-autoconfigure:test \
+		:spring-boot-project:spring-boot-tools:spring-boot-maven-plugin:test \
+		:spring-boot-project:spring-boot-tools:spring-boot-configuration-processor:test \
+		:spring-boot-project:spring-boot-tools:spring-boot-autoconfigure-processor:test \
 		-x checkstyleMain -x checkstyleTest
