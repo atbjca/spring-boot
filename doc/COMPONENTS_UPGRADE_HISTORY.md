@@ -7,6 +7,13 @@
 
 | 升级日期 | 组件名称 | 升级前版本 | 升级后版本 | 修复漏洞 / 原因 | 兼容性说明 |
 | :---: | :--- | :---: | :---: | :--- | :--- |
+| 2026-07-01 | `io.undertow:undertow-core` 等 | 2.2.31.Final | **2.2.39.Final** | CVE-2025-12543 (CVSS 9.6) Host header 验证绕过 | 同 2.2.x minor 线补丁，兼容 Java 8 |
+| 2026-07-01 | `org.thymeleaf:thymeleaf` 等 | 3.1.2.RELEASE | **3.1.5.RELEASE** | CVE-2026-40477, CVE-2026-40478, CVE-2026-41901 (CVSS 9.0 ×3) SSTI 模板注入 | 同 3.1.x minor 线补丁 |
+| 2026-07-01 | `org.apache.solr:solr-solrj` 等 | 8.11.2 | **8.11.4** | CVE-2024-45216 (CVSS 9.8) PKI 认证绕过 | 同 8.11.x minor 线补丁 |
+| 2026-07-01 | `org.apache.logging.log4j:*` | 2.25.3 | **2.25.4** | CVE-2026-34478, CVE-2026-34480 (CVSS 7.5) CRLF 注入 + XmlLayout 字符转义 | 补丁版本，Java 8 兼容 |
+| 2026-07-01 | `org.eclipse.jetty:jetty-bom` 等 | 9.4.57.v20241219 | **9.4.58.v20250814** | CVE-2025-5115 (CVSS 7.7) HTTP/2 资源耗尽 DoS | 9.4.x 最终安全发布（EOL 2026-01） |
+| 2026-07-01 | `org.glassfish.jersey:jersey-bom` 等 | 2.35 | **2.46** | CVE-2025-12383 (CVSS 7.4-9.4) SSL 竞态条件安全配置失效 | 同 2.x 主版本线；3.0+ 使用 jakarta.* 命名空间 |
+| 2026-06-30 | `org.liquibase:liquibase-core` 等 | 4.9.1 | **4.24.0** | 与 BOM 中 SnakeYAML 2.5 二进制不兼容 | Spring Boot 3.2 同款；支持 SnakeYAML 2.x，仍兼容 Java 8（5.0+ 需 Java 17） |
 | 2026-06-25 | `com.fasterxml.jackson.core:jackson-databind` 等 | 2.21.1 | **2.21.4** | CVE-2026-54513, CVE-2026-54512, CVE-2026-54516 等 | PTV / @JsonView 安全修复；`jackson-module-kotlin` 仍 strictly 2.16.2 |
 | 2026-06-25 | `tomcat-embed-core` 等 | 9.0.117 | **9.0.119** | CVE-2026-43515, CVE-2026-43512, CVE-2026-41293 等 | Tomcat 9.0.118 安全发布 + 9.0.119 最新稳定版 |
 | 2026-06-25 | `io.netty:netty-bom` 等 | 4.1.132.Final | **4.1.135.Final** | CVE-2026-42580, CVE-2026-42581, CVE-2026-50020, CVE-2026-47691 等 | 4.1.133 + 4.1.135 两轮安全发布合并 |

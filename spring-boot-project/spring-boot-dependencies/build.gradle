@@ -974,7 +974,7 @@ bom {
 			]
 		}
 	}
-	library("Jersey", "2.35") {
+	library("Jersey", "2.46") {
 		prohibit {
 			versionRange "[3.0.0-M1,)"
 			because "it uses the jakarta.* namespace"
@@ -1014,7 +1014,7 @@ bom {
 			]
 		}
 	}
-	library("Jetty", "9.4.57.v20241219") {
+	library("Jetty", "9.4.58.v20250814") {
 		prohibit {
 			versionRange "[10.0.0-alpha0,)"
 			because "it requires Java 11"
@@ -1197,7 +1197,9 @@ bom {
 			]
 		}
 	}
-	library("Liquibase", "4.9.1") {
+	// FORK: 4.9.1 与 BOM 中 SnakeYAML 2.5 不兼容（SafeConstructor 无参构造已移除）；
+	// 4.24.0 为 Spring Boot 3.2 同款，支持 SnakeYAML 2.x 且仍兼容 Java 8（5.0+ 需 Java 17）
+	library("Liquibase", "4.24.0") {
 		group("org.liquibase") {
 			modules = [
 				"liquibase-cdi",
@@ -1208,8 +1210,8 @@ bom {
 			]
 		}
 	}
-	// 2026-02-26: 升级到 2.25.3 以修复 CVE-2025-68161 漏洞并提升 Java 8 环境下的稳定性
-	library("Log4j2", "2.25.3") {
+	// 2026-07-01: 升级到 2.25.4 以修复 CVE-2026-34478 CRLF注入 + CVE-2026-34480 XmlLayout字符转义
+	library("Log4j2", "2.25.4") {
 		group("org.apache.logging.log4j") {
 			imports = [
 				"log4j-bom"
@@ -1739,7 +1741,7 @@ bom {
 			]
 		}
 	}
-	library("Solr", "8.11.2") {
+	library("Solr", "8.11.4") {
 		group("org.apache.solr") {
 			modules = [
 				"solr-analysis-extras",
@@ -2050,7 +2052,7 @@ bom {
 			]
 		}
 	}
-	library("Thymeleaf", "3.1.2.RELEASE") {
+	library("Thymeleaf", "3.1.5.RELEASE") {
 		group("org.thymeleaf") {
 			modules = [
 				"thymeleaf",
@@ -2118,7 +2120,7 @@ bom {
 			]
 		}
 	}
-	library("Undertow", "2.2.31.Final") {
+	library("Undertow", "2.2.39.Final") {
 		group("io.undertow") {
 			modules = [
 				"undertow-core",
