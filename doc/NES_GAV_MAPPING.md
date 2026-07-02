@@ -2,7 +2,7 @@
 
 ## Phase C（当前）
 
-在 Phase B 基础上，对仍使用官方 groupId 的 A 类生态组件（GraphQL、HATEOAS、Kafka、LDAP、Retry）在 BOM 中排除传递的 `org.springframework:*`，Framework 由 `resolutionStrategy` 提供 fork 坐标。
+在 Phase B 基础上，对仍使用官方 groupId 的 A 类生态组件在 BOM 中排除传递的 `org.springframework:*`，Framework 由 `resolutionStrategy` 提供 fork 坐标。
 
 | 组件 | 官方 groupId | Fork | BOM 排除 org.springframework |
 |------|-------------|------|------------------------------|
@@ -11,7 +11,12 @@
 | Spring Kafka | `org.springframework.kafka` | 官方 | ✅ |
 | Spring LDAP | `org.springframework.ldap` | 官方 | ✅ |
 | Spring Retry | `org.springframework.retry` | 官方 | ✅ |
-| Spring Data / Integration / Session 等 | 各官方 groupId | 官方 BOM import | ⏳ 待后续 change |
+| Spring AMQP | `org.springframework.amqp` | 官方 | ✅ bom→modules |
+| Spring Batch | `org.springframework.batch` | 官方 | ✅ bom→modules |
+| Spring WS | `org.springframework.ws` | 官方 | ✅ bom→modules（security 额外排除） |
+| Spring RESTDocs | `org.springframework.restdocs` | 官方 | ✅ bom→modules |
+| Spring Data / Integration / Session | 各官方 groupId | 官方 BOM import | ⏳ 待后续评估（2.7 也无 exclusion） |
+| Spring Pulsar | `org.springframework.pulsar` | 官方 BOM import | ⏳ 待后续评估（3.5 新增） |
 
 Logback 仍用官方 `ch.qos.logback:1.5.34`（不 fork bogback）。
 

@@ -2235,7 +2235,23 @@ bom {
 	library("Spring AMQP", "3.2.12") {
 		considerSnapshots()
 		group("org.springframework.amqp") {
-			bom("spring-amqp-bom")
+			modules = [
+				"spring-amqp" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-rabbit" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-rabbit-stream" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-rabbit-junit" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-rabbit-test" {
+					exclude group: "org.springframework", module: "*"
+				}
+			]
 		}
 		links {
 			site("https://spring.io/projects/spring-amqp")
@@ -2267,7 +2283,20 @@ bom {
 	library("Spring Batch", "5.2.6") {
 		considerSnapshots()
 		group("org.springframework.batch") {
-			bom("spring-batch-bom")
+			modules = [
+				"spring-batch-core" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-batch-infrastructure" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-batch-integration" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-batch-test" {
+					exclude group: "org.springframework", module: "*"
+				}
+			]
 		}
 		links {
 			site("https://spring.io/projects/spring-batch")
@@ -2449,7 +2478,21 @@ bom {
 	library("Spring RESTDocs", "3.0.6") {
 		considerSnapshots()
 		group("org.springframework.restdocs") {
-			bom("spring-restdocs-bom")
+			modules = [
+				"spring-restdocs-asciidoctor",
+				"spring-restdocs-core" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-restdocs-mockmvc" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-restdocs-restassured" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-restdocs-webtestclient" {
+					exclude group: "org.springframework", module: "*"
+				}
+			]
 		}
 		links {
 			site("https://spring.io/projects/spring-restdocs")
@@ -2518,7 +2561,24 @@ bom {
 	library("Spring WS", "4.1.4") {
 		considerSnapshots()
 		group("org.springframework.ws") {
-			bom("spring-ws-bom")
+			modules = [
+				"spring-ws-core" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-ws-security" {
+					exclude group: "org.springframework", module: "*"
+					exclude group: "org.springframework.security", module: "*"
+				},
+				"spring-ws-support" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-ws-test" {
+					exclude group: "org.springframework", module: "*"
+				},
+				"spring-xml" {
+					exclude group: "org.springframework", module: "*"
+				}
+			]
 		}
 		links("spring-webservices") {
 			site("https://spring.io/projects/spring-ws")
