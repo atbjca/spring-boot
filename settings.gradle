@@ -108,8 +108,7 @@ include "spring-boot-project:spring-boot-tools:spring-boot-loader"
 include "spring-boot-project:spring-boot-tools:spring-boot-loader-classic"
 include "spring-boot-project:spring-boot-tools:spring-boot-loader-tools"
 include "spring-boot-project:spring-boot-tools:spring-boot-maven-plugin"
-// NES: 不发布
-// include "spring-boot-project:spring-boot-tools:spring-boot-properties-migrator"
+include "spring-boot-project:spring-boot-tools:spring-boot-properties-migrator"
 include "spring-boot-project:spring-boot-tools:spring-boot-test-support"
 include "spring-boot-project:spring-boot-tools:spring-boot-test-support-docker"
 // NES: 需 Docker，不跑

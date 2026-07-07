@@ -1,26 +1,4 @@
-## Purpose
-
-Define how the Boot fork resolves dependencies from Nexus and publishes forked Maven artifacts to Nexus.
-
-## Requirements
-### Requirement: Nexus 仓库配置
-
-根 `build.gradle` 和 `settings.gradle`（pluginManagement）MUST 配置 Nexus 私服仓库，优先级高于 `mavenCentral()`。仓库 URL 和 credentials MUST 通过 `gradle.properties` 参数化：
-
-- `nexusPublicUrl`
-- `nexusSnapshotUrl`
-- `nexusReleaseUrl`
-- `nexusUsername` / `nexusPassword`
-
-credentials MUST NOT 以明文硬编码在版本控制的脚本中（可使用 `.gitignore` 的本地 `gradle.properties` 或环境变量）。
-
-#### Scenario: 依赖解析优先私服
-- **WHEN** Gradle 解析任意依赖
-- **THEN** repositories 列表中 Nexus 排在 `mavenCentral()` 之前
-
-#### Scenario: SNAPSHOT 发布到 snapshot 仓库
-- **WHEN** 项目 version 以 `-SNAPSHOT` 结尾并执行 `publish`
-- **THEN** 制品发布到 `nexusSnapshotUrl` 配置的仓库
+## MODIFIED Requirements
 
 ### Requirement: Maven 发布配置
 
