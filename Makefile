@@ -101,10 +101,11 @@ test: setup-gradle ## Tier A 核心模块测试（spring-boot + spring-boot-test
 #   (G) gradle-plugin TestKit / DocumentationTests（修复中：Jackson、bin/main、离线 zip）
 #   (E) 少量未定位：Liquibase / Quartz / Jersey* / WebTestClient 等
 #       sslWithValidAlias（已定位为 flaky，处置：@RepeatedTest(10)，非真实 SSL 缺陷）
+#       PrematureCloseException（reactor.netty 1.0.x + Servlet keep-alive 竞态，处置：CI=true 启用 TestRetry 自动重试 3 次）
 #   (S) smoke-tests 需外部组件：spring-boot-smoke-test-kafka（@Disabled — fork Kafka 3.9.2 与 spring-kafka-test 2.9.x 不兼容，EmbeddedKafka 无法启动）
 # ----------------------------------------------------------------------------
 test-feedback: setup-gradle ## Tier C 扩大反馈（--continue，含已知失败）
-	./gradlew -Dorg.gradle.caching=false test --continue \
+	CI=true ./gradlew -Dorg.gradle.caching=false test --continue \
 		-x :spring-boot-project:spring-boot-autoconfigure:test \
 		-x :spring-boot-project:spring-boot-autoconfigure:compileTestJava \
 		-x :spring-boot-project:spring-boot-tools:spring-boot-buildpack-platform:test \

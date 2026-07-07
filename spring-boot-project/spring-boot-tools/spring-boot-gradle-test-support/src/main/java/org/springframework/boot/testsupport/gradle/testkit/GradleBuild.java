@@ -46,7 +46,7 @@ import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.util.GradleVersion;
 import org.jetbrains.kotlin.gradle.model.KotlinProject;
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerPluginSupportPlugin;
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlugin;
+import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper;
 import org.jetbrains.kotlin.project.model.LanguageSettings;
 import org.tomlj.Toml;
 
@@ -115,15 +115,17 @@ public class GradleBuild {
 		if (!mainClasses.isDirectory()) {
 			mainClasses = new File("bin/main");
 		}
-		return Arrays.asList(mainClasses, new File("build/resources/main"), new File(pathOfJarContaining(LaunchScript.class)),
-				new File(pathOfJarContaining(ClassVisitor.class)),
+		return Arrays.asList(mainClasses, new File("build/resources/main"),
+				new File(pathOfJarContaining(LaunchScript.class)), new File(pathOfJarContaining(ClassVisitor.class)),
 				new File(pathOfJarContaining(DependencyManagementPlugin.class)),
 				new File(pathOfJarContaining("org.jetbrains.kotlin.cli.common.PropertiesKt")),
-				new File(pathOfJarContaining("org.jetbrains.kotlin.compilerRunner.KotlinLogger")),
-				new File(pathOfJarContaining(KotlinPlugin.class)), new File(pathOfJarContaining(KotlinProject.class)),
+				new File(pathOfJarContaining("org.jetbrains.kotlin.compilerRunner.CompilerEnvironment")),
+				new File(pathOfJarContaining(KotlinPluginWrapper.class)),
+				new File(pathOfJarContaining(KotlinProject.class)),
 				new File(pathOfJarContaining("org.jetbrains.kotlin.daemon.client.KotlinCompilerClient")),
 				new File(pathOfJarContaining(KotlinCompilerPluginSupportPlugin.class)),
 				new File(pathOfJarContaining(LanguageSettings.class)),
+				new File(pathOfJarContaining("org.jetbrains.kotlin.tooling.core.HasMutableExtras")),
 				new File(pathOfJarContaining(ArchiveEntry.class)), new File(pathOfJarContaining(BuildRequest.class)),
 				new File(pathOfJarContaining(HttpClientConnectionManager.class)),
 				new File(pathOfJarContaining(HttpRequest.class)), new File(pathOfJarContaining(Module.class)),

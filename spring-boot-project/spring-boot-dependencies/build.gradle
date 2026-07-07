@@ -452,7 +452,7 @@ bom {
 			]
 		}
 	}
-	library("Gson", "2.9.1") {
+	library("Gson", "2.12.1") {
 		group("com.google.code.gson") {
 			modules = [
 				"gson"
@@ -581,7 +581,7 @@ bom {
 			]
 		}
 	}
-	library("HttpClient5", "5.1.4") {
+	library("HttpClient5", "5.6.1") {
 		group("org.apache.httpcomponents.client5") {
 			modules = [
 				"httpclient5",
@@ -599,7 +599,7 @@ bom {
 			]
 		}
 	}
-	library("HttpCore5", "5.1.5") {
+	library("HttpCore5", "5.4") {
 		group("org.apache.httpcomponents.core5") {
 			modules = [
 				"httpcore5",
@@ -1084,7 +1084,7 @@ bom {
 			]
 		}
 	}
-	library("Json-smart", "2.4.11") {
+	library("Json-smart", "2.5.2") {
 		group("net.minidev") {
 			modules = [
 				"json-smart"
@@ -1448,7 +1448,7 @@ bom {
 			]
 		}
 	}
-	library("OkHttp", "4.9.3") {
+	library("OkHttp", "4.12.0") {
 		group("com.squareup.okhttp3") {
 			imports = [
 				"okhttp-bom"
@@ -1531,7 +1531,7 @@ bom {
 			]
 		}
 	}
-	library("Reactor Bom", "2020.0.38") {
+	library("Reactor Bom", "2020.0.47") {
 		considerSnapshots()
 		calendarName = "Reactor"
 		group("io.projectreactor") {
@@ -2034,7 +2034,7 @@ bom {
 			]
 		}
 	}
-	library("SQLite JDBC", "3.36.0.3") {
+	library("SQLite JDBC", "3.41.2.2") {
 		group("org.xerial") {
 			modules = [
 				"sqlite-jdbc"
@@ -2171,19 +2171,8 @@ bom {
 	}
 }
 
-// jackson-module-kotlin 2.17+ 使用 Kotlin 1.7+ 编译，与项目 Kotlin 1.6.21 不兼容。
-// 使用 strictly 约束将其固定到 2.16.2（最后一个使用 Kotlin 1.6.21 编译的版本），
-// 覆盖 jackson-bom 的版本管理，其余 Jackson 模块跟随 gradle.properties 中的 jacksonVersion 不变。
-dependencies {
-	constraints {
-		api("com.fasterxml.jackson.module:jackson-module-kotlin") {
-			version {
-				strictly "2.16.2"
-			}
-			because "jackson-module-kotlin 2.17+ 使用 Kotlin 1.7+ 编译，与项目 Kotlin 1.6.21 二进制不兼容"
-		}
-	}
-}
+// jackson-module-kotlin 2.17+ 需 Kotlin 1.7+，本项目已升级至 Kotlin 1.9.22，
+// 现已无约束，jackson-module-kotlin 由 jackson-bom 跟随 jacksonVersion=2.21.4 统一管理。
 
 generateMetadataFileForMavenPublication {
 	enabled = false

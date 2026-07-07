@@ -36,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Andy Wilkinson
  */
-@GradleCompatibility
+@GradleCompatibility(versionsGreaterThanOrEqualTo = "7.5", versionsLessThan = "8.0")
 class KotlinPluginActionIntegrationTests {
 
 	GradleBuild gradleBuild;
@@ -85,13 +85,9 @@ class KotlinPluginActionIntegrationTests {
 		if (GradleVersion.version(this.gradleBuild.getGradleVersion()).compareTo(GradleVersion.version("7.3.3")) < 0) {
 			assertThat(configured).containsExactly("help");
 		}
-		else if (GradleVersion.version(this.gradleBuild.getGradleVersion())
-			.compareTo(GradleVersion.version("8.3")) < 0) {
-			assertThat(configured).containsExactlyInAnyOrder("help", "clean", "compileKotlin", "compileTestKotlin");
-		}
 		else {
-			assertThat(configured).containsExactlyInAnyOrder("help", "clean", "compileJava", "compileKotlin",
-					"compileTestKotlin");
+			// Kotlin 1.9.22 改善了任务配置回避，compileKotlin/compileTestKotlin 不再被立即配置
+			assertThat(configured).containsExactlyInAnyOrder("help", "clean");
 		}
 	}
 
