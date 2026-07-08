@@ -7,6 +7,7 @@
 
 | 升级日期 | 组件名称 | 升级前版本 | 升级后版本 | 修复漏洞 / 原因 | 兼容性说明 |
 | :---: | :--- | :---: | :---: | :--- | :--- |
+| 2026-07-08 | `com.fasterxml.jackson.core:jackson-databind` 等 | 2.21.4 | **2.21.5** | CVE-2026-54515（大小写不敏感绑定重开 `@JsonIgnoreProperties` 忽略字段，mass-assignment）— 该 CVE 未随 2.21.4 修复，backport 至 2.21.5 | 2.21.x 同 minor 线安全补丁，API 兼容，Java 8 兼容 |
 | 2026-07-02 | `org.jetbrains.kotlin:*` | 1.6.21 | **1.9.22** | 让 OkHttp 4.12 / jackson-module-kotlin 2.21 携带的 Kotlin metadata（1.8/1.9）能被 fork 构建接受；配套 jackson-module-kotlin 从 `strictly 2.16.2` 恢复由 jackson-bom 统一管理 | Kotlin `languageVersion`/`apiVersion` 维持在 `1.6`（Kotlin 1.9 编译器仍支持）；源码零改动 |
 | 2026-07-02 | `org.xerial:sqlite-jdbc` | 3.36.0.3 | **3.41.2.2** | CVE-2023-32697 (CVSS 8.8) JDBC URL RCE | 测试依赖；Java 8 兼容 |
 | 2026-07-02 | `net.minidev:json-smart` | 2.4.11 | **2.5.2** | CVE-2023-1370 (CVSS 7.5) 深层嵌套 JSON 栈溢出 DoS | 跨 minor 升级 |
@@ -39,11 +40,11 @@
 
 ## 技术决策说明
 
-### Jackson 版本策略（当前 2.21.4）
-- 项目已于 [需求-027] 将 Jackson 从 2.15.4 升级至 2.21.x，并于 [需求-031] 跟进至 **2.21.4**
+### Jackson 版本策略（当前 2.21.5）
+- 项目已于 [需求-027] 将 Jackson 从 2.15.4 升级至 2.21.x，于 [需求-031] 跟进至 2.21.4，并于 [需求-033] 升至 **2.21.5**（补 CVE-2026-54515）
 - Jackson **2.16+** 的 BOM 会传递 `javax.xml.bind:jaxb-api`，已在 BOM 层 exclude + Gradle 全局 exclude 处理
-- `jackson-module-kotlin` 随 `jacksonVersion=2.21.4` 由 jackson-bom 统一管理（fork Kotlin 基线已升至 1.9.22，满足 jackson-module-kotlin 2.17+ 的 Kotlin 1.7+ 要求）
-- 小版本升级（2.21.1 → 2.21.4）为安全补丁，API 兼容，无需源码改动
+- `jackson-module-kotlin` 随 `jacksonVersion=2.21.5` 由 jackson-bom 统一管理（fork Kotlin 基线已升至 1.9.22，满足 jackson-module-kotlin 2.17+ 的 Kotlin 1.7+ 要求）
+- 小版本升级（2.21.1 → 2.21.4 → 2.21.5）均为安全补丁，API 兼容，无需源码改动
 
 ### Spring Framework 版本上限（5.3.39）
 - 5.3.40 及以后为 Spring 商业支持专属版本，**未发布至 Maven Central**

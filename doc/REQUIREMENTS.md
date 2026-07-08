@@ -4,6 +4,62 @@
 
 ---
 
+## 📅 2026年07月08日
+
+### [需求-033] Jackson BOM 升级至 2.21.5（CVE-2026-54515 补丁）
+
+#### 背景与目的
+[需求-031] 于 2026-06-25 将 Jackson 升至 **2.21.4**，覆盖了 2026 年 6 月同批披露的 7 个 jackson-databind CVE 中的 6 个（CVE-2026-54512/54513/54514/54516/54517/54518）。但其中 **CVE-2026-54515**（大小写不敏感绑定重开 `@JsonIgnoreProperties` 忽略字段，mass-assignment）因引入范围更广（2.8.0 起），未随 2.21.4 修复，而是 backport 至 **2.18.9 / 2.21.5 / 3.1.4**（见 jackson-databind#6041）。本次自 2.21.4 升至 **2.21.5**，闭环该批 CVE 的最后一个缺口，并补齐台账（[需求-031] 当时仅归档了 512/513/516 三个 CVE 文档）。
+
+#### 修改内容
+
+##### 1. BOM 版本属性升级
+- **文件**：`gradle.properties`
+    - `jacksonVersion=2.21.4` → `jacksonVersion=2.21.5`
+    - BOM 管理：单一版本变更经 `jackson-bom` 覆盖全部 Jackson 子模块
+
+##### 2. 构建注释泛化
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+    - `jackson-module-kotlin` 注释中硬编码的 `jacksonVersion=2.21.4` 改为泛化表述 `jacksonVersion`，避免后续升级遗漏维护
+
+##### 3. CVE 文档归档
+- **新建**（补齐 2.21.5 及 [需求-031] 遗漏的 2.21.4 CVE）：
+    - `doc/CVE/CVE-2026-54515.md` — 大小写不敏感绑定重开被忽略字段（**2.21.5 修复**，本次核心动因）
+    - `doc/CVE/CVE-2026-54514.md` — InetSocketAddress 反序列化触发 DNS 解析（SSRF，2.21.4 已修，补台账）
+    - `doc/CVE/CVE-2026-54517.md` — @JsonView 对 setterless 创建者属性失效（2.21.4 已修，补台账）
+    - `doc/CVE/CVE-2026-54518.md` — @JsonView 对 @JsonUnwrapped 创建者参数失效（2.21.4 已修，补台账）
+
+##### 4. 升级历史与漏洞报告同步
+- **文件**：`doc/COMPONENTS_UPGRADE_HISTORY.md`
+    - 追加 2.21.4 → 2.21.5 升级记录；「Jackson 版本策略」小节版本号更新为 2.21.5
+- **文件**：`doc/VULNERABILITY_REPORT.md`
+    - 补 CVE-2026-54514/54515/54517/54518 四个状态行；已修复计数 42 → 46
+
+#### CVE 修复覆盖摘要
+
+| CVE | 漏洞类型 | CVSS | 修复版本 | 说明 |
+|-----|---------|:----:|---------|------|
+| CVE-2026-54515 | 大小写不敏感绑定重开被忽略字段（mass-assignment） | 5.3 | **2.21.5** | 本次升级核心动因 |
+| CVE-2026-54514 | InetSocketAddress 反序列化触发 DNS（SSRF） | 5.3 | 2.21.4 | 2.21.4 已修，本次补台账 |
+| CVE-2026-54517 | @JsonView 对 setterless 创建者属性失效 | 5.3 | 2.21.4 | 2.21.4 已修，本次补台账 |
+| CVE-2026-54518 | @JsonView 对 @JsonUnwrapped 创建者参数失效 | 6.5 | 2.21.4 | 2.21.4 已修，本次补台账 |
+
+#### 兼容性说明
+- Jackson 2.21.5 为 2.21.x 同 minor 线安全补丁，纯安全修复，无 API 变更，保持 Java 8 兼容
+- `jackson-module-kotlin` 随 `jacksonVersion=2.21.5` 由 jackson-bom 统一管理（fork Kotlin 基线已于 2026-07-02 升至 1.9.22，满足 2.17+ 的 Kotlin 1.7+ 要求，已无 strictly 约束）
+- buildSrc / spring-boot-gradle-plugin 测试 classpath 仍锁定 Jackson **2.13.5**（构建期隔离，规避 `module-info.class`），与运行时 BOM 版本无关，不受本次升级影响
+- 构建验证：`make clean test`（Tier A：spring-boot + spring-boot-test）+ `make clean build-thin` 均 BUILD SUCCESSFUL（2026-07-08）
+
+#### 涉及文件
+- `gradle.properties`
+- `spring-boot-project/spring-boot-dependencies/build.gradle`
+- `doc/REQUIREMENTS.md`
+- `doc/COMPONENTS_UPGRADE_HISTORY.md`
+- `doc/VULNERABILITY_REPORT.md`
+- `doc/CVE/CVE-2026-54514.md`、`CVE-2026-54515.md`、`CVE-2026-54517.md`、`CVE-2026-54518.md`（新建 4 个）
+
+---
+
 ## 📅 2026年06月29日
 
 ### [需求-032] Logback BOM 升级至 RELEASE 版本

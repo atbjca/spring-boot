@@ -2171,7 +2171,7 @@ bom {
 }
 
 // jackson-module-kotlin 2.17+ 需 Kotlin 1.7+，本项目已升级至 Kotlin 1.9.22，
-// 现已无约束，jackson-module-kotlin 由 jackson-bom 跟随 jacksonVersion=2.21.4 统一管理。
+// 现已无约束，jackson-module-kotlin 由 jackson-bom 跟随 jacksonVersion 统一管理。
 
 generateMetadataFileForMavenPublication {
 	enabled = false
