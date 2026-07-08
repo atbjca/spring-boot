@@ -120,7 +120,18 @@ allprojects {
 				details.useTarget("${forkGroupIdBase}.security:${newArtifactId}:${springSecurityVersion}")
 			}
 
-			// 规则三：ch.qos.logback 组映射
+			// 规则三：org.springframework.kafka 组映射
+			// 将 org.springframework.kafka:spring-kafka{,-test} 替换为
+			//   cn.bjca.footstone.bpring.kafka:spring-kafka{,-test}:2.9.13-nes.patch.1-SNAPSHOT
+			// Spring Kafka NES 分支当前仅更换 groupId 和版本号，artifactId 仍保持
+			// spring-kafka / spring-kafka-test。
+			else if (requested.group == 'org.springframework.kafka') {
+				if (requested.name == 'spring-kafka' || requested.name == 'spring-kafka-test') {
+					details.useTarget("cn.bjca.footstone.bpring.kafka:${requested.name}:2.9.13-nes.patch.1-SNAPSHOT")
+				}
+			}
+
+			// 规则四：ch.qos.logback 组映射
 			// 将 ch.qos.logback:logback-{classic,core} 替换为
 			//   cn.bjca.footstone.bogback:bjca-footstone-bogback-{classic,core}:1.2.13-nes.patch.1
 			// Logback fork 仓库仅发布了 bjca-footstone-bogback-* 制品，

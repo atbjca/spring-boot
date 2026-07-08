@@ -1,6 +1,6 @@
 # Spring Boot GAV 映射全选清单 (Comprehensive Artifact Mapping)
 
-本文件记录了本项目所有 fork 组件的原始官方 GAV 坐标与自定义 GAV 坐标之间的完整映射关系，涵盖 Spring Boot、Spring Framework、Spring Security 三大组件系列。
+本文件记录了本项目所有 fork 组件的原始官方 GAV 坐标与自定义 GAV 坐标之间的完整映射关系，涵盖 Spring Boot、Spring Framework、Spring Security、Spring Kafka 等组件系列。
 
 > **全局属性**
 > - **GroupId**: `cn.bjca.footstone.bpring.boot`
@@ -219,6 +219,25 @@
 | `o.s.security:spring-security-oauth2-resource-server` | `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-oauth2-resource-server` |
 | `o.s.security:spring-security-saml2-service-provider` | `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-saml2-service-provider` |
 
+---
+
+## 7. Spring Kafka NES 模块映射
+
+Spring Kafka NES 分支当前采用 **GroupId 去特征化 + 版本 NES 化**，ArtifactId 保持 upstream 名称不变。
+
+> **映射方式**：根 `build.gradle` 的 `resolutionStrategy.eachDependency` 会在本仓库构建期将 `org.springframework.kafka` 组透明替换为 `cn.bjca.footstone.bpring.kafka`。
+>
+> **版本管理**：`spring-boot-dependencies` BOM 直接管理以下 NES 坐标。
+
+| 原始坐标 | NES 坐标 |
+| :--- | :--- |
+| `org.springframework.kafka:spring-kafka` | `cn.bjca.footstone.bpring.kafka:spring-kafka` |
+| `org.springframework.kafka:spring-kafka-test` | `cn.bjca.footstone.bpring.kafka:spring-kafka-test` |
+
+**版本：** `2.9.13-nes.patch.1-SNAPSHOT`
+
+> **注意：** 当前私服中未发布 `bjca-footstone-bpring-kafka-bom`，也未发布 `bjca-footstone-bpring-kafka` / `bjca-footstone-bpring-kafka-test` artifactId。下游应使用上表中的实际坐标。
+
 ### 6.3 扩展模块
 
 | 原始坐标 | Fork 坐标 |
@@ -250,7 +269,7 @@
 
 ---
 
-## 7. 自动映射机制说明
+## 8. 自动映射机制说明
 
 ### 7.1 配置单点管理（gradle.properties）
 
@@ -347,7 +366,7 @@ dependencyManagement {
 
 ---
 
-## 8. 兼容关系链
+## 9. 兼容关系链
 
 ```
 Spring Boot 2.7.18 (fork: 2.7.18-nes.patch.1-SNAPSHOT)

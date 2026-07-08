@@ -1,8 +1,5 @@
-# make-test-target Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change add-makefile-test-target. Update Purpose after archive.
-## Requirements
 ### Requirement: Makefile 暴露 `test` 目标
 
 根目录 `Makefile` SHALL 提供名为 `test` 的目标，作为本仓库日常测试入口。该目标 MUST 被声明为 `.PHONY`，并 MUST 先执行本地 Gradle 分发包准备流程。
@@ -37,25 +34,6 @@ TBD - created by archiving change add-makefile-test-target. Update Purpose after
 - **THEN** 调用过程中调度 `:spring-boot-project:spring-boot:test`
 - **AND** 调用过程中调度 `:spring-boot-project:spring-boot-test:test`
 
-### Requirement: 修复 fork 责任范围内的测试代码
-
-对以下 3 个测试文件 MUST 完成调整以适配 fork 当前的源码 / 依赖状态。所有调整只动测试代码，不动 `src/main/java` 下任何文件。每处改动 MUST 附 `// FORK:` 形式的注释说明原因。
-
-#### Scenario: BannerTests 适配 fork 修改后的 SpringBootBanner
-- **WHEN** `:spring-boot-project:spring-boot:test` 调度 `BannerTests.testDefaultBanner` 与 `testDefaultBannerInLog`
-- **THEN** 两条用例均通过
-- **AND** 测试断言中预期字符串包含 `:: Bpring Boot ::`（不再是 `:: Spring Boot ::`）
-
-#### Scenario: SpringBootVersionTests 适配 fork 版本号策略
-- **WHEN** `:spring-boot-project:spring-boot:test` 调度 `SpringBootVersionTests.getVersionShouldReturnVersionMatchingGradleProperties`
-- **THEN** 该用例通过
-- **AND** 断言形态为"前缀匹配"或等价宽松断言，能同时容纳 `2.7.18` 与 `2.7.18-nes.patch.1-SNAPSHOT` 两种取值
-
-#### Scenario: JacksonJsonParserTests 适配 Jackson 2.21.1 错误消息文案
-- **WHEN** `:spring-boot-project:spring-boot:test` 调度 `JacksonJsonParserTests.listWithRepeatedOpenArray`
-- **THEN** 该用例通过
-- **AND** `AbstractJsonParserTests` 中的异常消息断言不再依赖 `"too deeply nested"` 字面量
-
 ### Requirement: Makefile 内自描述
 
 `Makefile` 中 `test` 目标的紧邻注释 MUST 说明：
@@ -84,25 +62,3 @@ TBD - created by archiving change add-makefile-test-target. Update Purpose after
 #### Scenario: test-feedback 覆盖 Kafka smoke
 - **WHEN** 执行 `make -n test-feedback`
 - **THEN** 展开的命令中不包含 `-x :spring-boot-tests:spring-boot-smoke-tests:spring-boot-smoke-test-kafka:test`
-
-### Requirement: spring-boot 模块 Test 任务获得 `--add-opens=java.base/java.net=ALL-UNNAMED`
-
-`spring-boot-project/spring-boot/build.gradle` MUST 保证：通过 `./gradlew test`（不传 `-PtoolchainVersion`）调度的 `:spring-boot-project:spring-boot:test` 任务，其 JVM 启动参数中包含 `--add-opens=java.base/java.net=ALL-UNNAMED`。
-
-#### Scenario: 默认 `./gradlew test` 启动 JVM 含 opens 参数
-- **WHEN** 在 spring-boot-project/spring-boot 目录下执行 `./gradlew test --info` 或 `make test`
-- **AND** 不传 `-PtoolchainVersion` 任何属性
-- **THEN** Gradle Test Executor 进程的 JVM 命令行包含 `--add-opens=java.base/java.net=ALL-UNNAMED`
-- **AND** `DirtiesUrlFactoriesExtension` 通过反射设置 `URL.factory` 字段时不再抛出 `InaccessibleObjectException`
-
-#### Scenario: `*ServletWebServerFactoryTests` 整组通过
-- **WHEN** `make test` 调度 `:spring-boot-project:spring-boot:test` 子项目
-- **THEN** `org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactoryTests`、`TomcatReactiveWebServerFactoryTests`、`SslConnectorCustomizerTests`、`TomcatEmbeddedWebappClassLoaderTests`、`TldPatternsTests` 全部用例通过
-- **AND** `org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactoryTests`、`Jetty10ServletWebServerFactoryTests` 全部用例通过
-- **AND** `org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactoryTests` 全部用例通过
-
-#### Scenario: 兼容 `-PtoolchainVersion` 场景
-- **WHEN** 执行 `./gradlew :spring-boot-project:spring-boot:test -PtoolchainVersion=17`
-- **THEN** Test 任务 JVM 仍含 `--add-opens=java.base/java.net=ALL-UNNAMED`
-- **AND** 不因 `--add-opens` 参数被重复添加而启动失败
-

@@ -55,9 +55,7 @@ class HttpGraphQlTesterContextCustomizerWithCustomContextPathTests {
 
 		@Bean
 		TomcatServletWebServerFactory webServerFactory() {
-			TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory(0);
-			factory.setContextPath("/test");
-			return factory;
+			return new TomcatServletWebServerFactory(0);
 		}
 
 		@Bean

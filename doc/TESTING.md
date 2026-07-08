@@ -31,8 +31,8 @@
 |------|------|
 | 本地能跑测试吗？ | **能**（Java 8/11 + Gradle 7.6.3 本地 zip） |
 | 全量 `./gradlew test` 能全绿吗？ | **不能**，也不作为目标 |
-| 日常 `make test` 要 Kafka/Redis/Docker 吗？ | **不要** |
-| 日常 merge 门槛？ | **`make build-thin` + `make test`（Tier A，核心模块，承诺维护全绿）** |
+| 日常 `make test` 要 Kafka/Redis/Docker 吗？ | **需要内嵌 Kafka（NES EmbeddedKafka），不需要外部 Kafka/Redis/Docker** |
+| 日常 merge 门槛？ | **`make build-thin` + `make test`（Tier A，核心模块 + Kafka smoke，承诺维护全绿）** |
 | 扩大反馈？ | **`make test-feedback`（Tier C，`--continue`，已知红可接受）** |
 | 和 3.5 的 `make test` 一样短吗？ | **策略相同**（先窄后宽）；2.7 已投入更广摸底，用 `test-feedback` 保留 |
 
@@ -49,7 +49,7 @@
 ① make build-thin     编译、打包（跳过 test）
   │
   ▼
-② make test           Tier A：核心模块（spring-boot + spring-boot-test）
+② make test           Tier A：核心模块（spring-boot + spring-boot-test）+ Kafka smoke
   │
   ▼
 ③ （按需）单模块 test  只改了某一库时更快
@@ -107,7 +107,7 @@
 | **Gradle** | 7.6.3；wrapper 使用本地分发包（见 `gradle/wrapper/gradle-wrapper.properties`） |
 | **Gradle 分发包** | `file:///…/gradle-7.6.3-bin.zip`（路径见 `doc/gradle-bin 配置.md`） |
 | **Docker** | `make test` / `make build-thin` **不需要** |
-| **Kafka / Redis 等** | `make test` **不需要** |
+| **Kafka / Redis 等** | `make test` 使用 NES EmbeddedKafka，不需要外部 Kafka；Redis 等外部服务不需要 |
 | **TestKit 多版本 zip** | 仅 `gradle-plugin:test` 需要；见 [§9](#9-gradle-testkit-与离线分发包) |
 
 **Gradle 卡住时**：
@@ -123,7 +123,7 @@ make stop
 | 命令 | 作用 | 外部服务 |
 |------|------|----------|
 | `make build-thin` | 编译打包，跳过 test / 文档 | ❌ |
-| `make test` | **Tier A**：核心两模块，承诺全绿 | ❌ |
+| `make test` | **Tier A**：核心两模块 + Kafka smoke，承诺全绿 | 内嵌 Kafka |
 | `make test-feedback` | **Tier C**：三子树扩大反馈，`--continue` | 部分 smoke 需 H2/Kafka 等 |
 | `make install` / `deploy` | 发布（`-x test`） | ❌ |
 
@@ -133,6 +133,7 @@ make stop
 ./gradlew \
   :spring-boot-project:spring-boot:test \
   :spring-boot-project:spring-boot-test:test \
+  :spring-boot-tests:spring-boot-smoke-tests:spring-boot-smoke-test-kafka:test \
   -x checkstyleMain -x checkstyleTest
 ```
 
@@ -142,7 +143,7 @@ make stop
 
 ```
 Tier 0   make build-thin 绿          → 能编译、能发布（裁剪后模块）
-Tier A   make test 全绿             → 核心库（当前 merge 门槛）
+Tier A   make test 全绿             → 核心库 + Kafka smoke（当前 merge 门槛）
 Tier B   （规划）扩展核心库 + plugin  → 待摸底后纳入 make test
 Tier C   make test-feedback         → 2.7 风格扩大范围，--continue，非全绿
 ```
@@ -175,6 +176,7 @@ Tier C   make test-feedback         → 2.7 风格扩大范围，--continue，�
 |-------------|------|
 | `:spring-boot-project:spring-boot:test` | 主库（~5300 条） |
 | `:spring-boot-project:spring-boot-test:test` | 测试基础设施（~970 条） |
+| `:spring-boot-tests:spring-boot-smoke-tests:spring-boot-smoke-test-kafka:test` | NES Kafka EmbeddedKafka 基础收发 |
 
 ### 6.2 覆盖与不覆盖
 
@@ -182,13 +184,14 @@ Tier C   make test-feedback         → 2.7 风格扩大范围，--continue，�
 
 - 嵌入式容器、配置、Banner、版本号等核心运行时
 - `@SpringBootTest`、测试切片、`MockMvc` 等测试 API
+- NES `spring-kafka-test` 与 fork Kafka 3.9.2 的 EmbeddedKafka 兼容性
 
 **不覆盖**（由 `make test-feedback` 或单模块补跑）：
 
 - 自动配置矩阵（`autoconfigure`）
 - Actuator
 - Gradle / Maven 插件
-- Smoke / integration / system-tests
+- 除 Kafka 以外的 Smoke / integration / system-tests
 
 ### 6.3 JPMS 前置条件
 
@@ -239,7 +242,7 @@ Tier C   make test-feedback         → 2.7 风格扩大范围，--continue，�
 |------|------|------|---------------------|----------------------|
 | **G** | Gradle TestKit / 文档测试 | `*DocumentationTests`、`BuildInfoDslIntegrationTests` | ❌ | 修复中（见 §9） |
 | **E** | 未定位 / 少量断言 | Liquibase、Quartz、Jersey*、WebTestClient | 少量可能在 `spring-boot` | ✅ |
-| **S** | Smoke 外部依赖 | data-jpa、flyway、kafka、hibernate52 | ❌ | ✅ |
+| **S** | Smoke 外部依赖 | data-jpa、flyway、hibernate52 | Kafka 已纳入，其它 ❌ | ✅ |
 | **D** | JPMS | `*ServletWebServerFactoryTests` | 已修（`--add-opens`） | 已修 |
 
 **维护原则**：环境性失败 → `-x` 或 Tier C；可修测试 → 改 `src/test` + `// FORK:` 注释；禁止为通过测试改 `src/main` 业务语义。
@@ -263,7 +266,7 @@ Tier C   make test-feedback         → 2.7 风格扩大范围，--continue，�
 
 | 维度 | 2.7 | 3.5 |
 |------|-----|-----|
-| `make test` 宽度 | Tier A：2 核心模块（与 3.5 Phase 1 同策略） | Phase 1：2 模块 |
+| `make test` 宽度 | Tier A：2 核心模块 + Kafka smoke（NES Kafka 门禁） | Phase 1：2 模块 |
 | 扩大反馈 | **`make test-feedback`**（保留历史 `./gradlew test --continue`） | 规划 `make test-feedback`（Tier C） |
 | JDK | 8/11（推荐 11） | 17+ |
 | Gradle | 7.6.3 | 8.14.5 |
@@ -290,3 +293,4 @@ Tier C   make test-feedback         → 2.7 风格扩大范围，--continue，�
 | 2026-05-20 | JPMS `--add-opens` 修复 D 类（`add-jpms-open-for-tests`） |
 | 2026-06-30 | 拆分为 **`make test`（Tier A）** + **`make test-feedback`（Tier C）**；借鉴 3.5 分层策略 |
 | 2026-06-30 | `gradle-plugin` TestKit：Jackson 2.13.5、`bin/main` 优先级、离线 Gradle 分发包 |
+| 2026-07-08 | NES `spring-kafka-test` 已兼容 fork Kafka 3.9.2 EmbeddedKafka，`spring-boot-smoke-test-kafka` 纳入 `make test` |

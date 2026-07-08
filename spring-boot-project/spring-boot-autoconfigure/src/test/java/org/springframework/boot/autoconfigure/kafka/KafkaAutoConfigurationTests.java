@@ -534,7 +534,7 @@ class KafkaAutoConfigurationTests {
 		this.contextRunner.withUserConfiguration(MessageConverterConfiguration.class).run((context) -> {
 			ConcurrentKafkaListenerContainerFactory<?, ?> kafkaListenerContainerFactory = context
 				.getBean(ConcurrentKafkaListenerContainerFactory.class);
-			assertThat(kafkaListenerContainerFactory).hasFieldOrPropertyWithValue("messageConverter",
+			assertThat(kafkaListenerContainerFactory).hasFieldOrPropertyWithValue("recordMessageConverter",
 					context.getBean("myMessageConverter"));
 		});
 	}
@@ -547,7 +547,7 @@ class KafkaAutoConfigurationTests {
 			.run((context) -> {
 				ConcurrentKafkaListenerContainerFactory<?, ?> kafkaListenerContainerFactory = context
 					.getBean(ConcurrentKafkaListenerContainerFactory.class);
-				assertThat(kafkaListenerContainerFactory).hasFieldOrPropertyWithValue("messageConverter",
+				assertThat(kafkaListenerContainerFactory).hasFieldOrPropertyWithValue("batchMessageConverter",
 						context.getBean("myBatchMessageConverter"));
 			});
 	}
@@ -560,7 +560,7 @@ class KafkaAutoConfigurationTests {
 				ConcurrentKafkaListenerContainerFactory<?, ?> kafkaListenerContainerFactory = context
 					.getBean(ConcurrentKafkaListenerContainerFactory.class);
 				Object messageConverter = ReflectionTestUtils.getField(kafkaListenerContainerFactory,
-						"messageConverter");
+						"batchMessageConverter");
 				assertThat(messageConverter).isInstanceOf(BatchMessagingMessageConverter.class);
 				assertThat(((BatchMessageConverter) messageConverter).getRecordMessageConverter())
 					.isSameAs(context.getBean("myMessageConverter"));
@@ -572,7 +572,8 @@ class KafkaAutoConfigurationTests {
 		this.contextRunner.withPropertyValues("spring.kafka.listener.type=batch").run((context) -> {
 			ConcurrentKafkaListenerContainerFactory<?, ?> kafkaListenerContainerFactory = context
 				.getBean(ConcurrentKafkaListenerContainerFactory.class);
-			Object messageConverter = ReflectionTestUtils.getField(kafkaListenerContainerFactory, "messageConverter");
+			Object messageConverter = ReflectionTestUtils.getField(kafkaListenerContainerFactory,
+					"batchMessageConverter");
 			assertThat(messageConverter).isInstanceOf(BatchMessagingMessageConverter.class);
 			assertThat(((BatchMessageConverter) messageConverter).getRecordMessageConverter()).isNull();
 		});

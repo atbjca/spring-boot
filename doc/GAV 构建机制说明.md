@@ -64,6 +64,7 @@ eachDependency 拦截请求
 | :--- | :--- | :--- | :--- |
 | Spring Framework | `org.springframework:spring-xxx` | `cn.bjca.footstone.bpring:bjca-footstone-bpring-xxx` | 变量计算 |
 | Spring Security | `org.springframework.security:spring-security-xxx` | `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-xxx` | 变量计算 |
+| Spring Kafka | `org.springframework.kafka:spring-kafka{,-test}` | `cn.bjca.footstone.bpring.kafka:spring-kafka{,-test}` | 固定子命名空间 |
 
 **代码示例**（`build.gradle`）：
 
@@ -83,12 +84,22 @@ else if (requested.group == 'org.springframework.security' && requested.name.sta
     def newArtifactId = requested.name.replaceFirst(/^spring-security-/, "${forkArtifactPrefix}-security-")
     details.useTarget("${forkGroupIdBase}.security:${newArtifactId}:${springSecurityVersion}")
 }
+
+// 规则三：org.springframework.kafka 组映射
+// Spring Kafka NES 分支当前仅更换 groupId 和版本号，artifactId 仍保持
+// spring-kafka / spring-kafka-test。
+else if (requested.group == 'org.springframework.kafka') {
+    if (requested.name == 'spring-kafka' || requested.name == 'spring-kafka-test') {
+        details.useTarget("cn.bjca.footstone.bpring.kafka:${requested.name}:2.9.13-nes.patch.1-SNAPSHOT")
+    }
+}
 ```
 
 **特点**：
-- GroupId 通过 `forkGroupIdBase` + 后缀（如 `.security`）动态计算
+- GroupId 通过 `forkGroupIdBase` + 后缀（如 `.security`）动态计算，或使用已确认的同系列子命名空间（如 `.kafka`）
 - ArtifactId 通过 `forkArtifactPrefix` 替换前缀（如 `spring-` → `bjca-footstone-bpring-`）
 - 版本统一使用 `gradle.properties` 中的变量（如 `springFrameworkVersion`）
+- Spring Kafka 是例外：私服实际发布 artifactId 仍为 `spring-kafka` / `spring-kafka-test`，版本与 BOM 中 `library("Spring Kafka", ...)` 保持一致。
 
 ### 2.2 独立 fork（硬编码规则）
 

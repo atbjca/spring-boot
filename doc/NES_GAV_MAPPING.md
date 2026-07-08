@@ -34,6 +34,7 @@
 | Spring Framework | `5.3.39` | `5.3.39-nes.patch.1-SNAPSHOT` |
 | Spring Security | `5.8.16` | `5.8.16-nes.patch.1-SNAPSHOT` |
 | Spring Authorization Server | `0.4.5` | `0.4.5-nes.patch.1-SNAPSHOT` |
+| Spring Kafka | `2.9.13` | `2.9.13-nes.patch.1-SNAPSHOT` |
 
 ### 1.2 BOM 层级继承关系
 
@@ -59,6 +60,7 @@ bjca-footstone-bpring-boot-dependencies (Spring Boot BOM — 版本管理中心)
 | Spring Framework | `org.springframework` | `cn.bjca.footstone.bpring` |
 | Spring Security | `org.springframework.security` | `cn.bjca.footstone.bpring.security` |
 | Authorization Server | `org.springframework.security` | `cn.bjca.footstone.bpring.security` |
+| Spring Kafka | `org.springframework.kafka` | `cn.bjca.footstone.bpring.kafka` |
 | Logback | `ch.qos.logback` | `cn.bjca.footstone.bogback` |
 
 ---
@@ -530,7 +532,7 @@ NES BOM 对 8 个 **A 类第三方库** 执行了 `<exclusions>`，排除其对 
 
 | 序号 | A 类库 | 版本 | Starter 状态 |
 | :--- | :--- | :--- | :--- |
-| 1 | Spring Kafka | 2.9.13 | 无 Starter |
+| 1 | Spring Kafka NES | 2.9.13-nes.patch.1-SNAPSHOT | 无 Starter |
 | 2 | Spring Batch Core | 4.3.10 | 活跃 Starter（`spring-boot-starter-batch`） |
 | 3 | Spring HATEOAS | 1.5.6 | 已排除 Starter（`spring-boot-starter-hateoas`） |
 | 4 | Spring LDAP Core | 2.4.1 | 已排除 Starter（`spring-boot-starter-data-ldap`） |
@@ -557,7 +559,7 @@ NES BOM 对 8 个 **A 类第三方库** 执行了 `<exclusions>`，排除其对 
 
 #### 无 Starter 的库（需显式添加全部依赖）
 
-适用于：**Spring Kafka**、**Spring GraphQL**、**Spring RESTDocs**
+适用于：**Spring Kafka NES**、**Spring GraphQL**、**Spring RESTDocs**
 
 这些库本身没有可用的 Starter，使用时必须显式添加所有缺失的 Spring Framework fork 依赖。
 
@@ -572,7 +574,18 @@ NES BOM 对 8 个 **A 类第三方库** 执行了 `<exclusions>`，排除其对 
 
 ---
 
-#### 9.3.1 Spring Kafka 2.9.13（无 Starter）
+#### 9.3.1 Spring Kafka NES 2.9.13（无 Starter）
+
+Spring Kafka 已切换为 NES 坐标：
+
+| 原始坐标 | NES 坐标 |
+| :--- | :--- |
+| `org.springframework.kafka:spring-kafka` | `cn.bjca.footstone.bpring.kafka:spring-kafka` |
+| `org.springframework.kafka:spring-kafka-test` | `cn.bjca.footstone.bpring.kafka:spring-kafka-test` |
+
+> **注意：** 当前私服实际发布 artifactId 仍为 `spring-kafka` / `spring-kafka-test`，未发布 `bjca-footstone-bpring-kafka*` artifactId 或 `bjca-footstone-bpring-kafka-bom`。
+
+Spring Kafka NES POM 仍声明以下官方 Spring Framework 传递依赖，因此 Boot BOM 继续排除 `org.springframework:*`，下游在不使用相关 Starter 时需补充 NES Framework 模块。
 
 | 缺失的原始依赖 | Fork 替代 ArtifactId |
 | :--- | :--- |
@@ -691,12 +704,12 @@ Spring WS Core 及其依赖 `spring-xml` 的缺失依赖如下：
 
 以下示例均假设已通过 Parent POM 或 BOM 导入引入了 `bjca-footstone-bpring-boot-dependencies`，因此 fork 依赖无需声明版本号。
 
-#### 9.4.1 Spring Kafka 使用示例
+#### 9.4.1 Spring Kafka NES 使用示例
 
 ```xml
-<!-- Spring Kafka -->
+<!-- Spring Kafka NES -->
 <dependency>
-    <groupId>org.springframework.kafka</groupId>
+    <groupId>cn.bjca.footstone.bpring.kafka</groupId>
     <artifactId>spring-kafka</artifactId>
 </dependency>
 

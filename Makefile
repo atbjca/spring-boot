@@ -12,7 +12,7 @@ help: ## 显示帮助信息
 	@echo "  make projects       - 查看有效的项目"
 	@echo "  make tree           - 查看依赖树"
 	@echo "  make build          - 编译打包（不安装、不发布）"
-	@echo "  make test           - Tier A 核心模块测试（spring-boot + spring-boot-test，承诺全绿）"
+	@echo "  make test           - Tier A 核心模块测试（spring-boot + spring-boot-test + Kafka smoke，承诺全绿）"
 	@echo "  make test-feedback  - Tier C 扩大反馈（--continue，含已知失败，详见 doc/TESTING.md）"
 	@echo "  make setup-gradle   - 安装并解压 LOCAL_GRADLE_DIR 下全部 gradle-*-zip 到 wrapper 缓存"
 	@echo ""
@@ -55,9 +55,13 @@ projects: setup-gradle ## 查看有效的项目
 # ----------------------------------------------------------------------------
 # test —— Tier A 核心测试入口（承诺全绿）
 #
-# 范围：仅两个核心库模块，不含 smoke / system-tests / Docker / gradle-plugin。
+# 范围：两个核心库模块 + Kafka smoke，不含其它 smoke / system-tests / Docker / gradle-plugin。
 #   - :spring-boot-project:spring-boot:test
 #   - :spring-boot-project:spring-boot-test:test
+#   - :spring-boot-tests:spring-boot-smoke-tests:spring-boot-smoke-test-kafka:test
+#
+# Kafka smoke 使用 NES spring-kafka-test 对 fork Kafka 3.9.2 的 EmbeddedKafka
+# 兼容能力，不需要外部 Kafka 服务。
 #
 # 日常 merge 门槛：make build-thin + make test → BUILD SUCCESSFUL
 # 扩大反馈（BOM 大改、发布前摸底）：make test-feedback（Tier C）
@@ -68,6 +72,7 @@ test: setup-gradle ## Tier A 核心模块测试（spring-boot + spring-boot-test
 	./gradlew -Dorg.gradle.caching=false \
 		:spring-boot-project:spring-boot:test \
 		:spring-boot-project:spring-boot-test:test \
+		:spring-boot-tests:spring-boot-smoke-tests:spring-boot-smoke-test-kafka:test \
 		-x checkstyleMain -x checkstyleTest
 
 # ----------------------------------------------------------------------------
@@ -102,7 +107,8 @@ test: setup-gradle ## Tier A 核心模块测试（spring-boot + spring-boot-test
 #   (E) 少量未定位：Liquibase / Quartz / Jersey* / WebTestClient 等
 #       sslWithValidAlias（已定位为 flaky，处置：@RepeatedTest(10)，非真实 SSL 缺陷）
 #       PrematureCloseException（reactor.netty 1.0.x + Servlet keep-alive 竞态，处置：CI=true 启用 TestRetry 自动重试 3 次）
-#   (S) smoke-tests 需外部组件：spring-boot-smoke-test-kafka（@Disabled — fork Kafka 3.9.2 与 spring-kafka-test 2.9.x 不兼容，EmbeddedKafka 无法启动）
+#   (S) smoke-tests 需外部组件：Kafka smoke 已由 NES spring-kafka-test 兼容并纳入 make test；
+#       其它 smoke 外部依赖按 settings.gradle ignoredSmokeTests 或显式 -x 管理。
 # ----------------------------------------------------------------------------
 test-feedback: setup-gradle ## Tier C 扩大反馈（--continue，含已知失败）
 	CI=true ./gradlew -Dorg.gradle.caching=false test --continue \
@@ -111,6 +117,5 @@ test-feedback: setup-gradle ## Tier C 扩大反馈（--continue，含已知失�
 		-x :spring-boot-project:spring-boot-tools:spring-boot-buildpack-platform:test \
 		-x :spring-boot-tests:spring-boot-integration-tests:spring-boot-launch-script-tests:test \
 		-x :spring-boot-tests:spring-boot-integration-tests:spring-boot-loader-tests:test \
-		-x :spring-boot-tests:spring-boot-smoke-tests:spring-boot-smoke-test-kafka:test \
 		-x :spring-boot-system-tests:spring-boot-deployment-tests:test \
 		-x :spring-boot-system-tests:spring-boot-image-tests:test

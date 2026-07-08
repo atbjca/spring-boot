@@ -285,6 +285,41 @@ logback fork 仓库（`/nes/logback`）已于 2026-06-25 正式发布 `1.2.13-ne
 
 ## 📅 2026年03月10日
 
+### [需求-029] Spring Kafka NES GAV 依赖采用
+
+#### 背景与目的
+`spring-kafka-2.9` 已在私服发布 NES 维护分支产物。为避免下游通过 `spring-boot-dependencies` BOM 继续解析到官方 `org.springframework.kafka` 坐标，Spring Boot NES BOM 需直接管理 Spring Kafka NES 坐标，并在本仓库构建期对源码中的官方声明执行透明替换。
+
+#### 修改内容
+
+##### 1. BOM 坐标切换
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+- **改动**：
+  - `library("Spring Kafka", "2.9.13")` → `library("Spring Kafka", "2.9.13-nes.patch.1-SNAPSHOT")`
+  - `group("org.springframework.kafka")` → `group("cn.bjca.footstone.bpring.kafka")`
+  - 管理模块保持私服实际 artifactId：`spring-kafka`、`spring-kafka-test`
+
+##### 2. 构建期透明替换
+- **文件**：`build.gradle`
+- **改动**：新增 `org.springframework.kafka` 组映射，将 `spring-kafka` / `spring-kafka-test` 解析到 `cn.bjca.footstone.bpring.kafka`。
+
+##### 3. 继续排除官方 Spring Framework 传递依赖
+- **原因**：私服中 Spring Kafka NES POM 仍声明 `org.springframework:spring-context`、`spring-messaging`、`spring-tx`、`spring-test` 等官方坐标。
+- **影响**：BOM 条目继续保留 `exclude group: "org.springframework", module: "*"`，避免下游 classpath 混入官方 Spring Framework。
+
+#### 兼容性说明
+- Java package/import 不变，仍为 `org.springframework.kafka.*`
+- 未引入 `bjca-footstone-bpring-kafka-bom`；当前私服未发布该 BOM
+- NES `spring-kafka-test` 已兼容 fork Kafka 3.9.2 的 EmbeddedKafka 场景，Kafka smoke 测试恢复为 `make test` 门禁覆盖项
+
+#### 涉及文件
+- `build.gradle`
+- `spring-boot-project/spring-boot-dependencies/build.gradle`
+- `doc/GAV 构建机制说明.md`
+- `doc/NES_GAV_MAPPING.md`
+- `doc/GAV_MAPPING.md`
+- `doc/VULNERABILITY_REPORT.md`
+
 ### [需求-025] Spring Kafka / Kafka Clients 安全漏洞升级
 
 #### 背景与目的

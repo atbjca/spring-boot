@@ -175,6 +175,46 @@ class BomPluginIntegrationTests {
 	}
 
 	@Test
+	void nesSpringKafkaModulesAreIncludedInDependencyManagementOfGeneratedPom() throws IOException {
+		try (PrintWriter out = new PrintWriter(new FileWriter(this.buildFile))) {
+			out.println("plugins {");
+			out.println("    id 'org.springframework.boot.bom'");
+			out.println("}");
+			out.println("bom {");
+			out.println("    library('Spring Kafka', '2.9.13-nes.patch.1-SNAPSHOT') {");
+			out.println("        group('cn.bjca.footstone.bpring.kafka') {");
+			out.println("            modules = [");
+			out.println("                'spring-kafka' {");
+			out.println("                    exclude group: 'org.springframework', module: '*'");
+			out.println("                },");
+			out.println("                'spring-kafka-test' {");
+			out.println("                    exclude group: 'org.springframework', module: '*'");
+			out.println("                }");
+			out.println("            ]");
+			out.println("        }");
+			out.println("    }");
+			out.println("}");
+		}
+		generatePom((pom) -> {
+			assertThat(pom).textAtPath("//properties/spring-kafka.version").isEqualTo("2.9.13-nes.patch.1-SNAPSHOT");
+			NodeAssert springKafka = pom.nodeAtPath("//dependencyManagement/dependencies/dependency[1]");
+			assertThat(springKafka).textAtPath("groupId").isEqualTo("cn.bjca.footstone.bpring.kafka");
+			assertThat(springKafka).textAtPath("artifactId").isEqualTo("spring-kafka");
+			assertThat(springKafka).textAtPath("version").isEqualTo("${spring-kafka.version}");
+			NodeAssert springKafkaExclusion = springKafka.nodeAtPath("exclusions/exclusion");
+			assertThat(springKafkaExclusion).textAtPath("groupId").isEqualTo("org.springframework");
+			assertThat(springKafkaExclusion).textAtPath("artifactId").isEqualTo("*");
+			NodeAssert springKafkaTest = pom.nodeAtPath("//dependencyManagement/dependencies/dependency[2]");
+			assertThat(springKafkaTest).textAtPath("groupId").isEqualTo("cn.bjca.footstone.bpring.kafka");
+			assertThat(springKafkaTest).textAtPath("artifactId").isEqualTo("spring-kafka-test");
+			assertThat(springKafkaTest).textAtPath("version").isEqualTo("${spring-kafka.version}");
+			NodeAssert springKafkaTestExclusion = springKafkaTest.nodeAtPath("exclusions/exclusion");
+			assertThat(springKafkaTestExclusion).textAtPath("groupId").isEqualTo("org.springframework");
+			assertThat(springKafkaTestExclusion).textAtPath("artifactId").isEqualTo("*");
+		});
+	}
+
+	@Test
 	void moduleTypesAreIncludedInDependencyManagementOfGeneratedPom() throws IOException {
 		try (PrintWriter out = new PrintWriter(new FileWriter(this.buildFile))) {
 			out.println("plugins {");

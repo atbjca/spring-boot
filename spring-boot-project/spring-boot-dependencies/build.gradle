@@ -1891,12 +1891,11 @@ bom {
 			]
 		}
 	}
-	library("Spring Kafka", "2.9.13") {
+	library("Spring Kafka", "2.9.13-nes.patch.1-SNAPSHOT") {
 		considerSnapshots()
-		group("org.springframework.kafka") {
-			// [A 类排除] 未 fork 的 Spring 生态组件，传递依赖原始 Spring 坐标
-			// 排除 group: org.springframework
-			// 移除条件：当此组件完成 fork 后移除所有 exclude
+		group("cn.bjca.footstone.bpring.kafka") {
+			// Spring Kafka NES 分支仍在发布 POM 中传递依赖官方 org.springframework:*。
+			// 继续排除官方 Spring Framework 坐标，避免下游 classpath 混入两套 Spring。
 			modules = [
 				"spring-kafka" {
 					exclude group: "org.springframework", module: "*"
