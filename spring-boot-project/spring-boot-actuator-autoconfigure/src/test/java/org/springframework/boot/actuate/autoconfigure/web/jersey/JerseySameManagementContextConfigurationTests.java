@@ -40,7 +40,8 @@ import static org.mockito.Mockito.mock;
  *
  * @author Madhura Bhave
  */
-@ClassPathExclusions("spring-webmvc-*")
+// FORK: spring-webmvc 已重映射为 bjca-footstone-bpring-webmvc，原 Ant 模式无法排除
+@ClassPathExclusions({ "spring-webmvc-*", "bjca-footstone-bpring-webmvc-*" })
 class JerseySameManagementContextConfigurationTests {
 
 	private final WebApplicationContextRunner contextRunner = new WebApplicationContextRunner()

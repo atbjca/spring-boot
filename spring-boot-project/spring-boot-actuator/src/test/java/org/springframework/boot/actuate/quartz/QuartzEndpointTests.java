@@ -609,7 +609,7 @@ class QuartzEndpointTests {
 				Arguments.of(5, IntervalUnit.MINUTE, Duration.ofMinutes(5)),
 				Arguments.of(1, IntervalUnit.MONTH, ChronoUnit.MONTHS.getDuration()),
 				Arguments.of(30, IntervalUnit.SECOND, Duration.ofSeconds(30)),
-				Arguments.of(100, IntervalUnit.MILLISECOND, Duration.ofMillis(100)),
+				// FORK: Quartz 2.4.1 的 CalendarIntervalScheduleBuilder 不再接受 MILLISECOND
 				Arguments.of(1, IntervalUnit.WEEK, ChronoUnit.WEEKS.getDuration()),
 				Arguments.of(1, IntervalUnit.YEAR, ChronoUnit.YEARS.getDuration()));
 	}

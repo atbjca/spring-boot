@@ -78,6 +78,9 @@ dependencies {
 	testImplementation("org.mockito:mockito-core")
 	testImplementation("org.mockito:mockito-junit-jupiter")
 	testImplementation("org.postgresql:postgresql")
+	// FORK: LocalDevToolsAutoConfigurationTests 装配 FreeMarkerAutoConfiguration，
+	// 依赖 org.springframework.ui.freemarker.* —— 由 spring-context-support 提供
+	testImplementation("org.springframework:spring-context-support")
 	testImplementation("org.springframework:spring-test")
 	testImplementation("org.springframework:spring-webmvc")
 	testImplementation("org.springframework:spring-websocket")

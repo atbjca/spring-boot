@@ -46,8 +46,8 @@ class WebTestClientContextCustomizerFactory implements ContextCustomizerFactory 
 		boolean httpComponentsClientPresent = ClassUtils
 			.isPresent("org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient", classLoader)
 				&& ClassUtils.isPresent("org.apache.hc.core5.reactive.ReactiveDataConsumer", classLoader);
-		boolean webClientPresent = ClassUtils
-			.isPresent("org.springframework.web.reactive.function.client.WebClient", classLoader);
+		boolean webClientPresent = ClassUtils.isPresent("org.springframework.web.reactive.function.client.WebClient",
+				classLoader);
 		return (springBootTest != null && webClientPresent
 				&& (reactorClientPresent || jettyClientPresent || httpComponentsClientPresent))
 						? new WebTestClientContextCustomizer() : null;

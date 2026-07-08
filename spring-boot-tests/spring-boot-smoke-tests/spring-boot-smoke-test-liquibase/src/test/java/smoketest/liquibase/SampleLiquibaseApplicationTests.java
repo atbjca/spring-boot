@@ -59,11 +59,10 @@ class SampleLiquibaseApplicationTests {
 		assertThat(output).contains("Successfully acquired change log lock")
 			.contains("Creating database history table with name: PUBLIC.DATABASECHANGELOG")
 			.contains("Table person created")
-			.contains("ChangeSet classpath:/db/changelog/db.changelog-master.yaml::1::"
-					+ "marceloverdijk ran successfully")
+			// FORK: Liquibase 4.24 日志不再带 classpath: 前缀，且追加 "in Nms"
+			.contains("db.changelog-master.yaml::1::marceloverdijk ran successfully")
 			.contains("New row inserted into person")
-			.contains("ChangeSet classpath:/db/changelog/"
-					+ "db.changelog-master.yaml::2::marceloverdijk ran successfully")
+			.contains("db.changelog-master.yaml::2::marceloverdijk ran successfully")
 			.contains("Successfully released change log lock");
 	}
 
