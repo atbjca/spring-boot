@@ -15,7 +15,8 @@
 | Spring Batch | `org.springframework.batch` | 官方 | ✅ bom→modules |
 | Spring WS | `org.springframework.ws` | 官方 | ✅ bom→modules（security 额外排除） |
 | Spring RESTDocs | `org.springframework.restdocs` | 官方 | ✅ bom→modules |
-| Spring Data / Integration / Session | 各官方 groupId | 官方 BOM import | ⏳ 待后续评估（2.7 也无 exclusion） |
+| Spring Data Redis 链路 | `org.springframework.data` | 官方 BOM import + 独立 module libraries | ✅ `redis` / `keyvalue` / `commons` |
+| Spring Data 其它模块 / Integration / Session | 各官方 groupId | 官方 BOM import | ⏳ 待后续评估 |
 | Spring Pulsar | `org.springframework.pulsar` | 官方 BOM import | ⏳ 待后续评估（3.5 新增） |
 
 Logback 仍用官方 `ch.qos.logback:1.5.34`（不 fork bogback）。
@@ -51,9 +52,9 @@ Logback 仍用官方 `ch.qos.logback:1.5.34`（不 fork bogback）。
 
 ### SCA 规避说明
 
-Phase B 完成后，显式声明的 `org.springframework:*` / `org.springframework.security:*` 由 `resolutionStrategy` 替换为 fork 坐标。Phase C 对 GraphQL / Kafka 等 A 类模块在 BOM 中排除传递的官方 Spring 依赖。
+Phase B 完成后，显式声明的 `org.springframework:*` / `org.springframework.security:*` 由 `resolutionStrategy` 替换为 fork 坐标。Phase C 对 GraphQL / Kafka 等 A 类模块在 BOM 中排除传递的官方 Spring 依赖。Spring Data Redis 链路保留 `spring-data-bom` import，同时通过独立 library 显式管理 `spring-data-commons` / `spring-data-keyvalue` / `spring-data-redis` 的真实模块版本并添加 exclusion。
 
-仍使用 BOM import、尚未添加 exclusion 的组件（Spring Data、Integration、Session、AMQP、Batch、Pulsar、WS 等）可能仍被 SCA 扫描到官方 Spring 传递链，待后续 change 处理。
+仍使用 BOM import、尚未添加 exclusion 的组件（Spring Data 其它模块、Integration、Session、Pulsar 等）可能仍被 SCA 扫描到官方 Spring 传递链，待后续 change 处理。
 
 ## Phase A（已完成）
 

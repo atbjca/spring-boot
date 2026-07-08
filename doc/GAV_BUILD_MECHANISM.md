@@ -126,6 +126,7 @@ else if (requested.group == 'org.springframework.security'
 | Spring Batch | `org.springframework.batch:spring-batch-*` | 官方 | exclusion |
 | Spring WS | `org.springframework.ws:spring-ws-*` | 官方 | exclusion + security exclusion |
 | Spring RESTDocs | `org.springframework.restdocs:spring-restdocs-*` | 官方 | exclusion |
+| Spring Data Redis 链路 | `org.springframework.data:spring-data-{commons,keyvalue,redis}` | 官方 | bom import + 独立 module libraries exclusion |
 
 **代码示例**（`spring-boot-dependencies/build.gradle`）：
 
@@ -191,14 +192,26 @@ library("Spring WS", "4.1.4") {
 在 `spring-boot-dependencies/build.gradle` 中找到该组件的 `library()` 定义：
 
 ```
-# 情况 A：该组件使用 bom() import
+# 情况 A：该组件使用 bom() import，且需要全量覆盖
 library("Spring XXX", "x.y.z") {
     group("org.springframework.xxx") {
         bom("spring-xxx-bom")  # ← 需要改为显式 modules
     }
 }
 
-# 情况 B：该组件已使用显式 modules
+# 情况 B：该组件使用 bom() import，但仅确认局部链路泄露
+library("Spring XXX", "x.y.z") {
+    group("org.springframework.xxx") {
+        bom("spring-xxx-bom")  # ← 保留 BOM import 管理全量版本
+    }
+}
+library("Spring XXX Core", "a.b.c") {
+    group("org.springframework.xxx") {
+        modules = [ "spring-xxx-core", ... ]  # ← 使用真实模块版本显式覆盖已确认泄露链路
+    }
+}
+
+# 情况 C：该组件已使用显式 modules
 library("Spring XXX", "x.y.z") {
     group("org.springframework.xxx") {
         modules = [ "spring-xxx-core", ... ]  # ← 直接加 exclusion
@@ -219,7 +232,7 @@ find ~/.m2/repository/org/springframework/xxx -name "spring-xxx-bom-*.pom" \
 
 ### Step 3：判断是否需要 bom→modules 转换
 
-如果组件使用 `bom()`，**必须改为显式 `modules` 列表**才能添加 per-module exclusion。
+如果组件使用 `bom()`，通常需要改为显式 `modules` 列表才能添加 per-module exclusion。若只确认某条局部链路泄露，可以保留 `bom()` import，并额外用独立 library 声明该链路涉及的显式 `modules`，例如 Spring Data Redis 链路。注意：独立 library 的版本必须是模块真实版本，不能使用 release train BOM 版本。
 
 ### Step 4：添加 exclusion
 
@@ -254,15 +267,53 @@ exclude group: "org.springframework.security", module: "*"
 
 ### 4.1 何时需要转换
 
-3.5 上游将多个组件从显式 `modules` 改为 `bom()` import，导致 per-module exclusion 丢失。如果组件使用 `bom()` 且需要 exclusion，**唯一方式是将 bom() 改回显式 modules**。
+3.5 上游将多个组件从显式 `modules` 改为 `bom()` import，导致 per-module exclusion 丢失。如果组件使用 `bom()` 且需要全量 exclusion，常规方式是将 `bom()` 改回显式 modules。
+
+对于 Spring Data 这类模块数量较多、但只确认 Redis 链路泄露的组件，可以使用“保留 BOM import + 独立 module libraries”模式：
+
+```groovy
+library("Spring Data Bom", "2025.0.13") {
+    group("org.springframework.data") {
+        bom("spring-data-bom")
+    }
+}
+library("Spring Data Commons", "3.5.13") {
+    group("org.springframework.data") {
+        modules = [
+            "spring-data-commons" {
+                exclude group: "org.springframework", module: "*"
+            }
+        ]
+    }
+}
+library("Spring Data KeyValue", "3.5.13") {
+    group("org.springframework.data") {
+        modules = [
+            "spring-data-keyvalue" {
+                exclude group: "org.springframework", module: "*"
+            }
+        ]
+    }
+}
+library("Spring Data Redis", "3.5.13") {
+    group("org.springframework.data") {
+        modules = [
+            "spring-data-redis" {
+                exclude group: "org.springframework", module: "*"
+            }
+        ]
+    }
+}
+```
 
 ### 4.2 操作步骤
 
 1. 在 `spring-boot-dependencies/build.gradle` 中找到对应的 `library()` 块
-2. 将 `bom("spring-xxx-bom")` 替换为 `modules = [ ... ]`
-3. 列出 BOM 中的所有模块，逐个添加 exclusion
-4. 保留原有的 `links {}` 块不变
-5. 如果某个模块在组件中无引用（如 `spring-restdocs-restassured` 在 RESTDocs BOM 中不存在但被其他模块可选依赖），检查组件是否真的引用它，引用则必须加入 modules
+2. 如果要全量覆盖，将 `bom("spring-xxx-bom")` 替换为 `modules = [ ... ]`
+3. 如果只覆盖局部链路，保留 `bom("spring-xxx-bom")`，并额外用独立 library 声明该链路涉及的 modules 及真实模块版本
+4. 列出 BOM 中的所有目标模块，逐个添加 exclusion
+5. 保留原有的 `links {}` 块不变
+6. 如果某个模块在组件中无引用（如 `spring-restdocs-restassured` 在 RESTDocs BOM 中不存在但被其他模块可选依赖），检查组件是否真的引用它，引用则必须加入 modules
 
 ### 4.3 风险：上游新增模块遗漏
 
@@ -294,7 +345,7 @@ exclude group: "org.springframework.security", module: "*"
 
 ### Q4：bom() 组件如何加 exclusion？
 
-**不能直接加**。必须将 `bom()` 改回显式 `modules = [...]`，然后在每个模块中加 exclusion。具体见本文档 §4。
+不能在 `bom()` import 本身上直接加 per-module exclusion。可选做法有两种：全量覆盖时将 `bom()` 改回显式 `modules = [...]`；局部覆盖时保留 `bom()` import，并额外用独立 library 声明需要 exclusion 的显式 modules。具体见本文档 §4。
 
 ### Q5：哪些组件不适合 exclusion？
 

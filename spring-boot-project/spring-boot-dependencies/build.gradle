@@ -2324,6 +2324,36 @@ bom {
 			releaseNotes("https://github.com/spring-projects/spring-data-bom/releases/tag/{version}")
 		}
 	}
+	library("Spring Data Commons", "3.5.13") {
+		group("org.springframework.data") {
+			// [A 类排除] Spring Data Redis 链路中间模块，阻断官方 Spring Framework 坐标传递。
+			modules = [
+				"spring-data-commons" {
+					exclude group: "org.springframework", module: "*"
+				}
+			]
+		}
+	}
+	library("Spring Data KeyValue", "3.5.13") {
+		group("org.springframework.data") {
+			// [A 类排除] Spring Data Redis 链路中间模块，阻断官方 Spring Framework 坐标传递。
+			modules = [
+				"spring-data-keyvalue" {
+					exclude group: "org.springframework", module: "*"
+				}
+			]
+		}
+	}
+	library("Spring Data Redis", "3.5.13") {
+		group("org.springframework.data") {
+			// [A 类排除] Spring Data Redis 会直接传递 spring-tx / spring-oxm / spring-aop 等官方坐标。
+			modules = [
+				"spring-data-redis" {
+					exclude group: "org.springframework", module: "*"
+				}
+			]
+		}
+	}
 	library("Spring Framework", "${springFrameworkVersion}") {
 		prohibit {
 			versionRange "[7.0.0-M1,)"

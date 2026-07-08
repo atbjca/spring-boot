@@ -143,6 +143,44 @@ class BomPluginIntegrationTests {
 	}
 
 	@Test
+	void libraryCanImportBomAndManageModulesWithExclusions() throws Exception {
+		try (PrintWriter out = new PrintWriter(new FileWriter(this.buildFile))) {
+			out.println("plugins {");
+			out.println("    id 'org.springframework.boot.bom'");
+			out.println("    id 'org.springframework.boot.deployed'");
+			out.println("}");
+			out.println("bom {");
+			out.println("    library('Jackson Bom', '2.10.0') {");
+			out.println("        group('com.fasterxml.jackson') {");
+			out.println("            bom('jackson-bom')");
+			out.println("            modules = [");
+			out.println("                'jackson-databind' {");
+			out.println("                    exclude group: 'org.example', module: '*'");
+			out.println("                }");
+			out.println("            ]");
+			out.println("        }");
+			out.println("    }");
+			out.println("}");
+		}
+		generatePom((pom) -> {
+			assertThat(pom).textAtPath("//properties/jackson-bom.version").isEqualTo("2.10.0");
+			NodeAssert managedModule = pom.nodeAtPath("//dependencyManagement/dependencies/dependency[1]");
+			assertThat(managedModule).textAtPath("groupId").isEqualTo("com.fasterxml.jackson");
+			assertThat(managedModule).textAtPath("artifactId").isEqualTo("jackson-databind");
+			assertThat(managedModule).textAtPath("version").isEqualTo("${jackson-bom.version}");
+			NodeAssert exclusion = managedModule.nodeAtPath("exclusions/exclusion");
+			assertThat(exclusion).textAtPath("groupId").isEqualTo("org.example");
+			assertThat(exclusion).textAtPath("artifactId").isEqualTo("*");
+			NodeAssert importedBom = pom.nodeAtPath("//dependencyManagement/dependencies/dependency[2]");
+			assertThat(importedBom).textAtPath("groupId").isEqualTo("com.fasterxml.jackson");
+			assertThat(importedBom).textAtPath("artifactId").isEqualTo("jackson-bom");
+			assertThat(importedBom).textAtPath("version").isEqualTo("${jackson-bom.version}");
+			assertThat(importedBom).textAtPath("scope").isEqualTo("import");
+			assertThat(importedBom).textAtPath("type").isEqualTo("pom");
+		});
+	}
+
+	@Test
 	void moduleExclusionsAreIncludedInDependencyManagementOfGeneratedPom() throws IOException {
 		try (PrintWriter out = new PrintWriter(new FileWriter(this.buildFile))) {
 			out.println("plugins {");

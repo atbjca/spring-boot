@@ -54,10 +54,11 @@ nexusPassword=your-password
 |------|------|
 | 状态 | 已完成 |
 | 基线 | Phase B 完成后的 `3.5.x-bjca-patch` |
-| 范围 | BOM 中对 GraphQL / HATEOAS / Kafka / LDAP / Retry 添加 `exclude org.springframework` |
-| 非目标 | Spring Data / Integration / Session BOM import 条目、Logback fork |
+| 范围 | BOM 中对 GraphQL / HATEOAS / Kafka / LDAP / Retry 添加 `exclude org.springframework`；Redis 链路覆盖 `spring-data-commons` / `spring-data-keyvalue` / `spring-data-redis` |
+| 非目标 | Spring Data 其它模块 / Integration / Session BOM import 条目、Logback fork |
 
 ### 验收标准
 
 - 生成的 BOM POM 中上述模块含 `org.springframework:*` exclusion
+- Spring Data Redis 链路保留 `spring-data-bom` import，同时 Redis 相关三个 managed module 含 `org.springframework:*` exclusion
 - `make build-thin` / `make test` 全绿

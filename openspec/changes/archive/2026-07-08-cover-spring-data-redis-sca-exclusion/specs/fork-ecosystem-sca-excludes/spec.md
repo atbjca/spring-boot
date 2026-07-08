@@ -1,8 +1,4 @@
-## Purpose
-
-定义未 fork 的 Spring 生态组件在 NES Spring Boot BOM 中的 SCA exclusion 策略，阻断它们向下游传递官方 Spring Framework / Security 坐标。
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: A 类生态组件排除官方 Spring 传递依赖
 
