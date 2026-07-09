@@ -122,13 +122,13 @@ allprojects {
 
 			// 规则三：org.springframework.kafka 组映射
 			// 将 org.springframework.kafka:spring-kafka{,-test} 替换为
-			//   cn.bjca.footstone.bpring.kafka:spring-kafka{,-test}:2.9.13-nes.patch.1-SNAPSHOT
-			// Spring Kafka NES 分支当前仅更换 groupId 和版本号，artifactId 仍保持
-			// spring-kafka / spring-kafka-test。
-			else if (requested.group == 'org.springframework.kafka') {
-				if (requested.name == 'spring-kafka' || requested.name == 'spring-kafka-test') {
-					details.useTarget("cn.bjca.footstone.bpring.kafka:${requested.name}:2.9.13-nes.patch.1-SNAPSHOT")
-				}
+			//   cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka{,-test}:2.9.13-nes.patch.1-SNAPSHOT
+			// Spring Kafka NES 分支已完成 artifactId 去特征化并发布到私服：
+			// spring-kafka → bjca-footstone-bpring-kafka、spring-kafka-test → bjca-footstone-bpring-kafka-test；
+			// GroupId、Version 不变。artifactId 通过 spring- 前缀替换得到，与规则一/二同构。
+			else if (requested.group == 'org.springframework.kafka' && requested.name.startsWith('spring-kafka')) {
+				def newArtifactId = requested.name.replaceFirst(/^spring-/, "${forkArtifactPrefix}-")
+				details.useTarget("cn.bjca.footstone.bpring.kafka:${newArtifactId}:2.9.13-nes.patch.1-SNAPSHOT")
 			}
 
 			// 规则四：ch.qos.logback 组映射

@@ -1897,10 +1897,10 @@ bom {
 			// Spring Kafka NES 分支仍在发布 POM 中传递依赖官方 org.springframework:*。
 			// 继续排除官方 Spring Framework 坐标，避免下游 classpath 混入两套 Spring。
 			modules = [
-				"spring-kafka" {
+				"bjca-footstone-bpring-kafka" {
 					exclude group: "org.springframework", module: "*"
 				},
-				"spring-kafka-test" {
+				"bjca-footstone-bpring-kafka-test" {
 					exclude group: "org.springframework", module: "*"
 				}
 			]

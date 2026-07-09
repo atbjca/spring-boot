@@ -580,10 +580,10 @@ Spring Kafka 已切换为 NES 坐标：
 
 | 原始坐标 | NES 坐标 |
 | :--- | :--- |
-| `org.springframework.kafka:spring-kafka` | `cn.bjca.footstone.bpring.kafka:spring-kafka` |
-| `org.springframework.kafka:spring-kafka-test` | `cn.bjca.footstone.bpring.kafka:spring-kafka-test` |
+| `org.springframework.kafka:spring-kafka` | `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka` |
+| `org.springframework.kafka:spring-kafka-test` | `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka-test` |
 
-> **注意：** 当前私服实际发布 artifactId 仍为 `spring-kafka` / `spring-kafka-test`，未发布 `bjca-footstone-bpring-kafka*` artifactId 或 `bjca-footstone-bpring-kafka-bom`。
+> **注意：** 当前私服实际发布 artifactId 为 `bjca-footstone-bpring-kafka` / `bjca-footstone-bpring-kafka-test`，未发布 `bjca-footstone-bpring-kafka-bom`。
 
 Spring Kafka NES POM 仍声明以下官方 Spring Framework 传递依赖，因此 Boot BOM 继续排除 `org.springframework:*`，下游在不使用相关 Starter 时需补充 NES Framework 模块。
 
@@ -710,7 +710,7 @@ Spring WS Core 及其依赖 `spring-xml` 的缺失依赖如下：
 <!-- Spring Kafka NES -->
 <dependency>
     <groupId>cn.bjca.footstone.bpring.kafka</groupId>
-    <artifactId>spring-kafka</artifactId>
+    <artifactId>bjca-footstone-bpring-kafka</artifactId>
 </dependency>
 
 <!-- 补充被排除的 Spring Framework fork 依赖 -->
