@@ -334,7 +334,10 @@ tasks.withType(org.asciidoctor.gradle.jvm.AbstractAsciidoctorTask) {
 					"spring-framework-version": versionConstraints["org.springframework:spring-core"],
 					"spring-graphql-version": versionConstraints["org.springframework.graphql:spring-graphql"],
 					"spring-integration-version": versionConstraints["org.springframework.integration:spring-integration-core"],
-					"spring-kafka-version": versionConstraints["org.springframework.kafka:spring-kafka"],
+					// spring.io 官方文档站基线版本，用于拼参考文档外链（见 attributes.adoc）。
+					// 与 fork 内部版本（BOM 的 2.9.13-nes.patch.1-SNAPSHOT）解耦：官网只有官方版本号的文档。
+					// Kafka 基线升级时需手动同步此常量。
+					"spring-kafka-version": "2.9.13",
 					"spring-security-version": securityVersion,
 					"spring-webservices-version": versionConstraints["org.springframework.ws:spring-ws-core"],
 					"remote-spring-application-output": runRemoteSpringApplicationExample.outputs.files.singleFile,
