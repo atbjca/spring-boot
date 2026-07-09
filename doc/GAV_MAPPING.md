@@ -312,10 +312,23 @@ forkGroupIdBase=cn.bjca.footstone.bpring
   Version:     (任意)                               → ${springSecurityVersion}
 ```
 
+> 此外，根 `build.gradle` 还实现了 **规则三（Spring Kafka）**、**规则四（Logback）**，详见源码内注释。
+
+**规则五 —— Spring Data 组映射（仅 commons / keyvalue）：**
+```
+触发条件：requested.group == 'org.springframework.data'
+          && requested.name ∈ { spring-data-commons, spring-data-keyvalue }
+转换逻辑：
+  GroupId:     org.springframework.data            → cn.bjca.footstone.bpring.data
+  ArtifactId:  spring-data-{name}                  → ${forkArtifactPrefix}-data-{name}
+  Version:     (任意)                               → 2.7.18-nes.patch.1-SNAPSHOT（硬编码）
+```
+> 仅 commons/keyvalue 两个模块完成 fork（含本体 CVE 修复），其余 `spring-data-*` 保持官方坐标 + 官方版本，由私服/mavenCentral 代理解析。规则五同时堵住 `spring-data-redis` 等官方模块经传递依赖回拉官方 `spring-data-commons` 的链路。见 [需求-034]。
+
 **关键特性：**
 - 所有子模块 `build.gradle` **无需任何修改**，仍使用上游原始坐标声明依赖
 - 替换在依赖解析阶段自动完成，对开发者完全透明
-- 如需新增映射组（如 `spring-data`），只需在 `resolutionStrategy` 中添加新的 `else if` 分支
+- 如需新增映射组，只需在 `resolutionStrategy` 中仿照现有规则添加新的 `else if` 分支
 
 ### 7.3 下游项目使用 BOM
 

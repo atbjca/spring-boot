@@ -142,6 +142,22 @@ allprojects {
 					details.useTarget("cn.bjca.footstone.bogback:bjca-footstone-bogback-${artifactSuffix}:1.2.13-nes.patch.1")
 				}
 			}
+
+			// 规则五：org.springframework.data 组映射（仅 commons / keyvalue）
+			// 将 org.springframework.data:spring-data-{commons,keyvalue} 替换为
+			//   cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-{commons,keyvalue}:2.7.18-nes.patch.1-SNAPSHOT
+			// Spring Data 仅这两个模块在 NES 分支完成本体 CVE 修复 + 去特征化并发布到私服
+			// （commons：CVE-2026-41711/41716/41721；keyvalue：CVE-2026-41719），其余 spring-data-*
+			// （redis / jpa / mongodb / rest 等）保持官方坐标，由 mavenCentral / 私服代理解析。
+			// 本规则有双重作用：① 让源码中对 commons/keyvalue 的官方坐标声明解析到 NES 制品；
+			// ② 堵住 spring-data-redis 等官方模块通过传递依赖回拉官方 spring-data-commons 的链路
+			// （fork BOM 用 NES 坐标做 key，管不到官方坐标，故必须在此全局重写）。
+			// 版本号硬编码为 fork 制品版本，与规则三（Kafka）同构。
+			else if (requested.group == 'org.springframework.data'
+					&& (requested.name == 'spring-data-commons' || requested.name == 'spring-data-keyvalue')) {
+				def newArtifactId = requested.name.replaceFirst(/^spring-/, "${forkArtifactPrefix}-")
+				details.useTarget("cn.bjca.footstone.bpring.data:${newArtifactId}:2.7.18-nes.patch.1-SNAPSHOT")
+			}
 		}
 	}
 }

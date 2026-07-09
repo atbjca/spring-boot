@@ -7,6 +7,7 @@
 
 | 升级日期 | 组件名称 | 升级前版本 | 升级后版本 | 修复漏洞 / 原因 | 兼容性说明 |
 | :---: | :--- | :---: | :---: | :--- | :--- |
+| 2026-07-09 | `org.springframework.data:spring-data-bom` → `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom` | `2021.2.18-nes.patch.1-SNAPSHOT`（官方坐标） | `2021.2.18-nes.patch.1-SNAPSHOT`（**fork 坐标**） | fork BOM 完成坐标去特征化；commons/keyvalue 切 NES 制品并 backport CVE-2026-41711/41716/41721（commons DoS）、CVE-2026-41719（keyvalue SpEL 注入）；配套 resolutionStrategy 规则五重写 commons/keyvalue | 包名/JPMS 模块名不变，Java 8 兼容；其余 spring-data-* 保持官方坐标由私服代理解析 |
 | 2026-07-08 | `com.fasterxml.jackson.core:jackson-databind` 等 | 2.21.4 | **2.21.5** | CVE-2026-54515（大小写不敏感绑定重开 `@JsonIgnoreProperties` 忽略字段，mass-assignment）— 该 CVE 未随 2.21.4 修复，backport 至 2.21.5 | 2.21.x 同 minor 线安全补丁，API 兼容，Java 8 兼容 |
 | 2026-07-02 | `org.jetbrains.kotlin:*` | 1.6.21 | **1.9.22** | 让 OkHttp 4.12 / jackson-module-kotlin 2.21 携带的 Kotlin metadata（1.8/1.9）能被 fork 构建接受；配套 jackson-module-kotlin 从 `strictly 2.16.2` 恢复由 jackson-bom 统一管理 | Kotlin `languageVersion`/`apiVersion` 维持在 `1.6`（Kotlin 1.9 编译器仍支持）；源码零改动 |
 | 2026-07-02 | `org.xerial:sqlite-jdbc` | 3.36.0.3 | **3.41.2.2** | CVE-2023-32697 (CVSS 8.8) JDBC URL RCE | 测试依赖；Java 8 兼容 |

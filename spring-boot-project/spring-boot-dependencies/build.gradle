@@ -1826,9 +1826,18 @@ bom {
 			versionRange "[2022.0.0-M1,)"
 			because "it uses Spring Framework 6"
 		}
-		group("org.springframework.data") {
+		// Spring Data BOM 已在 fork 仓库（spring-data-bom NES 分支）完成去特征化并发布到私服：
+		//   org.springframework.data:spring-data-bom
+		//     → cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom（version 2021.2.18-nes.patch.1-SNAPSHOT 不变）。
+		// 原始 org.springframework.data:spring-data-bom 坐标在私服中不存在，必须引用 fork 坐标。
+		// fork BOM 内部仅将 spring-data-commons / spring-data-keyvalue 切至 NES 制品，其余
+		// spring-data-* 模块保持官方坐标 + 官方版本（由 mavenCentral / 私服代理解析）。
+		// 与 root build.gradle 中 resolutionStrategy 规则五协作：BOM 提供版本管理，
+		// resolutionStrategy 将源码中 org.springframework.data:spring-data-{commons,keyvalue}
+		// 声明重写为 NES 坐标，并堵住 redis 等模块回拉官方 commons 的传递链。
+		group("cn.bjca.footstone.bpring.data") {
 			imports = [
-				"spring-data-bom"
+				"bjca-footstone-bpring-data-bom"
 			]
 		}
 	}

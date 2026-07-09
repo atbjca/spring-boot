@@ -493,6 +493,35 @@ implementation 'cn.bjca.footstone.bogback:bjca-footstone-bogback-core:1.2.13-nes
 
 ---
 
+## 7A. Spring Data GAV 映射表
+
+Spring Data 仅对 **BOM、commons、keyvalue** 三项完成 fork 去特征化（含本体 CVE 修复）；其余 spring-data-* 模块（redis / jpa / mongodb / rest / neo4j 等）**保持官方坐标 + 官方 `2.7.18` 版本**，由私服 `maven-public` / `mavenCentral` 代理解析。
+
+| 原始 GroupId | 原始 ArtifactId | NES Fork GroupId | NES Fork ArtifactId | NES Fork Version |
+| :--- | :--- | :--- | :--- | :--- |
+| `org.springframework.data` | `spring-data-bom` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-bom` | `2021.2.18-nes.patch.1-SNAPSHOT` |
+| `org.springframework.data` | `spring-data-commons` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-commons` | `2.7.18-nes.patch.1-SNAPSHOT` |
+| `org.springframework.data` | `spring-data-keyvalue` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-keyvalue` | `2.7.18-nes.patch.1-SNAPSHOT` |
+
+> **说明**：`commons` / `keyvalue` 的去特征化由本项目根 `build.gradle` 的 `resolutionStrategy` **规则五**透明完成——源码中对 `org.springframework.data:spring-data-{commons,keyvalue}` 的声明会在依赖解析期自动重写为上表 NES 坐标，各子模块 `build.gradle` 无需修改。该规则同时堵住 `spring-data-redis` 等官方模块通过传递依赖回拉官方 `spring-data-commons` 的链路。
+
+> **CVE 覆盖**：commons — CVE-2026-41711 / 41716 / 41721（DoS）；keyvalue — CVE-2026-41719（SpEL 排序注入）。详见 `doc/VULNERABILITY_REPORT.md` 与 `doc/CVE/`。
+
+### Gradle 依赖声明（BOM 平台方式）
+
+```groovy
+dependencies {
+    // 引入 fork Spring Data BOM 平台，版本由其统一管理
+    implementation platform('cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom:2021.2.18-nes.patch.1-SNAPSHOT')
+    // 源码可继续声明官方坐标，resolutionStrategy 规则五会重写为 NES 坐标
+    implementation 'org.springframework.data:spring-data-commons'
+}
+```
+
+> **提示**：引入 `bjca-footstone-bpring-boot-dependencies` BOM 的下游项目，Spring Data BOM 已被间接导入，无需重复声明。Java 包名（`org.springframework.data.*`）与 JPMS 模块名（`spring.data.commons` 等）保持不变，import 语句无需修改。
+
+---
+
 ## 8. 已排除的 Starter 清单
 
 以下 Starter 因依赖链冲突、私服缺失或构建精简策略，已从当前 NES 构建中排除，**不产生 fork 制品**。如下游项目需要使用这些功能，请继续使用官方原始坐标或联系维护团队评估纳入。

@@ -4,6 +4,79 @@
 
 ---
 
+## 📅 2026年07月09日
+
+### [需求-034] Spring Data BOM 切换至 fork 去特征化坐标 + commons/keyvalue CVE 闭环
+
+#### 背景与目的
+[需求-017] 于依赖版本对齐时，已将 `spring-boot-dependencies` 中 Spring Data BOM 的**版本**升至 fork 版本体系 `2021.2.18-nes.patch.1-SNAPSHOT`，但当时 fork 侧尚未对 BOM 及子模块做坐标去特征化，故 BOM import 仍用官方坐标 `org.springframework.data:spring-data-bom`，且 [需求-017] 改造一明确「跳过 spring-data-bom」。
+
+此后 fork 侧三个仓库完成本体 CVE 修复 + GAV 去特征化并发布私服：
+- **spring-data-bom**（`spring-data-bom-2.7`，分支 `2021.2.x-bjca-patch`）：BOM 自身坐标去特征化为 `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom`，内部仅将 commons/keyvalue 切至 NES 制品，其余 spring-data-* 保持官方坐标 + 官方 2.7.18；并删除 commons/keyvalue 上对 spring-core/beans/context/tx 的 `exclusions`（fork data 制品已自带 fork framework 依赖）。
+- **spring-data-commons-2.7**：backport 修复 3 个本体 DoS CVE（41711/41716/41721）+ 去特征化。
+- **spring-data-keyvalue-2.7**：backport 修复 SpEL 排序注入 CVE-2026-41719 + 去特征化。
+
+原始 `org.springframework.data:spring-data-bom:...-nes.patch.1-SNAPSHOT` 坐标在私服中已不存在，本项目若不更新，构建到 Spring Data 解析会失败。本需求补齐坐标层对接，并将 commons/keyvalue 四个 CVE 纳入四件套台账。
+
+#### 修改内容
+
+##### 1. BOM import 坐标去特征化（层一）
+- **文件**：`spring-boot-project/spring-boot-dependencies/build.gradle`
+    - `library("Spring Data Bom", "2021.2.18-nes.patch.1-SNAPSHOT")` 的 import 组由
+      `group("org.springframework.data") { imports = ["spring-data-bom"] }`
+      改为 `group("cn.bjca.footstone.bpring.data") { imports = ["bjca-footstone-bpring-data-bom"] }`
+    - 版本号 `2021.2.18-nes.patch.1-SNAPSHOT` 不变；加注释说明 fork BOM 仅 commons/keyvalue 去特征化、其余官方兜底、与 resolutionStrategy 规则五协作。
+
+##### 2. resolutionStrategy 规则五（层二）
+- **文件**：`build.gradle`（root），规则四（logback）之后新增规则五
+    - 将 `org.springframework.data:spring-data-{commons,keyvalue}` 重写为
+      `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-{commons,keyvalue}:2.7.18-nes.patch.1-SNAPSHOT`
+    - **仅**重写这两个模块，其余 spring-data-*（redis/jpa/mongodb/rest 等）保持官方坐标。
+    - 双重作用：① 让源码中 commons/keyvalue 的官方坐标声明解析到 NES 制品；② 堵住 spring-data-redis 等官方模块通过传递依赖回拉官方 spring-data-commons（fork BOM 用 NES 坐标做 key，管不到官方坐标）。版本硬编码，与规则三（Kafka）同构。
+    - 同步更新映射组头部注释（补 spring-data 到现有映射组清单）。
+
+##### 3. CVE 文档归档
+- **新建**：
+    - `doc/CVE/CVE-2026-41711.md` — PropertyPath camel-case 递归栈溢出 DoS（commons，5.9）
+    - `doc/CVE/CVE-2026-41716.md` — TypeDiscoverer 无界负结果缓存 OOM DoS（commons，7.5）
+    - `doc/CVE/CVE-2026-41721.md` — MapDataBinder SpEL 集合自动增长无上限 DoS（commons，8.2）
+- **更新**：`doc/CVE/CVE-2026-41719.md` — KeyValue SpEL 排序注入，状态由「⬜免疫」改为「✅已修复（fork backport）+ 未使用（双保险）」
+
+##### 4. 升级历史与漏洞报告同步
+- `doc/COMPONENTS_UPGRADE_HISTORY.md`：追加 Spring Data BOM 坐标去特征化行
+- `doc/VULNERABILITY_REPORT.md`：补 41711/41716/41721/41719 四个状态行，已修复计数 46 → 50
+- `doc/NES_GAV_MAPPING.md`、`doc/GAV_MAPPING.md`：新增 Spring Data GAV 映射章节（兑现 GAV_MAPPING.md 中「如需新增 spring-data 映射组」的既有 TODO）
+
+#### CVE 修复覆盖摘要
+
+| CVE | 组件 | 漏洞类型 | CVSS | 修复来源 |
+|-----|------|---------|:----:|---------|
+| CVE-2026-41721 | data-commons | MapDataBinder SpEL 集合自增无上限 DoS | 8.2 | fork 2.7.18-nes.patch.1 |
+| CVE-2026-41716 | data-commons | TypeDiscoverer 无界负缓存 OOM DoS | 7.5 | fork 2.7.18-nes.patch.1 |
+| CVE-2026-41711 | data-commons | PropertyPath camel-case 递归栈溢出 DoS | 5.9 | fork 2.7.18-nes.patch.1 |
+| CVE-2026-41719 | data-keyvalue | SpEL 排序注入 | HIGH | fork 2.7.18-nes.patch.1（+ 本体未使用） |
+
+#### 兼容性说明
+- fork data 制品为 Java 8 字节码、包名 `org.springframework.data.*` 与 JPMS 模块名不变，下游 `import` 零改动。
+- fork BOM 删除 commons/keyvalue 的 spring-core/beans/context/tx `exclusions` 后，即便 commons 传递回 `org.springframework:spring-core`，也会被 resolutionStrategy 规则一重写为 fork core，与规则五殊途同归、无双份。
+- spring-data-redis 等仍为官方坐标 + 官方 2.7.18，由 `mavenCentral()` / 私服 maven-public 代理解析；本次未 fork redis，其本体 CVE 不在本期范围。
+- 构建验证：见下方「构建验证」小节。
+
+#### 构建验证
+- 待在可访问私服（`192.168.131.36:8088`）且 fork data SNAPSHOT 制品已 deploy 的环境执行：
+    - `make clean test`（Tier A）+ `make clean build-thin`
+    - `./gradlew :spring-boot-project:spring-boot:dependencies` 核对 classpath 无官方/fork 双份 `spring-data-commons`、无官方 `spring-core` 漏网
+- 本次改动为坐标/版本管理层，若沙盒/离线环境私服不可达，则构建验证在具备内网的环境补跑。
+
+#### 涉及文件
+- `build.gradle`
+- `spring-boot-project/spring-boot-dependencies/build.gradle`
+- `doc/REQUIREMENTS.md`、`doc/COMPONENTS_UPGRADE_HISTORY.md`、`doc/VULNERABILITY_REPORT.md`
+- `doc/NES_GAV_MAPPING.md`、`doc/GAV_MAPPING.md`
+- `doc/CVE/CVE-2026-41711.md`、`CVE-2026-41716.md`、`CVE-2026-41721.md`（新建 3 个）、`CVE-2026-41719.md`（更新）
+
+---
+
 ## 📅 2026年07月08日
 
 ### [需求-033] Jackson BOM 升级至 2.21.5（CVE-2026-54515 补丁）
