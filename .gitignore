@@ -39,3 +39,7 @@ target
 secrets.yml
 .gradletasknamecache
 .sts4-cache
+.claude/settings.local.json
+.codex
+.cursor
+hs_err_pid*.log
