@@ -1039,7 +1039,9 @@ bom {
 		alignWith {
 			property {
 				name "jedis"
-				of "org.springframework.data:spring-data-redis"
+				// fork redis 坐标；官方 spring-data-redis 在私服已不存在，
+				// bomr 须读取 fork redis 制品 POM 中的 jedis 版本属性。
+				of "cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-redis"
 				managedBy "Spring Data Bom"
 			}
 		}
@@ -1293,7 +1295,9 @@ bom {
 		alignWith {
 			property {
 				name "lettuce"
-				of "org.springframework.data:spring-data-redis"
+				// fork redis 坐标；官方 spring-data-redis 在私服已不存在，
+				// bomr 须读取 fork redis 制品 POM 中的 lettuce 版本属性。
+				of "cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-redis"
 				managedBy "Spring Data Bom"
 			}
 		}

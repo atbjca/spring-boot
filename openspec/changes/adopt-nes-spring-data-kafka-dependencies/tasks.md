@@ -10,6 +10,7 @@
 - [x] 2.1 `library("Spring Kafka", ...)`：版本改 `3.3.16-nes.patch.1-SNAPSHOT`、group 改 `cn.bjca.footstone.bpring.kafka`、modules key 改名为 `bjca-footstone-bpring-kafka` / `-kafka-test`，**保留 `exclude group: "org.springframework", module: "*"`**
 - [x] 2.2 `library("Elasticsearch Client", "8.18.8")`：`alignWith { version { from ... } }` 的 `from` 由 `org.springframework.data:spring-data-elasticsearch` 改到 `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-elasticsearch`，`managedBy "Spring Data Bom"` 保持
 - [x] 2.3 **删除** Spring Data Commons / KeyValue / Redis 三个独立 library 块（四模块已 fork、内部不传递官方坐标，改由 fork data-bom 纳管，无需 A 类 exclude；与 2.7 一致）
+- [x] 2.4 `library("Jedis", ...)` / `library("Lettuce", ...)`：`alignWith { property { of ... } }` 的 `of` 由 `org.springframework.data:spring-data-redis` 改到 `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-redis`（官方 redis 坐标私服已不存在，bomrCheck 读版本属性时须指向 fork redis POM；fork redis POM 保留 `jedis`/`lettuce` 属性）
 
 ## 3. starter（确认不改）
 
