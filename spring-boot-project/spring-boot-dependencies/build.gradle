@@ -365,7 +365,9 @@ bom {
 		}
 		alignWith {
 			version {
-				from "org.springframework.data:spring-data-elasticsearch"
+				// fork ES 走独立 5.5.x 版本线；官方坐标在私服已不存在，
+				// bomr 版本对齐须读取 fork ES 制品 POM 中的 elasticsearch 版本属性。
+				from "cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-elasticsearch"
 				managedBy "Spring Data Bom"
 			}
 		}
@@ -2308,50 +2310,30 @@ bom {
 			releaseNotes("https://github.com/spring-projects/spring-batch/releases/tag/v{version}")
 		}
 	}
-	library("Spring Data Bom", "2025.0.13") {
+	library("Spring Data Bom", "2025.0.13-nes.patch.1-SNAPSHOT") {
 		prohibit {
 			versionRange "[2025.1.0-M1,)"
 			because "it exceeds our baseline"
 		}
 		considerSnapshots()
 		calendarName = "Spring Data Release"
-		group("org.springframework.data") {
-			bom("spring-data-bom")
+		// Spring Data BOM 已在 fork 仓库（spring-data-bom NES 分支）完成去特征化并发布私服：
+		//   org.springframework.data:spring-data-bom
+		//     → cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom（版本 2025.0.13-nes.patch.1-SNAPSHOT）。
+		// 原始官方坐标在私服中不存在，必须引用 fork 坐标。fork BOM 内部将
+		// commons/keyvalue/redis/elasticsearch 四模块切至 NES 制品（内部依赖已 fork 化，
+		// 不再传递官方 org.springframework:* 坐标，故无需再声明 A 类 exclude），
+		// 其余 spring-data-*（jpa/mongodb/neo4j/... ）保持官方坐标 + 官方版本。
+		// 与 root build.gradle 的 resolutionStrategy 协作：BOM 提供版本管理，
+		// resolutionStrategy 将源码/传递的 org.springframework.data:spring-data-{commons,keyvalue,redis,elasticsearch}
+		// 声明重写为 NES 坐标（commons/keyvalue/redis 走 3.5.x 线，elasticsearch 走独立 5.5.x 线）。
+		group("cn.bjca.footstone.bpring.data") {
+			bom("bjca-footstone-bpring-data-bom")
 		}
 		links("spring-data") {
 			site("https://spring.io/projects/spring-data")
 			github("https://github.com/spring-projects/spring-data-bom")
 			releaseNotes("https://github.com/spring-projects/spring-data-bom/releases/tag/{version}")
-		}
-	}
-	library("Spring Data Commons", "3.5.13") {
-		group("org.springframework.data") {
-			// [A 类排除] Spring Data Redis 链路中间模块，阻断官方 Spring Framework 坐标传递。
-			modules = [
-				"spring-data-commons" {
-					exclude group: "org.springframework", module: "*"
-				}
-			]
-		}
-	}
-	library("Spring Data KeyValue", "3.5.13") {
-		group("org.springframework.data") {
-			// [A 类排除] Spring Data Redis 链路中间模块，阻断官方 Spring Framework 坐标传递。
-			modules = [
-				"spring-data-keyvalue" {
-					exclude group: "org.springframework", module: "*"
-				}
-			]
-		}
-	}
-	library("Spring Data Redis", "3.5.13") {
-		group("org.springframework.data") {
-			// [A 类排除] Spring Data Redis 会直接传递 spring-tx / spring-oxm / spring-aop 等官方坐标。
-			modules = [
-				"spring-data-redis" {
-					exclude group: "org.springframework", module: "*"
-				}
-			]
 		}
 	}
 	library("Spring Framework", "${springFrameworkVersion}") {
@@ -2438,15 +2420,18 @@ bom {
 			releaseNotes("https://github.com/spring-projects/spring-integration/releases/tag/v{version}")
 		}
 	}
-	library("Spring Kafka", "3.3.16") {
+	library("Spring Kafka", "3.3.16-nes.patch.1-SNAPSHOT") {
 		considerSnapshots()
-		group("org.springframework.kafka") {
-			// [A 类排除] 未 fork 的生态组件，排除传递的官方 Spring 坐标
+		group("cn.bjca.footstone.bpring.kafka") {
+			// Spring Kafka NES 分支仅改 GAV，发布 POM 中仍以官方 org.springframework:* 声明
+			// 传递依赖（spring-context / spring-messaging / spring-tx）。虽然 root build.gradle
+			// 的 resolutionStrategy 规则一会将其重写为 fork 坐标，此处仍保留 A 类 exclude 作为
+			// 依赖图层面的双保险，避免下游 classpath 混入两套 Spring。
 			modules = [
-				"spring-kafka" {
+				"bjca-footstone-bpring-kafka" {
 					exclude group: "org.springframework", module: "*"
 				},
-				"spring-kafka-test" {
+				"bjca-footstone-bpring-kafka-test" {
 					exclude group: "org.springframework", module: "*"
 				}
 			]
