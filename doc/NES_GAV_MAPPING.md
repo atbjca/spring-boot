@@ -502,10 +502,12 @@ Spring Data 仅对 **BOM、commons、keyvalue** 三项完成 fork 去特征化�
 | `org.springframework.data` | `spring-data-bom` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-bom` | `2021.2.18-nes.patch.1-SNAPSHOT` |
 | `org.springframework.data` | `spring-data-commons` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-commons` | `2.7.18-nes.patch.1-SNAPSHOT` |
 | `org.springframework.data` | `spring-data-keyvalue` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-keyvalue` | `2.7.18-nes.patch.1-SNAPSHOT` |
+| `org.springframework.data` | `spring-data-redis` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-redis` | `2.7.18-nes.patch.1-SNAPSHOT` |
+| `org.springframework.data` | `spring-data-elasticsearch` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-elasticsearch` | `4.4.18-nes.patch.1-SNAPSHOT` |
 
-> **说明**：`commons` / `keyvalue` 的去特征化由本项目根 `build.gradle` 的 `resolutionStrategy` **规则五**透明完成——源码中对 `org.springframework.data:spring-data-{commons,keyvalue}` 的声明会在依赖解析期自动重写为上表 NES 坐标，各子模块 `build.gradle` 无需修改。该规则同时堵住 `spring-data-redis` 等官方模块通过传递依赖回拉官方 `spring-data-commons` 的链路。
+> **说明**：`commons` / `keyvalue` / `redis` 的去特征化由本项目根 `build.gradle` 的 `resolutionStrategy` **规则五**透明完成（同 `2.7.18-nes.patch.1-SNAPSHOT` 版本线）；`elasticsearch` 因版本线为 `4.4.18-nes.patch.1-SNAPSHOT`（ES 4.4.x），由独立的 **规则六** 处理。源码中对 `org.springframework.data:spring-data-{commons,keyvalue,redis,elasticsearch}` 的声明会在依赖解析期自动重写为上表 NES 坐标，各子模块 `build.gradle` 无需修改。规则五同时堵住未 fork 的 `spring-data-jpa` 等模块通过传递依赖回拉官方 `spring-data-commons` 的链路。见 [需求-034]、[需求-035]。
 
-> **CVE 覆盖**：commons — CVE-2026-41711 / 41716 / 41721（DoS）；keyvalue — CVE-2026-41719（SpEL 排序注入）。详见 `doc/VULNERABILITY_REPORT.md` 与 `doc/CVE/`。
+> **CVE 覆盖**：commons — CVE-2026-41711 / 41716 / 41721（DoS）；keyvalue — CVE-2026-41719（SpEL 排序注入）。redis / elasticsearch 所修为**传递依赖** CVE（Kotlin 29582 / Jackson 35116 / commons-beanutils 48734 / SnakeYAML 1471 / Elasticsearch 46673 / Netty 批），本项目 spring-boot BOM 版本已高于修复线，属坐标一致性对齐（[需求-035]）。详见 `doc/VULNERABILITY_REPORT.md` 与 `doc/CVE/`。
 
 ### Gradle 依赖声明（BOM 平台方式）
 

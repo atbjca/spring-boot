@@ -143,20 +143,37 @@ allprojects {
 				}
 			}
 
-			// 规则五：org.springframework.data 组映射（仅 commons / keyvalue）
-			// 将 org.springframework.data:spring-data-{commons,keyvalue} 替换为
-			//   cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-{commons,keyvalue}:2.7.18-nes.patch.1-SNAPSHOT
-			// Spring Data 仅这两个模块在 NES 分支完成本体 CVE 修复 + 去特征化并发布到私服
-			// （commons：CVE-2026-41711/41716/41721；keyvalue：CVE-2026-41719），其余 spring-data-*
-			// （redis / jpa / mongodb / rest 等）保持官方坐标，由 mavenCentral / 私服代理解析。
-			// 本规则有双重作用：① 让源码中对 commons/keyvalue 的官方坐标声明解析到 NES 制品；
-			// ② 堵住 spring-data-redis 等官方模块通过传递依赖回拉官方 spring-data-commons 的链路
+			// 规则五：org.springframework.data 组映射（commons / keyvalue / redis）
+			// 将 org.springframework.data:spring-data-{commons,keyvalue,redis} 替换为
+			//   cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-{commons,keyvalue,redis}:2.7.18-nes.patch.1-SNAPSHOT
+			// 这三个模块在 NES 分支完成本体去特征化（commons/keyvalue 另含本体 CVE 修复：
+			// commons CVE-2026-41711/41716/41721、keyvalue CVE-2026-41719）并发布到私服，同为
+			// 2.7.18-nes.patch.1-SNAPSHOT 版本线，故合并处理。elasticsearch 版本线不同（4.4.x），
+			// 见规则六。其余 spring-data-*（jpa / mongodb / rest / neo4j / r2dbc 等）保持官方坐标，
+			// 由 mavenCentral / 私服代理解析。
+			// 本规则有双重作用：① 让源码中对上述模块的官方坐标声明解析到 NES 制品；
+			// ② 堵住 spring-data-jpa 等未 fork 模块通过传递依赖回拉官方 spring-data-commons 的链路
 			// （fork BOM 用 NES 坐标做 key，管不到官方坐标，故必须在此全局重写）。
 			// 版本号硬编码为 fork 制品版本，与规则三（Kafka）同构。
 			else if (requested.group == 'org.springframework.data'
-					&& (requested.name == 'spring-data-commons' || requested.name == 'spring-data-keyvalue')) {
+					&& (requested.name == 'spring-data-commons'
+						|| requested.name == 'spring-data-keyvalue'
+						|| requested.name == 'spring-data-redis')) {
 				def newArtifactId = requested.name.replaceFirst(/^spring-/, "${forkArtifactPrefix}-")
 				details.useTarget("cn.bjca.footstone.bpring.data:${newArtifactId}:2.7.18-nes.patch.1-SNAPSHOT")
+			}
+
+			// 规则六：org.springframework.data:spring-data-elasticsearch 映射
+			// 将 org.springframework.data:spring-data-elasticsearch 替换为
+			//   cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-elasticsearch:4.4.18-nes.patch.1-SNAPSHOT
+			// elasticsearch NES fork 跟随 Spring Data Elasticsearch 4.4.x 版本线，其制品版本为
+			// 【4.4.18-nes.patch.1-SNAPSHOT】——与规则五的 2.7.18 版本线不同，故独立成一条分支，
+			// 不能并入规则五（否则会解析到不存在的 ...-elasticsearch:2.7.18-... 坐标而失败）。
+			// artifactId 同样走 spring- 前缀替换。
+			else if (requested.group == 'org.springframework.data'
+					&& requested.name == 'spring-data-elasticsearch') {
+				def newArtifactId = requested.name.replaceFirst(/^spring-/, "${forkArtifactPrefix}-")
+				details.useTarget("cn.bjca.footstone.bpring.data:${newArtifactId}:4.4.18-nes.patch.1-SNAPSHOT")
 			}
 		}
 	}

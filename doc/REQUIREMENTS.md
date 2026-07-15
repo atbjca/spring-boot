@@ -4,6 +4,63 @@
 
 ---
 
+## 📅 2026年07月10日
+
+### [需求-035] Spring Data redis / elasticsearch 纳入 fork 去特征化坐标
+
+#### 背景与目的
+[需求-034]（2026-07-09）完成 fork Spring Data 首轮对接时，上游仅 fork 了 BOM / commons / keyvalue 三项，redis / elasticsearch 保持官方坐标，故 `build.gradle` resolutionStrategy 规则五仅重写 commons/keyvalue。
+
+此后 fork 侧完成 redis / elasticsearch 两个模块本体去特征化并发布私服，且 fork BOM（`bjca-footstone-bpring-data-bom:2021.2.18-nes.patch.1-SNAPSHOT`，2026-07-10 09:11 deploy）已将 redis / elasticsearch 两条 managed 依赖切为 NES 坐标：
+- **spring-data-redis-2.7**（分支 `2.7.x-bjca-patch`）：去特征化为 `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-redis:2.7.18-nes.patch.1-SNAPSHOT`。
+- **spring-data-elasticsearch-2.7**（分支 `4.4.x-bjca-patch`）：去特征化为 `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-elasticsearch:4.4.18-nes.patch.1-SNAPSHOT`（版本线为 ES 4.4.x，非 2.7.x）。
+
+fork BOM 以 NES 坐标做 dependencyManagement key，无法匹配源码/starter 中声明的官方坐标 `org.springframework.data:spring-data-{redis,elasticsearch}`，故必须在 `build.gradle` 解析期补齐重写。本需求补齐这一层，并将 redis/es fork 所修的传递依赖 CVE 纳入四件套台账。
+
+#### 修改内容
+
+##### 1. resolutionStrategy 规则五扩容 + 新增规则六（build.gradle）
+- **规则五**：白名单并入 `spring-data-redis`（与 commons/keyvalue 同版本线 `2.7.18-nes.patch.1-SNAPSHOT`，走 `spring-` 前缀替换）。更新注释说明现覆盖 commons/keyvalue/redis。
+- **规则六**（新增）：单独处理 `spring-data-elasticsearch` → `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-elasticsearch:4.4.18-nes.patch.1-SNAPSHOT`。因版本线（4.4.x）不同于规则五（2.7.x），不能并入规则五（否则解析到不存在的 `...-elasticsearch:2.7.18-...` 坐标而失败），故独立成分支。
+- **BOM import 坐标不变**：[需求-034] 已将 Spring Data BOM import 切为 fork 坐标，今日 fork BOM 新 deploy 自动生效，本需求不动 `spring-boot-dependencies/build.gradle`。
+
+##### 2. CVE 文档归档（redis/es 传递依赖 CVE）
+- **新建**：
+    - `doc/CVE/CVE-2020-29582.md` — Kotlin `createTempDir/createTempFile` 本地信息泄露（redis 传递，Kotlin 协程扩展 optional）
+    - `doc/CVE/CVE-2023-35116.md` — jackson-databind 深层嵌套 DoS（redis 传递）
+    - `doc/CVE/CVE-2025-48734.md` — commons-beanutils PropertyUtils class 属性访问（redis 经 BeanUtilsHashMapper，optional）
+    - `doc/CVE/CVE-2022-1471.md` — SnakeYAML 不安全反序列化 RCE（es 经 elasticsearch-x-content 传递）
+    - `doc/CVE/CVE-2023-46673.md` — Elasticsearch 本体（es 传递）
+    - `doc/CVE/CVE-NETTY-REDIS-ES-4.1.65.md` — Netty 4.1.65.Final 批量 CVE 汇总（redis/es 传递）
+- **统一定性**：本项目经 spring-boot BOM 管理的实际版本全线高于修复线（Kotlin 1.9.22 / Jackson 2.21.5 / Netty 4.1.135.Final / SnakeYAML 2.5 / Elasticsearch 7.17.29），故这些 CVE **已免疫或已修复（双保险）**。纳入 redis/es fork 属**坐标一致性对齐，非修补当前敞口**。
+
+##### 3. 升级历史与漏洞报告同步
+- `doc/COMPONENTS_UPGRADE_HISTORY.md`：追加 redis/es 坐标去特征化对接行
+- `doc/VULNERABILITY_REPORT.md`：补 redis/es 传递 CVE 状态行，**按维护约定不再累计/更新统计计数**
+- `doc/NES_GAV_MAPPING.md`、`doc/GAV_MAPPING.md`：Spring Data fork 边界说明由「BOM/commons/keyvalue」修订为「BOM/commons/keyvalue/redis/elasticsearch」，补 redis/es NES 坐标与版本
+
+#### fork 边界更新摘要
+
+| 模块 | fork 坐标 | 版本线 | 处理规则 |
+|------|-----------|:------:|---------|
+| commons | bjca-footstone-bpring-data-commons | 2.7.18-nes.patch.1 | 规则五 |
+| keyvalue | bjca-footstone-bpring-data-keyvalue | 2.7.18-nes.patch.1 | 规则五 |
+| **redis** | **bjca-footstone-bpring-data-redis** | **2.7.18-nes.patch.1** | **规则五（本次并入）** |
+| **elasticsearch** | **bjca-footstone-bpring-data-elasticsearch** | **4.4.18-nes.patch.1** | **规则六（本次新增）** |
+| 其余 spring-data-*（jpa/mongodb/rest/neo4j/r2dbc…） | 官方坐标 | 官方 2.7.18 | 不重写 |
+
+#### 兼容性说明
+- fork redis/es 制品为 Java 8 字节码，包名 `org.springframework.data.redis.*` / `org.springframework.data.elasticsearch.*` 与 JPMS 模块名不变，下游 `import` 零改动。
+- redis/es fork 打包的传递依赖版本旧于本项目 BOM，但经规则一（framework 整组映射）与 BOM 统一版本管理，运行时 classpath 取本项目更高版本，无双份、无降级。
+- 规则五对 commons 的重写本就兼堵 redis/es 经传递依赖回拉官方 commons 的链路。
+
+#### 构建验证
+- 待在可访问私服（`192.168.131.36:8088`）且 fork redis/es SNAPSHOT 制品已 deploy 的环境执行（制品已确认在本机 `~/.m2`）：
+    - `make clean test`（Tier A）+ `make clean build-thin`
+    - `./gradlew :spring-boot-project:spring-boot:dependencies` 核对 redis/es 解析到 NES 制品、无官方/fork 双份 `spring-data-redis`/`spring-data-elasticsearch`、无官方 `spring-data-commons` 漏网
+
+---
+
 ## 📅 2026年07月09日
 
 ### [需求-034] Spring Data BOM 切换至 fork 去特征化坐标 + commons/keyvalue CVE 闭环
