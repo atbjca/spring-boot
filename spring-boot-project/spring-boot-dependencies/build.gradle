@@ -2332,7 +2332,21 @@ bom {
 		// resolutionStrategy 将源码/传递的 org.springframework.data:spring-data-{commons,keyvalue,redis,elasticsearch}
 		// 声明重写为 NES 坐标（commons/keyvalue/redis 走 3.5.x 线，elasticsearch 走独立 5.5.x 线）。
 		group("cn.bjca.footstone.bpring.data") {
-			bom("bjca-footstone-bpring-data-bom")
+			bom("bjca-footstone-bpring-data-bom") {
+				permit("org.springframework.data:spring-data-cassandra")
+				permit("org.springframework.data:spring-data-couchbase")
+				permit("org.springframework.data:spring-data-envers")
+				permit("org.springframework.data:spring-data-jdbc")
+				permit("org.springframework.data:spring-data-jpa")
+				permit("org.springframework.data:spring-data-ldap")
+				permit("org.springframework.data:spring-data-mongodb")
+				permit("org.springframework.data:spring-data-neo4j")
+				permit("org.springframework.data:spring-data-r2dbc")
+				permit("org.springframework.data:spring-data-relational")
+				permit("org.springframework.data:spring-data-rest-core")
+				permit("org.springframework.data:spring-data-rest-hal-explorer")
+				permit("org.springframework.data:spring-data-rest-webmvc")
+			}
 		}
 		links("spring-data") {
 			site("https://spring.io/projects/spring-data")
@@ -2526,7 +2540,6 @@ bom {
 	library("Spring Retry", "2.0.13") {
 		considerSnapshots()
 		group("org.springframework.retry") {
-			// [A 类排除] 未 fork 的生态组件，排除传递的官方 Spring 坐标
 			modules = [
 				"spring-retry" {
 					exclude group: "org.springframework", module: "*"
@@ -2579,25 +2592,17 @@ bom {
 	}
 	library("Spring WS", "4.1.4") {
 		considerSnapshots()
+		// 使用 bom() 导入而非展开 modules：spring-ws-security 会经 wss4j 传递依赖
+		// org.opensaml:*:5.1.6，而 opensaml 5.x 仅托管在 Shibboleth 仓库
+		// （build.shibboleth.net），不在 Maven Central、本项目 nexus 私服亦未代理。
+		// 展开成显式 modules 会令 bomrCheck 深挖各模块传递闭包、触发 opensaml 解析失败；
+		// bom() 导入仅校验 BOM 自身、不深挖闭包，与上游做法一致，从根上规避该问题。
+		// 未展开 modules 则无法对单模块声明 A 类 exclude，但 spring-ws-* 传递的官方
+		// org.springframework:spring-* 坐标已由根 build.gradle resolutionStrategy 规则一
+		// 全局重写为 fork 坐标（:dependencies 实测无官方漏网），故 exclude 在此冗余。
+		// 前提：本项目未使用 SOAP WS-Security / SAML 2.0 功能（无 starter-webservices）。
 		group("org.springframework.ws") {
-			modules = [
-				"spring-ws-core" {
-					exclude group: "org.springframework", module: "*"
-				},
-				"spring-ws-security" {
-					exclude group: "org.springframework", module: "*"
-					exclude group: "org.springframework.security", module: "*"
-				},
-				"spring-ws-support" {
-					exclude group: "org.springframework", module: "*"
-				},
-				"spring-ws-test" {
-					exclude group: "org.springframework", module: "*"
-				},
-				"spring-xml" {
-					exclude group: "org.springframework", module: "*"
-				}
-			]
+			bom("spring-ws-bom")
 		}
 		links("spring-webservices") {
 			site("https://spring.io/projects/spring-ws")

@@ -2,6 +2,7 @@
 
 LOCAL_GRADLE_DIR ?= $(HOME)/dev
 SETUP_GRADLE := ./scripts/setup-gradle-local.sh
+TEST_ENV := env -u DOCKER_HOST -u DOCKER_CONTEXT -u DOCKER_TLS_VERIFY -u DOCKER_CERT_PATH
 
 help: ## 显示帮助信息
 	@echo ""
@@ -30,7 +31,7 @@ format: setup-gradle ## 格式化代码
 	./gradlew format
 
 build: setup-gradle ## 全量 build（含 test，本地不推荐）
-	./gradlew build
+	$(TEST_ENV) ./gradlew build
 
 build-thin: setup-gradle ## 编译打包，跳过 test / intTest / 部分 checkstyle
 	./gradlew assemble -x test -x intTest -x checkstyleMain -x checkstyleTest
@@ -62,7 +63,7 @@ projects: setup-gradle ## 查看子项目列表
 # Tier B（make test-gate）待摸底后实施；当前 make test 仅为 Phase 1 过渡。
 # ----------------------------------------------------------------------------
 test: setup-gradle ## Phase 1 核心模块测试（spring-boot + spring-boot-test）
-	./gradlew \
+	$(TEST_ENV) ./gradlew \
 		:spring-boot-project:spring-boot:test \
 		:spring-boot-project:spring-boot-test:test \
 		-x checkstyleMain -x checkstyleTest
@@ -76,7 +77,7 @@ test: setup-gradle ## Phase 1 核心模块测试（spring-boot + spring-boot-tes
 # 本地实测（2026-07-01，Java 17）：14395 条，0 失败，约 14 分钟。
 # ----------------------------------------------------------------------------
 test-gate: setup-gradle ## Tier B 正式 merge 门槛（9 模块，承诺全绿）
-	./gradlew \
+	$(TEST_ENV) ./gradlew \
 		:spring-boot-project:spring-boot:test \
 		:spring-boot-project:spring-boot-test:test \
 		:spring-boot-project:spring-boot-autoconfigure:test \

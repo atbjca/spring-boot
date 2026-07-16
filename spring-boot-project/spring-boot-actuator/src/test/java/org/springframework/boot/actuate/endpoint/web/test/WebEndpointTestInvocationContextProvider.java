@@ -68,6 +68,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.annotation.MergedAnnotations.SearchStrategy;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -194,6 +195,7 @@ class WebEndpointTestInvocationContextProvider implements TestTemplateInvocation
 			uriBuilderFactory.setEncodingMode(EncodingMode.NONE);
 			return WebTestClient.bindToServer()
 				.uriBuilderFactory(uriBuilderFactory)
+				.defaultHeader(HttpHeaders.CONNECTION, "close")
 				.responseTimeout(TIMEOUT)
 				.codecs((codecs) -> codecs.defaultCodecs().maxInMemorySize(-1))
 				.filter((request, next) -> {

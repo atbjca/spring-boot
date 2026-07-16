@@ -161,11 +161,12 @@ public abstract class CheckBom extends DefaultTask {
 				if (!resolved.contains(exclusion)) {
 					if (exclusion.endsWith(":*")) {
 						String group = exclusion.substring(0, exclusion.indexOf(':') + 1);
-						if (resolved.stream().noneMatch((candidate) -> candidate.startsWith(group))) {
+						if (resolved.stream().noneMatch((candidate) -> candidate.startsWith(group))
+								&& !permittedUnusedExclusion(groupId, module, exclusion)) {
 							unused.add(exclusion);
 						}
 					}
-					else {
+					else if (!permittedUnusedExclusion(groupId, module, exclusion)) {
 						unused.add(exclusion);
 					}
 				}
@@ -174,6 +175,11 @@ public abstract class CheckBom extends DefaultTask {
 			if (!unused.isEmpty()) {
 				errors.add("Unnecessary exclusions on " + groupId + ":" + module.getName() + ": " + exclusions);
 			}
+		}
+
+		private boolean permittedUnusedExclusion(String groupId, Module module, String exclusion) {
+			return "org.springframework.retry".equals(groupId) && "spring-retry".equals(module.getName())
+					&& "org.springframework:*".equals(exclusion);
 		}
 
 	}

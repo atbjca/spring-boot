@@ -22,9 +22,11 @@ import java.util.stream.Collectors;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.artifacts.component.ModuleComponentSelector;
 import org.gradle.api.artifacts.result.DependencyResult;
 import org.gradle.api.artifacts.result.ResolutionResult;
+import org.gradle.api.artifacts.result.ResolvedDependencyResult;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.TaskAction;
@@ -56,10 +58,13 @@ public abstract class CheckClasspathForUnconstrainedDirectDependencies extends D
 		ResolutionResult resolutionResult = this.classpath.getIncoming().getResolutionResult();
 		Set<? extends DependencyResult> dependencies = resolutionResult.getRoot().getDependencies();
 		Set<String> unconstrainedDependencies = dependencies.stream()
-			.map(DependencyResult::getRequested)
-			.filter(ModuleComponentSelector.class::isInstance)
-			.map(ModuleComponentSelector.class::cast)
-			.map((selector) -> selector.getGroup() + ":" + selector.getModule())
+			.filter(ResolvedDependencyResult.class::isInstance)
+			.map(ResolvedDependencyResult.class::cast)
+			.map(ResolvedDependencyResult::getSelected)
+			.map((component) -> component.getId())
+			.filter(ModuleComponentIdentifier.class::isInstance)
+			.map(ModuleComponentIdentifier.class::cast)
+			.map((identifier) -> identifier.getGroup() + ":" + identifier.getModule())
 			.collect(Collectors.toSet());
 		Set<String> constraints = resolutionResult.getAllDependencies()
 			.stream()

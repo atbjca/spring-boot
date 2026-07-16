@@ -8,7 +8,11 @@
 
 **Spring Kafka 虽已 fork（GAV 去特征化）**，但其 fork POM 内部仍以官方坐标声明传递依赖（`org.springframework:spring-context/messaging/tx`），故作为特例**保留**在本 A 类范围内：group 与 modules key 更名为 fork 坐标，`exclude group: "org.springframework", module: "*"` 保留，作为依赖图层面的双保险（与 root `resolutionStrategy` 规则一的坐标重写叠加）。
 
-覆盖范围（更新后）：GraphQL / HATEOAS / LDAP / Retry（显式 modules，官方坐标）+ AMQP / Batch / WS / RESTDocs（bom→modules 转换，官方坐标）+ **Kafka（fork 坐标 `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka{,-test}`，保留 exclude）**。Spring Data 链路（commons/keyvalue/redis/elasticsearch）**不再属于本范围**。
+**Spring Retry 保留在本 A 类覆盖范围内**：`spring-retry` POM 声明了 optional `org.springframework:spring-context`，Gradle 解析传递 artifact set 时不会拉取 optional 依赖，但 SCA/治理仍按 POM 声明看到官方 Spring 坐标，因此 BOM dependencyManagement MUST 保留 `exclude group: "org.springframework", module: "*"`。`bomrCheck` 对该策略性 optional exclusion 设白名单。
+
+**Spring WS 从本 A 类覆盖范围移除**：Spring WS 保持上游 `spring-ws-bom` import，避免显式 modules 触发 `spring-ws-security -> wss4j -> org.opensaml:*` 解析，而 OpenSAML 5.x 仅托管在 Shibboleth 仓库、本项目私服未代理。
+
+覆盖范围（更新后）：GraphQL / HATEOAS / LDAP / Retry（显式 modules，官方坐标）+ AMQP / Batch / RESTDocs（bom→modules 转换，官方坐标）+ **Kafka（fork 坐标 `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka{,-test}`，保留 exclude）**。Spring Data 链路（commons/keyvalue/redis/elasticsearch）、Spring WS **不再属于本范围**。
 
 | 组件 | groupId | 模块数 | 备注 |
 |------|---------|--------|------|
@@ -16,13 +20,12 @@
 | Spring HATEOAS | `org.springframework.hateoas` | 1 | 官方坐标，排除 |
 | Spring Kafka | `cn.bjca.footstone.bpring.kafka` | 2 | **fork 坐标**，key `bjca-footstone-bpring-kafka{,-test}`，保留排除 |
 | Spring LDAP | `org.springframework.ldap` | 4 | 官方坐标，全部排除 |
-| Spring Retry | `org.springframework.retry` | 1 | 官方坐标，排除 |
+| Spring Retry | `org.springframework.retry` | 1 | 官方坐标，排除 optional Spring 坐标 |
 | Spring AMQP | `org.springframework.amqp` | 5 | 官方坐标，全部排除 |
 | Spring Batch | `org.springframework.batch` | 4 | 官方坐标，全部排除 |
-| Spring WS | `org.springframework.ws` | 5 | `spring-ws-security` 额外排除 `org.springframework.security` |
 | Spring RESTDocs | `org.springframework.restdocs` | 4 | `spring-restdocs-asciidoctor` 不排除 |
 
-AMQP / Batch / WS / RESTDocs MUST 从 `bom()` import 改为显式 `modules = [...]` 列表以支持 per-module exclusion。Spring Data MUST 导入 fork `bjca-footstone-bpring-data-bom` 且不再声明 exclude（fork 模块内部已 fork 化）。
+AMQP / Batch / RESTDocs MUST 从 `bom()` import 改为显式 `modules = [...]` 列表以支持 per-module exclusion。Spring WS MUST use `bom("spring-ws-bom")` import and SHALL NOT expand to explicit modules unless the build also provides an OpenSAML/Shibboleth resolution strategy. Spring Data MUST 导入 fork `bjca-footstone-bpring-data-bom` 且不再声明 exclude（fork 模块内部已 fork 化）。
 
 #### Scenario: spring-kafka managed dependency 含 exclusion
 - **WHEN** 生成 `spring-boot-dependencies` POM
@@ -33,9 +36,14 @@ AMQP / Batch / WS / RESTDocs MUST 从 `bom()` import 改为显式 `modules = [..
 - **WHEN** 生成 `spring-boot-dependencies` POM
 - **THEN** `org.springframework.amqp:spring-amqp` 的 dependencyManagement 条目包含 exclusion `org.springframework:*`
 
-#### Scenario: spring-ws-security 含双重 exclusion
+#### Scenario: spring-ws-bom 保持 BOM import
 - **WHEN** 生成 `spring-boot-dependencies` POM
-- **THEN** `org.springframework.ws:spring-ws-security` 的 dependencyManagement 条目包含 exclusion `org.springframework:*` 和 `org.springframework.security:*`
+- **THEN** dependencyManagement imports `org.springframework.ws:spring-ws-bom`
+- **AND** Spring WS is not expanded into per-module dependency management entries.
+
+#### Scenario: spring-retry managed dependency 含 exclusion
+- **WHEN** 生成 `spring-boot-dependencies` POM
+- **THEN** `org.springframework.retry:spring-retry` 的 dependencyManagement 条目包含 `org.springframework:*` exclusion
 
 #### Scenario: spring-restdocs-asciidoctor 无 exclusion
 - **WHEN** 生成 `spring-boot-dependencies` POM

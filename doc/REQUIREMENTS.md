@@ -54,11 +54,12 @@ nexusPassword=your-password
 |------|------|
 | 状态 | 已完成 |
 | 基线 | Phase B 完成后的 `3.5.x-bjca-patch` |
-| 范围 | BOM 中对 GraphQL / HATEOAS / Kafka / LDAP / Retry 添加 `exclude org.springframework`；Redis 链路覆盖 `spring-data-commons` / `spring-data-keyvalue` / `spring-data-redis` |
-| 非目标 | Spring Data 其它模块 / Integration / Session BOM import 条目、Logback fork |
+| 范围 | BOM 中对 GraphQL / HATEOAS / LDAP / Retry / AMQP / Batch / RESTDocs 添加 `exclude org.springframework`；Kafka 使用 fork 坐标并保留 exclusion；Spring Data commons/keyvalue/redis/elasticsearch 使用 fork BOM + fork 制品 |
+| 非目标 | Spring Data 其它未 fork 模块 / Integration / Session BOM import 条目、Logback fork；Spring WS 保持上游 BOM import |
 
 ### 验收标准
 
-- 生成的 BOM POM 中上述模块含 `org.springframework:*` exclusion
-- Spring Data Redis 链路保留 `spring-data-bom` import，同时 Redis 相关三个 managed module 含 `org.springframework:*` exclusion
+- 生成的 BOM POM 中上述 A 类模块含 `org.springframework:*` exclusion
+- Spring Data BOM 使用 `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom`，Redis/KeyValue/Commons/Elasticsearch 解析到 fork 坐标
+- Spring WS 保持 `spring-ws-bom` import，不展开 modules 解析 OpenSAML
 - `make build-thin` / `make test` 全绿

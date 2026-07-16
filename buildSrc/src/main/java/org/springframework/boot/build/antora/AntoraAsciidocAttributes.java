@@ -189,13 +189,21 @@ public class AntoraAsciidocAttributes {
 
 	private void addSpringDataDependencyVersion(Map<String, String> attributes, Map<String, String> internal,
 			String name, String artifactId) {
-		String groupAndArtifactId = "org.springframework.data:" + artifactId;
-		addDependencyVersion(attributes, name, groupAndArtifactId);
-		String version = getVersion(groupAndArtifactId);
+		String version = getSpringDataVersion(artifactId);
+		attributes.put("version-" + name, version);
 		String majorMinor = Arrays.stream(version.split("\\.")).limit(2).collect(Collectors.joining("."));
 		String antoraVersion = version.endsWith(DASH_SNAPSHOT) ? majorMinor + DASH_SNAPSHOT : majorMinor;
 		internal.put("antoraversion-" + name, antoraVersion);
 		internal.put("dotxversion-" + name, majorMinor + ".x");
+	}
+
+	private String getSpringDataVersion(String artifactId) {
+		String version = this.dependencyVersions.get("org.springframework.data:" + artifactId);
+		if (version != null) {
+			return version;
+		}
+		String forkArtifactId = "bjca-footstone-bpring-data-" + artifactId.replace("spring-data-", "");
+		return getVersion("cn.bjca.footstone.bpring.data:" + forkArtifactId);
 	}
 
 	private void addDependencyVersion(Map<String, String> attributes, String name, String groupAndArtifactId) {

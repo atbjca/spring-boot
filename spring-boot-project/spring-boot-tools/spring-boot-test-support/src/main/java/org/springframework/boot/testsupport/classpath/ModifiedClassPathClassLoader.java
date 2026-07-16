@@ -306,6 +306,46 @@ final class ModifiedClassPathClassLoader extends URLClassLoader {
 		return excludedPackages;
 	}
 
+	private static Set<String> expandExclusionsForFork(Set<String> exclusions) {
+		String forkPrefix = resolveForkArtifactPrefix();
+		if (forkPrefix == null || forkPrefix.isEmpty()) {
+			return exclusions;
+		}
+		Set<String> expanded = new LinkedHashSet<>(exclusions);
+		for (String exclusion : exclusions) {
+			if (exclusion.contains("spring-")) {
+				expanded.add(exclusion.replace("spring-", forkPrefix + "-"));
+			}
+		}
+		return expanded;
+	}
+
+	private static String resolveForkArtifactPrefix() {
+		String fromProperty = System.getProperty("forkArtifactPrefix");
+		if (fromProperty != null && !fromProperty.isEmpty()) {
+			return fromProperty;
+		}
+		File dir = new File(System.getProperty("user.dir"));
+		while (dir != null) {
+			File gradleProperties = new File(dir, "gradle.properties");
+			if (gradleProperties.isFile()) {
+				try (FileInputStream in = new FileInputStream(gradleProperties)) {
+					Properties properties = new Properties();
+					properties.load(in);
+					String prefix = properties.getProperty("forkArtifactPrefix");
+					if (prefix != null && !prefix.isEmpty()) {
+						return prefix.trim();
+					}
+				}
+				catch (IOException ex) {
+					// Ignore
+				}
+			}
+			dir = dir.getParentFile();
+		}
+		return null;
+	}
+
 	/**
 	 * Filter for class path entries.
 	 */
@@ -346,46 +386,6 @@ final class ModifiedClassPathClassLoader extends URLClassLoader {
 			return false;
 		}
 
-	}
-
-	private static Set<String> expandExclusionsForFork(Set<String> exclusions) {
-		String forkPrefix = resolveForkArtifactPrefix();
-		if (forkPrefix == null || forkPrefix.isEmpty()) {
-			return exclusions;
-		}
-		Set<String> expanded = new LinkedHashSet<>(exclusions);
-		for (String exclusion : exclusions) {
-			if (exclusion.contains("spring-")) {
-				expanded.add(exclusion.replace("spring-", forkPrefix + "-"));
-			}
-		}
-		return expanded;
-	}
-
-	private static String resolveForkArtifactPrefix() {
-		String fromProperty = System.getProperty("forkArtifactPrefix");
-		if (fromProperty != null && !fromProperty.isEmpty()) {
-			return fromProperty;
-		}
-		File dir = new File(System.getProperty("user.dir"));
-		while (dir != null) {
-			File gradleProperties = new File(dir, "gradle.properties");
-			if (gradleProperties.isFile()) {
-				try (FileInputStream in = new FileInputStream(gradleProperties)) {
-					Properties properties = new Properties();
-					properties.load(in);
-					String prefix = properties.getProperty("forkArtifactPrefix");
-					if (prefix != null && !prefix.isEmpty()) {
-						return prefix.trim();
-					}
-				}
-				catch (IOException ex) {
-					// Ignore
-				}
-			}
-			dir = dir.getParentFile();
-		}
-		return null;
 	}
 
 }
