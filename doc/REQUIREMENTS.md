@@ -29,6 +29,22 @@ nexusUsername=your-user
 nexusPassword=your-password
 ```
 
+## [需求-004] 2026-07-16 依赖安全修复
+
+| 组件 | 要求版本 | 说明 |
+|------|----------|------|
+| Jackson Databind/BOM | 2.21.5 | 修复 2026-54512 至 54518、2026-59888/59889 |
+| Logback | 1.5.38 | 保持官方 `ch.qos.logback` 坐标，修复 CVE-2026-13006 |
+| Tomcat | 10.1.57 | 修复 CVE-2026-59083 |
+| Undertow | 2.3.26.Final | 修复 2026-28367/28368/28369，保持 2.3.x 兼容线 |
+
+验收要求：
+
+- 生成 BOM 必须显示上述版本。
+- 必须执行 clean `make build-thin` 和 `make test` 并记录结果。
+- 必须同步 `doc/VULNERABILITY_REPORT.md` 与 `doc/CVE/` 明细。
+- Log4j2 2.24.3 本轮不升级；默认运行时使用 Logback，并记录风险接受边界和复核触发条件。
+
 ## [需求-002] Framework / Security GAV 映射 Phase B
 
 | 字段 | 内容 |

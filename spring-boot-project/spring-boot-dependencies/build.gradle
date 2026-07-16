@@ -1355,7 +1355,7 @@ bom {
 			releaseNotes("https://github.com/apache/logging-log4j2/releases/tag/rel%2F{version}")
 		}
 	}
-	library("Logback", "1.5.34") {
+	library("Logback", "1.5.38") {
 		group("ch.qos.logback") {
 			modules = [
 				"logback-classic",
@@ -2743,7 +2743,7 @@ bom {
 			releaseNotes("https://github.com/pingidentity/ldapsdk/releases/tag/{version}")
 		}
 	}
-	library("Undertow", "2.3.24.Final") {
+	library("Undertow", "2.3.26.Final") {
 		group("io.undertow") {
 			modules = [
 				"undertow-core",

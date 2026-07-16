@@ -19,7 +19,7 @@
 | Spring Data 其它模块 / Integration / Session | 各官方 groupId | 官方 BOM import / 官方坐标 | ⏳ 待后续评估 |
 | Spring Pulsar | `org.springframework.pulsar` | 官方 BOM import | ⏳ 待后续评估（3.5 新增） |
 
-Logback 仍用官方 `ch.qos.logback:1.5.34`（不 fork bogback）。
+Logback 仍用官方 `ch.qos.logback:1.5.38`（不 fork bogback）。
 
 ## Phase B（已完成）
 
@@ -36,7 +36,7 @@ Logback 仍用官方 `ch.qos.logback:1.5.34`（不 fork bogback）。
 | Spring Data Elasticsearch | `org.springframework.data:spring-data-elasticsearch` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-elasticsearch` | `5.5.13-nes.patch.1-SNAPSHOT` |
 | Spring Kafka | `org.springframework.kafka:spring-kafka` | `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka` | `3.3.16-nes.patch.1-SNAPSHOT` |
 | Spring Kafka Test | `org.springframework.kafka:spring-kafka-test` | `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka-test` | `3.3.16-nes.patch.1-SNAPSHOT` |
-| Logback | `ch.qos.logback:*` | 官方 | `1.5.34` |
+| Logback | `ch.qos.logback:*` | 官方 | `1.5.38` |
 
 ### Fork 参数
 

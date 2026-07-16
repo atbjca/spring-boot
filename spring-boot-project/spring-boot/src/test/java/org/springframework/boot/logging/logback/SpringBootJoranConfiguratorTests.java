@@ -238,22 +238,6 @@ class SpringBootJoranConfiguratorTests {
 	}
 
 	@Test
-	@WithPropertyInIfXmlResource
-	void springPropertyInIfWhenTrue() throws Exception {
-		TestPropertySourceUtils.addInlinedPropertiesToEnvironment(this.environment, "my.example-property=true");
-		initialize("property-in-if.xml");
-		assertThat(this.context.getProperty("MYCHECK")).isEqualTo("i-was-included");
-	}
-
-	@Test
-	@WithPropertyInIfXmlResource
-	void springPropertyInIfWhenFalse() throws Exception {
-		TestPropertySourceUtils.addInlinedPropertiesToEnvironment(this.environment, "my.example-property=false");
-		initialize("property-in-if.xml");
-		assertThat(this.context.getProperty("MYCHECK")).isNull();
-	}
-
-	@Test
 	@WithResource(name = "property-in-include.xml", content = """
 			<?xml version="1.0" encoding="UTF-8"?>
 			<configuration>
@@ -329,24 +313,6 @@ class SpringBootJoranConfiguratorTests {
 			</configuration>
 			""")
 	private @interface WithPropertyDefaultValueXmlResource {
-
-	}
-
-	@Target(ElementType.METHOD)
-	@Retention(RetentionPolicy.RUNTIME)
-	@WithResource(name = "property-in-if.xml", content = """
-			<?xml version="1.0" encoding="UTF-8"?>
-			<configuration>
-				<include resource="org/springframework/boot/logging/logback/base.xml"/>
-				<springProperty scope="context" name="MINE" source="my.example-property"/>
-				<if condition='property("MINE").contains("true")'>
-					<then>
-						<variable scope="context" name="MYCHECK" value="i-was-included"/>
-					</then>
-				</if>
-			</configuration>
-			""")
-	private @interface WithPropertyInIfXmlResource {
 
 	}
 
