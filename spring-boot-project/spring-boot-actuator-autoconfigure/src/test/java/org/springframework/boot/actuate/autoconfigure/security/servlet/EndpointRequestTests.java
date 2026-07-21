@@ -120,6 +120,20 @@ class EndpointRequestTests {
 	}
 
 	@Test
+	void toEndpointIdWhenEndpointIsNotExposedShouldNotMatchNullPath() {
+		RequestMatcher matcher = EndpointRequest.to("foo");
+		List<ExposableEndpoint<?>> endpoints = new ArrayList<>();
+		PathMappedEndpoints pathMappedEndpoints = new PathMappedEndpoints("/actuator", () -> endpoints);
+		List<String> patterns = new ArrayList<>();
+		RequestMatcherProvider matcherProvider = (pattern) -> {
+			patterns.add(pattern);
+			return (request) -> false;
+		};
+		assertMatcher(matcher, pathMappedEndpoints, matcherProvider).doesNotMatch("/null/example");
+		assertThat(patterns).isEmpty();
+	}
+
+	@Test
 	void toLinksShouldOnlyMatchLinks() {
 		RequestMatcher matcher = EndpointRequest.toLinks();
 		assertMatcher(matcher).doesNotMatch("/actuator/foo");

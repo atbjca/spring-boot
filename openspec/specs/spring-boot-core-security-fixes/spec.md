@@ -1,0 +1,48 @@
+# spring-boot-core-security-fixes Specification
+
+## Purpose
+TBD - created by archiving change fix-spring-boot-core-cve-batch. Update Purpose after archive.
+## Requirements
+### Requirement: ApplicationTemp MUST reject insecure pre-existing paths
+`ApplicationTemp` SHALL validate a pre-existing application temporary path without following symbolic links. On POSIX file systems it MUST require a directory owned by the current process owner with owner-only read/write/execute permissions; on other file systems it MUST reject symbolic links and non-directories and MUST validate ownership when the file system exposes it.
+
+#### Scenario: Secure directory is reused
+- **WHEN** the computed application temporary path already exists as a directory owned by the current user with the required permissions
+- **THEN** `ApplicationTemp.getDir()` returns that directory
+
+#### Scenario: Symbolic link is rejected
+- **WHEN** the computed application temporary path is a symbolic link
+- **THEN** `ApplicationTemp.getDir()` fails without following or using the link target
+
+#### Scenario: Wrong owner or permissions are rejected
+- **WHEN** the computed application temporary path has a different owner or broader POSIX permissions
+- **THEN** `ApplicationTemp.getDir()` fails with an actionable error
+
+### Requirement: ApplicationTemp MUST remain Java 8 compatible
+The security implementation SHALL use APIs available on Java 8 and SHALL preserve the existing stable hash-based directory name and public API.
+
+#### Scenario: Java 8 compilation
+- **WHEN** the `spring-boot` module is compiled with the project Java 8 baseline
+- **THEN** the `ApplicationTemp` implementation and tests compile without Java 9+ APIs
+
+### Requirement: EndpointRequest MUST ignore unavailable endpoint paths
+The servlet and reactive `EndpointRequest.to(...)` implementations SHALL omit endpoints whose path is unavailable because the endpoint is disabled or not exposed over the web. They MUST NOT create `/null`, `/null/**`, or equivalent matchers.
+
+#### Scenario: Servlet endpoint is not exposed
+- **WHEN** a servlet `EndpointRequest.to(...)` references an endpoint that is not web-exposed
+- **THEN** the matcher does not match `/null`, `/null/**`, or unrelated application paths
+
+#### Scenario: Reactive endpoint is not exposed
+- **WHEN** a reactive `EndpointRequest.to(...)` references an endpoint that is not web-exposed
+- **THEN** the matcher does not match `/null`, `/null/**`, or unrelated application paths
+
+#### Scenario: Exposed endpoint behavior is preserved
+- **WHEN** `EndpointRequest.to(...)` references an exposed endpoint
+- **THEN** its normal root and descendant paths continue to match in servlet and reactive applications
+
+### Requirement: Core CVE fixes MUST be documented and regression tested
+Each Spring Boot core CVE fixed by the fork SHALL have a dedicated CVE document, a status entry in the vulnerability report, a requirements/history entry, and a regression test that fails on the vulnerable implementation.
+
+#### Scenario: CVE remediation is completed
+- **WHEN** CVE-2026-40973 and CVE-2025-22235 are marked fixed
+- **THEN** the corresponding source tests pass and all maintained documents consistently identify the fork fix

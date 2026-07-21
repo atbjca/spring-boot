@@ -459,7 +459,7 @@ bom {
 			]
 		}
 	}
-	library("H2", "2.1.214") {
+	library("H2", "2.2.220") {
 		group("com.h2database") {
 			modules = [
 				"h2"
@@ -475,7 +475,7 @@ bom {
 			]
 		}
 	}
-	library("Hazelcast", "5.1.7") {
+	library("Hazelcast", "5.2.5") {
 		group("com.hazelcast") {
 			modules = [
 				"hazelcast",
@@ -541,7 +541,7 @@ bom {
 	library("HSQLDB", "2.5.2") {
 		prohibit {
 			versionRange "[2.6.0,)"
-			because "it requires Java 11"
+			because "the default artifacts require Java 11; the CVE-2022-41853 fix line is not usable by this Java 8 BOM"
 		}
 		group("org.hsqldb") {
 			modules = [
@@ -1473,7 +1473,7 @@ bom {
 			]
 		}
 	}
-	library("Postgresql", "42.3.8") {
+	library("Postgresql", "42.7.13") {
 		group("org.postgresql") {
 			modules = [
 				"postgresql"
@@ -1510,7 +1510,7 @@ bom {
 			]
 		}
 	}
-	library("Rabbit AMQP Client", "5.14.3") {
+	library("Rabbit AMQP Client", "5.18.0") {
 		group("com.rabbitmq") {
 			modules = [
 				"amqp-client"
@@ -1915,7 +1915,7 @@ bom {
 			]
 		}
 	}
-	library("Spring LDAP", "2.4.1") {
+	library("Spring LDAP", "2.4.4") {
 		considerSnapshots()
 		prohibit {
 			versionRange "[3.0.0-M1,)"
@@ -2049,7 +2049,7 @@ bom {
 			]
 		}
 	}
-	library("Sun Mail", "1.6.7") {
+	library("Sun Mail", "1.6.8") {
 		prohibit {
 			versionRange "[2.0.0-RC1,)"
 			because "it uses the jakarta.* namespace"
@@ -2128,7 +2128,7 @@ bom {
 			]
 		}
 	}
-	library("Undertow", "2.2.39.Final") {
+	library("Undertow", "2.2.40.Final") {
 		group("io.undertow") {
 			modules = [
 				"undertow-core",

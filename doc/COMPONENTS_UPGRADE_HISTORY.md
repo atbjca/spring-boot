@@ -7,6 +7,16 @@
 
 | 升级日期 | 组件名称 | 升级前版本 | 升级后版本 | 修复漏洞 / 原因 | 兼容性说明 |
 | :---: | :--- | :---: | :---: | :--- | :--- |
+| 2026-07-21 | Spring Boot `ApplicationTemp` / Actuator `EndpointRequest` | 2.7.18 原始实现 | **NES Java 8 backport** | CVE-2026-40973 临时目录接管、CVE-2025-22235 `/null/**` 安全匹配器 | 公开 API/GAV 不变；servlet/reactive 回归测试覆盖（[需求-036]） |
+| 2026-07-21 | `org.postgresql:postgresql` | 42.3.8 | **42.7.13** | CVE-2024-1597 SQL 注入、CVE-2026-42198 SCRAM PBKDF2 CPU DoS | Java 8 兼容；跨 minor，执行 JDBC/JPA 回归（[需求-037]） |
+| 2026-07-21 | `com.h2database:h2` | 2.1.214 | **2.2.220** | CVE-2022-45868 Web Console 管理密码命令行泄露 | class major 52，Java 8 兼容 |
+| 2026-07-21 | `com.hazelcast:hazelcast` | 5.1.7 | **5.2.5** | CVE-2023-45859 / CVE-2023-45860 权限校验缺失 | 5.2.x Java 8 编译目标；执行 cache/session 回归 |
+| 2026-07-21 | `com.rabbitmq:amqp-client` | 5.14.3 | **5.18.0** | CVE-2023-46120 超大消息 OOM DoS | class major 52，Java 8 兼容 |
+| 2026-07-21 | `org.springframework.ldap:*` | 2.4.1 | **2.4.4** | CVE-2024-38829 locale 大小写转换导致数据暴露 | 保持 Spring Framework 5 / Javax 体系 |
+| 2026-07-21 | `com.sun.mail:jakarta.mail` | 1.6.7 | **1.6.8** | CVE-2025-7962 SMTP 注入 | 保持 javax.mail namespace，兼容 Boot 2.7 |
+| 2026-07-21 | `io.undertow:*` | 2.2.39.Final | **2.2.40.Final** | strict HTTP parser 修复 CVE-2026-28367/28368/28369；纠正 CVE-2026-3260 状态，2.2.40 仍在公告影响范围 | Java 8 兼容；3260 仍需拒绝 multipart GET 等缓解 |
+| 2026-07-21 | `org.apache.tomcat.embed:*` | 9.0.119 | **9.0.120** | 跟进 Java 8 兼容的 9.0.x 最新补丁线 | 同主版本补丁升级 |
+| 2026-07-21 | `org.apache.derby:*` / `org.hsqldb:hsqldb` | 10.14.2.0 / 2.5.2 | **保持不变** | Derby 无公开 Java 8 修复制品；HSQLDB 修复线需 Java 11，纠正台账而不伪报升级 | 仅可信测试/开发场景，维持暂缓/缓解状态 |
 | 2026-07-10 | `org.springframework.data:spring-data-redis` → `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-redis` | `2.7.18`（官方坐标） | `2.7.18-nes.patch.1-SNAPSHOT`（**fork 坐标**） | redis 完成坐标去特征化；fork BOM 将 redis managed 依赖切 NES 制品；配套 resolutionStrategy 规则五并入 redis。所修传递依赖 CVE（Kotlin CVE-2020-29582 / Jackson CVE-2023-35116 / commons-beanutils CVE-2025-48734 / Netty 批）本项目 BOM 版本已高于修复线，属坐标一致性对齐（[需求-035]） | 包名/JPMS 模块名不变，Java 8 兼容 |
 | 2026-07-10 | `org.springframework.data:spring-data-elasticsearch` → `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-elasticsearch` | `4.4.18`（官方坐标） | `4.4.18-nes.patch.1-SNAPSHOT`（**fork 坐标**，ES 4.4.x 版本线） | elasticsearch 完成坐标去特征化；fork BOM 将 es managed 依赖切 NES 制品；配套 resolutionStrategy 新增规则六（独立 4.4.x 版本线）。所修传递依赖 CVE（SnakeYAML CVE-2022-1471 / Elasticsearch CVE-2023-46673 / Netty 批）本项目 BOM 版本已高于修复线，属坐标一致性对齐（[需求-035]） | 包名/JPMS 模块名不变，Java 8 兼容 |
 | 2026-07-09 | `org.springframework.data:spring-data-bom` → `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom` | `2021.2.18-nes.patch.1-SNAPSHOT`（官方坐标） | `2021.2.18-nes.patch.1-SNAPSHOT`（**fork 坐标**） | fork BOM 完成坐标去特征化；commons/keyvalue 切 NES 制品并 backport CVE-2026-41711/41716/41721（commons DoS）、CVE-2026-41719（keyvalue SpEL 注入）；配套 resolutionStrategy 规则五重写 commons/keyvalue | 包名/JPMS 模块名不变，Java 8 兼容；其余 spring-data-* 保持官方坐标由私服代理解析 |

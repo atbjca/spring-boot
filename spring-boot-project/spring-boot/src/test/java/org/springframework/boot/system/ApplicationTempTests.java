@@ -23,15 +23,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.nio.file.attribute.UserPrincipal;
 import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import org.springframework.util.FileSystemUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Tests for {@link ApplicationTemp}.
@@ -39,6 +44,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Phillip Webb
  */
 class ApplicationTempTests {
+
+	@TempDir
+	Path tempDirectory;
 
 	@BeforeEach
 	@AfterEach
@@ -85,12 +93,94 @@ class ApplicationTempTests {
 		}
 	}
 
+	@Test
+	void existingSecureDirectoryIsReused() throws Exception {
+		withTempDirectory(() -> {
+			File directory = new ApplicationTemp().getDir();
+			assertThat(new ApplicationTemp().getDir()).isEqualTo(directory);
+		});
+	}
+
+	@Test
+	void existingFileIsRejected() throws Exception {
+		withTempDirectory(() -> {
+			Path path = new ApplicationTemp().getDir().toPath();
+			Files.delete(path);
+			Files.createFile(path);
+			assertThatIllegalStateException().isThrownBy(() -> new ApplicationTemp().getDir())
+				.withMessageContaining("is not a directory");
+		});
+	}
+
+	@Test
+	void symbolicLinkIsRejected() throws Exception {
+		withTempDirectory(() -> {
+			Path path = new ApplicationTemp().getDir().toPath();
+			Files.delete(path);
+			Path target = Files.createDirectory(this.tempDirectory.resolve("target"));
+			try {
+				Files.createSymbolicLink(path, target);
+			}
+			catch (IOException | UnsupportedOperationException ex) {
+				assumeTrue(false, "Symbolic links are not supported by this test environment");
+			}
+			assertThatIllegalStateException().isThrownBy(() -> new ApplicationTemp().getDir())
+				.withMessageContaining("is not a directory");
+		});
+	}
+
+	@Test
+	void existingDirectoryWithUnsafePosixPermissionsIsRejected() throws Exception {
+		withTempDirectory(() -> {
+			Path path = new ApplicationTemp().getDir().toPath();
+			assumeTrue(path.getFileSystem().supportedFileAttributeViews().contains("posix"),
+					"POSIX file attributes are not supported by this test environment");
+			Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rwxr-xr-x"));
+			assertThatIllegalStateException().isThrownBy(() -> new ApplicationTemp().getDir())
+				.withMessageContaining("does not have the permissions");
+		});
+	}
+
+	@Test
+	void existingDirectoryWithUnexpectedOwnerIsRejected() throws Exception {
+		withTempDirectory(() -> {
+			Path path = new ApplicationTemp().getDir().toPath();
+			try {
+				Files.getOwner(path);
+			}
+			catch (UnsupportedOperationException ex) {
+				assumeTrue(false, "File ownership is not supported by this test environment");
+			}
+			UserPrincipal unexpectedOwner = () -> "unexpected-owner";
+			assertThatIllegalStateException().isThrownBy(() -> new ApplicationTemp(null, unexpectedOwner).getDir())
+				.withMessageContaining("is not owned by unexpected-owner");
+		});
+	}
+
 	private void assertDirectoryPermissions(Path path) throws IOException {
 		Set<PosixFilePermission> permissions = Files.getFileAttributeView(path, PosixFileAttributeView.class)
 			.readAttributes()
 			.permissions();
 		assertThat(permissions).containsExactlyInAnyOrder(PosixFilePermission.OWNER_READ,
 				PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_EXECUTE);
+	}
+
+	private void withTempDirectory(ThrowingRunnable action) throws Exception {
+		String previous = System.getProperty("java.io.tmpdir");
+		try {
+			System.setProperty("java.io.tmpdir", this.tempDirectory.toString());
+			action.run();
+		}
+		finally {
+			System.setProperty("java.io.tmpdir", previous);
+		}
+	}
+
+	@FunctionalInterface
+	private interface ThrowingRunnable {
+
+		void run() throws Exception;
+
 	}
 
 }

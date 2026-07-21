@@ -37,6 +37,8 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.http.server.reactive.MockServerHttpResponse;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
+import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebHandler;
 import org.springframework.web.server.adapter.HttpWebHandlerAdapter;
@@ -106,6 +108,15 @@ class EndpointRequestTests {
 	void toEndpointIdShouldNotMatchOtherPath() {
 		ServerWebExchangeMatcher matcher = EndpointRequest.to("foo");
 		assertMatcher(matcher).doesNotMatch("/actuator/bar");
+	}
+
+	@Test
+	void toEndpointIdWhenEndpointIsNotExposedShouldNotMatchNullPath() {
+		ServerWebExchangeMatcher matcher = EndpointRequest.to("foo");
+		List<ExposableEndpoint<?>> endpoints = new ArrayList<>();
+		PathMappedEndpoints pathMappedEndpoints = new PathMappedEndpoints("/actuator", () -> endpoints);
+		assertMatcher(matcher, pathMappedEndpoints).doesNotMatch("/null/example");
+		assertThat(ReflectionTestUtils.getField(matcher, "delegate")).isNotInstanceOf(OrServerWebExchangeMatcher.class);
 	}
 
 	@Test

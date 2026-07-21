@@ -4,6 +4,70 @@
 
 ---
 
+## 📅 2026年07月21日
+
+### [需求-037] Java 8 受管组件安全基线升级与漏洞台账纠偏
+
+#### 背景与目的
+
+在 Spring Boot 2.7.18 / Java 8 基线不变的前提下，BOM 中 PostgreSQL JDBC、H2、Hazelcast、RabbitMQ Java Client、Spring LDAP、Mail 等组件仍处于已知漏洞版本；Tomcat、Undertow 也已有同版本线补丁。同时，既有文档对 Derby 与 Undertow 的修复状态存在制品或公告证据不一致，需要将“可升级修复”和“受版本线约束暂缓”明确分开。
+
+#### 版本调整
+
+| 组件 | 原版本 | 新版本/结论 | 安全目的 |
+|------|:------:|:-----------:|---------|
+| PostgreSQL JDBC | 42.3.8 | **42.7.13** | 修复 CVE-2024-1597、CVE-2026-42198 |
+| H2 | 2.1.214 | **2.2.220** | 修复 CVE-2022-45868 |
+| Hazelcast | 5.1.7 | **5.2.5** | 修复 CVE-2023-45859、CVE-2023-45860 |
+| RabbitMQ Java Client | 5.14.3 | **5.18.0** | 修复 CVE-2023-46120 |
+| Spring LDAP | 2.4.1 | **2.4.4** | 修复 CVE-2024-38829 |
+| Sun/Jakarta Mail | 1.6.7 | **1.6.8** | 修复 CVE-2025-7962，保持 javax namespace |
+| Undertow | 2.2.39.Final | **2.2.40.Final** | 修复 CVE-2026-28367/28368/28369；CVE-2026-3260 仍未修复 |
+| Tomcat | 9.0.119 | **9.0.120** | 跟进 Java 8 兼容的 9.0.x 补丁线 |
+| Derby | 10.14.2.0 | **保持不变** | 10.14 修复仅回移到源码分支，Central 无 Java 8 修复制品 |
+| HSQLDB | 2.5.2 | **保持不变** | CVE-2022-41853 修复线 2.7.x 为 Java 11 字节码 |
+
+#### 证据与约束
+
+- 生成 Maven BOM 并执行 `generateEffectiveBom` / `bomrCheck`，核对升级后的单一版本来源。
+- H2 2.2.220、Hazelcast 5.2.5、RabbitMQ 5.18.0 等目标保持 Java 8 兼容；HSQLDB 2.7.4 为 class major 55，不能进入 Java 8 基线。
+- Maven Central 对 `org.apache.derby:derby:10.14.2.1`、`10.14.3.0` 均无公开制品，Derby 继续限定可信测试场景，不伪造修复版本。
+- Undertow strict HTTP parser commit `60575f08f07b` 随 2.2.40.Final 发布，闭环 CVE-2026-28367/28368/28369；`GHSA-3x3v-w654-m28m` 仍把 2.2.40.Final 列入 CVE-2026-3260 影响范围，故后者从“已修复”纠正为“暂缓”，下游需拒绝 multipart GET 并限制请求体/临时磁盘资源。
+- 范围明确排除 Spring Kafka、Reactor Netty/Netty、ActiveMQ/Artemis 和 Spring Security，待后续单独确认。
+
+#### 涉及文件
+
+- `spring-boot-project/spring-boot-dependencies/build.gradle`
+- `gradle.properties`
+- `doc/CVE/` 对应漏洞文档
+- `doc/VULNERABILITY_REPORT.md`、`doc/COMPONENTS_UPGRADE_HISTORY.md`
+- `openspec/changes/upgrade-managed-security-baseline-2026-07/`
+
+### [需求-036] Spring Boot 本体 CVE-2026-40973 / CVE-2025-22235 回移修复
+
+#### 背景与目的
+
+Spring Boot 2.7.x 已结束社区维护，本项目 2.7.18 基线无法通过公开补丁版本直接闭环 `ApplicationTemp` 临时目录接管和 Actuator `EndpointRequest` `/null/**` 路径混淆问题，因此在 NES fork 内按 Java 8 基线回移上游安全语义。
+
+#### 修改内容
+
+- `ApplicationTemp` 对已有路径使用 `NOFOLLOW_LINKS`，拒绝符号链接/非目录；POSIX 文件系统要求 `0700` 且所有者与当前进程一致，非 POSIX 在能力允许时校验所有者。
+- servlet/reactive `EndpointRequest.to(...)` 过滤未暴露 endpoint 的空路径；无有效路径时返回空 matcher，不再生成 `/null/**`。
+- 增加先红后绿回归测试，覆盖权限、所有权、符号链接、安全目录复用以及 servlet/reactive 未暴露 endpoint 场景。
+- 新建 `CVE-2026-40973.md`、`CVE-2025-22235.md`，同步漏洞总览和升级维护历史。
+
+#### 兼容性与范围
+
+- 保持 Java 8、公开 API、GAV 与 `ApplicationTemp` 稳定哈希目录命名不变。
+- 正常暴露 endpoint、links、exclude 与 servlet session 目录行为保持兼容。
+- 不包含 Spring Kafka、Reactor Netty/Netty 变更。
+
+#### OpenSpec
+
+- `openspec/changes/fix-spring-boot-core-cve-batch/`
+
+---
+
 ## 📅 2026年07月10日
 
 ### [需求-035] Spring Data redis / elasticsearch 纳入 fork 去特征化坐标
