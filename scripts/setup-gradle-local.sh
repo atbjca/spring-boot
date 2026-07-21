@@ -67,7 +67,8 @@ zips=("${LOCAL_GRADLE_DIR}"/gradle-*-bin.zip "${LOCAL_GRADLE_DIR}"/gradle-*-all.
 if [[ ${#zips[@]} -eq 0 ]]; then
 	echo "未在 ${LOCAL_GRADLE_DIR} 找到 gradle-*-{bin,all}.zip" >&2
 	echo "可将发行包放到该目录，或设置 LOCAL_GRADLE_DIR" >&2
-	exit 1
+	echo "跳过本地 Gradle 安装：Wrapper 将按官方 distributionUrl 联网下载。" >&2
+	exit 0
 fi
 
 echo "扫描 ${LOCAL_GRADLE_DIR}，共 ${#zips[@]} 个 Gradle 发行包..."
