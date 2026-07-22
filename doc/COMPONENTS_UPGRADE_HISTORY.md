@@ -7,6 +7,8 @@
 
 | 升级日期 | 组件名称 | 升级前版本 | 升级后版本 | 修复漏洞 / 原因 | 兼容性说明 |
 | :---: | :--- | :---: | :---: | :--- | :--- |
+| 2026-07-22 | `io.projectreactor.netty:reactor-netty-*` → Reactor Netty NES | 官方 1.0.48 | **`cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty-*:1.0.48-nes.patch.1-SNAPSHOT`** | 统一 NES GAV；starter POM 直接发布 NES HTTP 坐标；commit `da3c7cf2` 修复 CVE-2025-22227/41715，Nexus HTTP 制品 `20260722.053243-4` 已验证安全字节码（[需求-039]） | Java package 不变；关键 class major 52；源码、测试与制品证据闭环 |
+| 2026-07-22 | `io.netty:netty-bom` 等 | 4.1.135.Final | **4.1.136.Final** | 与 Reactor Netty NES 已验证组合对齐，覆盖修复线不高于 4.1.136 的 Netty 漏洞 | Java 8 兼容；HTTP/2 `maxStreams` 回归覆盖 |
 | 2026-07-22 | Spring Kafka NES `DefaultKafkaHeaderMapper` | `2.9.13-nes.patch.1-SNAPSHOT` 旧时间戳制品 | **版本字符串不变；验证 `20260721.054238-2`** | fork commit `c119b8f62` 回移 CVE-2026-41731，受信包由父包前缀匹配收紧为精确包名匹配 | Java 8 variant；Boot 消费端行为回归覆盖；旧 SNAPSHOT 缓存需刷新（[需求-038]） |
 | 2026-07-21 | Spring Boot `ApplicationTemp` / Actuator `EndpointRequest` | 2.7.18 原始实现 | **NES Java 8 backport** | CVE-2026-40973 临时目录接管、CVE-2025-22235 `/null/**` 安全匹配器 | 公开 API/GAV 不变；servlet/reactive 回归测试覆盖（[需求-036]） |
 | 2026-07-21 | `org.postgresql:postgresql` | 42.3.8 | **42.7.13** | CVE-2024-1597 SQL 注入、CVE-2026-42198 SCRAM PBKDF2 CPU DoS | Java 8 兼容；跨 minor，执行 JDBC/JPA 回归（[需求-037]） |
@@ -29,7 +31,7 @@
 | 2026-07-02 | `com.squareup.okhttp3:okhttp-bom` | 4.9.3 | **4.12.0** | CVE-2023-3635 (CVSS 7.5) Okio GzipSource DoS | 跨 minor 升级；Java 8 兼容 |
 | 2026-07-02 | `org.apache.httpcomponents.client5:httpclient5` | 5.1.4 | **5.6.1** | CVE-2026-40542 (CVSS 6.9) SCRAM-SHA-256 认证验证缺失 | 跨 minor 升级；需配套 httpcore5 5.4 |
 | 2026-07-02 | `org.apache.httpcomponents.core5:httpcore5` 等 | 5.1.5 | **5.4** | HttpClient5 5.6.1 传递依赖要求 httpcore5 5.4+（`Tokenizer.delimiters()` API 在 5.2+ 引入） | 跨 minor 升级 |
-| 2026-07-02 | `io.projectreactor:reactor-bom` | 2020.0.38 | **2020.0.47** | CVE-2025-22227 (CVSS 6.1) Reactor Netty 重定向凭据泄漏 | 2020.0.x 最终版；含 reactor-netty-http 1.0.48 |
+| 2026-07-02 | `io.projectreactor:reactor-bom` | 2020.0.38 | **2020.0.47** | 跟进 2020.0.x 最终版；后续核实其 Reactor Netty 1.0.48 仍受 CVE-2025-22227 影响 | Reactor Core 继续由该 BOM 管理；Reactor Netty 于 [需求-039] 切 NES GAV |
 | 2026-07-01 | `io.undertow:undertow-core` 等 | 2.2.31.Final | **2.2.39.Final** | CVE-2025-12543 (CVSS 9.6) Host header 验证绕过 | 同 2.2.x minor 线补丁，兼容 Java 8 |
 | 2026-07-01 | `org.thymeleaf:thymeleaf` 等 | 3.1.2.RELEASE | **3.1.5.RELEASE** | CVE-2026-40477, CVE-2026-40478, CVE-2026-41901 (CVSS 9.0 ×3) SSTI 模板注入 | 同 3.1.x minor 线补丁 |
 | 2026-07-01 | `org.apache.solr:solr-solrj` 等 | 8.11.2 | **8.11.4** | CVE-2024-45216 (CVSS 9.8) PKI 认证绕过 | 同 8.11.x minor 线补丁 |

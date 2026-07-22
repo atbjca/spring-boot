@@ -138,6 +138,13 @@ class NettyWebServerFactoryCustomizerTests {
 	}
 
 	@Test
+	void reactorNettyPreservesExplicitHttp2MaxStreamsWithNetty136() {
+		Http2SettingsSpec settings = Http2SettingsSpec.builder().maxStreams(123).build();
+		assertThat(settings.maxConcurrentStreams()).isEqualTo(123);
+		assertThat(settings.maxStreams()).isEqualTo(123);
+	}
+
+	@Test
 	void configureHttpRequestDecoder() {
 		ServerProperties.Netty nettyProperties = this.serverProperties.getNetty();
 		this.serverProperties.setMaxHttpHeaderSize(DataSize.ofKilobytes(24));

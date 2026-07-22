@@ -1441,7 +1441,7 @@ bom {
 			]
 		}
 	}
-	library("Netty", "4.1.135.Final") {
+	library("Netty", "4.1.136.Final") {
 		group("io.netty") {
 			imports = [
 				"netty-bom"
@@ -1537,6 +1537,20 @@ bom {
 		group("io.projectreactor") {
 			imports = [
 				"reactor-bom"
+			]
+		}
+	}
+	// Reactor BOM 只能管理官方 io.projectreactor.netty 坐标，无法管理去特征化后的
+	// NES group，因此四个稳定 fork 模块必须在 Spring Boot BOM 中显式登记。
+	// incubator QUIC 使用独立 group 和版本线，本项目默认响应式栈不直接管理它。
+	library("Reactor Netty NES", reactorNettyNesVersion) {
+		considerSnapshots()
+		group("cn.bjca.footstone.beactor.netty") {
+			modules = [
+				"bjca-footstone-beactor-netty",
+				"bjca-footstone-beactor-netty-core",
+				"bjca-footstone-beactor-netty-http",
+				"bjca-footstone-beactor-netty-http-brave"
 			]
 		}
 	}

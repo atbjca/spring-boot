@@ -6,6 +6,35 @@
 
 ## 📅 2026年07月22日
 
+### [需求-039] 采用 Reactor Netty NES fork 并对齐 Netty 4.1.136
+
+#### 背景与目的
+
+Spring Boot 2.7 NES 原先仍发布官方 `io.projectreactor.netty:reactor-netty-http`，根构建的坐标替换无法改变下游 Maven 看到的 starter POM。Reactor Netty NES `1.0.48-nes.patch.1-SNAPSHOT` 已部署到 Nexus，并在 Netty `4.1.136.Final` 上完成生产者侧全量验证，因此需要同时闭环仓库内部解析、BOM 管理和下游发布语义。
+
+#### 实施要求
+
+- `reactorNettyNesVersion` 是 Reactor Netty NES 版本的唯一配置源。
+- 根依赖规则仅映射 `reactor-netty`、`core`、`http`、`http-brave` 四个稳定模块；incubator QUIC 保持独立 group/版本线。
+- `spring-boot-dependencies` 显式管理四个 NES 模块，并继续保留官方 Reactor BOM 管理 `reactor-core` 等非 fork 组件。
+- `spring-boot-starter-reactor-netty` 的发布 POM 必须直接声明 `cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty-http`，不得依赖只在本仓库生效的 Gradle 替换规则。
+- Netty BOM 从 `4.1.135.Final` 对齐至 `4.1.136.Final`；最终依赖图不得出现旧 Netty 或官方/NES Reactor Netty 双份。
+
+#### 安全边界
+
+- Netty 4.1.136 覆盖的传递依赖漏洞可按修复线和依赖证据闭环。
+- Reactor Netty fork 已在 commit `da3c7cf2` backport `CVE-2025-22227`、`CVE-2026-41715` 并完成重定向回归测试。
+- 2026-07-22 Boot 从全新 Maven 本地仓库解析到 Nexus HTTP 制品 `20260722.053243-4`，SHA-256 为 `19adc757f94b426c8654afdedb27eb67a0f4e40b7a35957411686524f2a4d5cc`；字节码包含 `UriEndpoint.isSecure()` 降级剥头分支，两条 CVE 的源码、测试与制品证据均已闭环。
+
+#### 验证与交付
+
+- TDD 覆盖坐标白名单、BOM、starter POM 和无双份依赖契约。
+- 回归 WebFlux、WebClient、Actuator、RSocket 和 HTTP/2 `maxStreams` 语义。
+- 使用不含 `mavenLocal()` 的 Nexus 消费者以及独立 Maven/Gradle 消费者验证发布结果。
+- 同步漏洞台账、组件历史、GAV 文档、User Manual、Quick Start 与测试指南。
+
+---
+
 ### [需求-038] Spring Kafka CVE-2026-41731 SNAPSHOT 修复采纳与消费端验证
 
 #### 背景与目的

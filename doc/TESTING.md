@@ -3,7 +3,7 @@
 > **分支**：`2.7.x-bjca-patch`  
 > **基线**：2.7.18（NES fork `2.7.18-nes.patch.1-SNAPSHOT`）  
 > **对齐参考**：3.5 fork 的 Tier 分层（`doc/TESTING.md`）  
-> **最后更新**：2026-06-30
+> **最后更新**：2026-07-22
 
 本文档说明 2.7 fork **测什么、不测什么、日常怎么验**，以及 `make test` 与 `make test-feedback` 的分工。
 
@@ -80,6 +80,38 @@
 | 某个 `starter` | `make build-thin` |
 | 仅 `doc/` / `Makefile` | 可不跑 test |
 | BOM / `spring-boot-dependencies` | **必须** `make build-thin` + `make test-feedback` |
+| Reactor Netty/Netty 坐标或版本 | buildSrc 映射契约 + BOM/starter POM + autoconfigure Netty 测试 + 独立消费者解析 |
+
+### 2.5 Reactor Netty NES 专项门禁
+
+采用或升级 Reactor Netty NES 时至少验证：
+
+```bash
+./gradlew -p buildSrc test \
+  --tests org.springframework.boot.build.ForkDependencySubstitutionTests
+
+./gradlew \
+  :spring-boot-project:spring-boot-dependencies:generatePomFileForMavenPublication \
+  :spring-boot-project:spring-boot-starters:spring-boot-starter-reactor-netty:generatePomFileForMavenPublication
+
+./gradlew :spring-boot-project:spring-boot-autoconfigure:test \
+  --tests org.springframework.boot.autoconfigure.web.embedded.NettyWebServerFactoryCustomizerTests
+```
+
+还必须检查 starter/BOM 生成 POM、runtimeClasspath 和独立 Maven/Gradle 消费者：不得出现官方/NES Reactor Netty 双份，所有 Netty 核心模块必须为 `4.1.136.Final`。重定向 CVE 必须以源码、回归测试和已发布制品三项证据闭环，不允许用“预期泄露”的永久绿色测试掩盖风险。
+
+#### 2026-07-22 实施记录
+
+- buildSrc 契约测试：修改前新增 3 个用例按预期失败；实现后 6/6 通过。
+- BOM/starter 生成 POM：通过；starter 直接依赖 NES HTTP，BOM 管理四个 NES 模块和 Netty 4.1.136。
+- `NettyWebServerFactoryCustomizerTests`：通过，包含 `maxStreams(123)` 回归。
+- 独立 Gradle 消费者：通过，仅解析 NES Reactor Netty，Netty 全为 4.1.136。
+- 独立 Maven 消费者：将新 BOM/starter 安装到隔离临时仓库后通过；依赖树仅包含 NES HTTP/Core，Netty 全为 4.1.136，无官方 Reactor Netty。
+- WebFlux/WebClient、Actuator、RSocket、Netty server 针对性测试：通过（`BUILD SUCCESSFUL in 51s`）。
+- Tier A 首轮发现 classpath 排除仍按旧 artifactId 匹配；修复后针对性用例通过。后续复验确认 98% 阶段仍会继续执行，并非 Jetty 死锁；真正的偶发失败是 Tomcat `useForwardHeaders()` 在高负载下首请求收到 `NoHttpResponseException`。公共 Servlet WebServer 测试辅助方法现仅对该瞬时异常做最长 10 秒的有限重试，其他 I/O、URI 和断言错误仍立即失败。
+- 2026-07-22 修复后连续两轮 `make clean test` 均通过：分别为 `BUILD SUCCESSFUL in 6m 56s`、`BUILD SUCCESSFUL in 8m 29s`，退出码均为 0；随后 `make build-thin` 约 14m49s 完成，退出码 0。Tier A 与 build 门禁现可如实标记为全绿。
+- Nexus 上尚未部署本次新的 Boot SNAPSHOT，因此直接消费 Nexus 仍会得到旧 starter；正式部署后必须再做一次不使用临时本地仓库的 Maven/Gradle 依赖树验收。
+- Reactor Netty 生产者已提交并推送 `da3c7cf2`。重新部署后，使用全新 Maven 本地仓库从 Nexus 解析到 HTTP 制品 `20260722.053243-4`，SHA-256 为 `19adc757f94b426c8654afdedb27eb67a0f4e40b7a35957411686524f2a4d5cc`；`javap` 确认字节码包含两次 `UriEndpoint.isSecure()` 调用，跨 origin 与 HTTPS→HTTP 降级剥头修复已进入制品。
 
 **单模块示例**：
 

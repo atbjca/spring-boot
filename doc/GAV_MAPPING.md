@@ -398,3 +398,14 @@ Spring Boot 2.7.18 (fork: 2.7.18-nes.patch.1-SNAPSHOT)
         BOM: bjca-footstone-bpring-security-bom
         └── Authorization Server 0.4.5 (fork: 0.4.5-nes.patch.1-SNAPSHOT)
 ```
+
+## Reactor Netty NES 映射（[需求-039]）
+
+| 官方 GAV | NES GAV |
+|---|---|
+| `io.projectreactor.netty:reactor-netty` | `cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty` |
+| `io.projectreactor.netty:reactor-netty-core` | `cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty-core` |
+| `io.projectreactor.netty:reactor-netty-http` | `cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty-http` |
+| `io.projectreactor.netty:reactor-netty-http-brave` | `cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty-http-brave` |
+
+统一版本为 `1.0.48-nes.patch.1-SNAPSHOT`。构建期映射只服务于本仓库解析；发布期由 starter 直接写入 NES HTTP GAV，保证 Maven 消费者不回拉官方坐标。官方 Reactor BOM 仍管理 Reactor Core，incubator QUIC 不自动替换。

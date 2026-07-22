@@ -175,6 +175,19 @@ allprojects {
 				def newArtifactId = requested.name.replaceFirst(/^spring-/, "${forkArtifactPrefix}-")
 				details.useTarget("cn.bjca.footstone.bpring.data:${newArtifactId}:4.4.18-nes.patch.1-SNAPSHOT")
 			}
+
+			// 规则七：Reactor Netty 官方坐标映射
+			// 仅替换 Spring Boot 2.7 使用并已在 NES fork 发布的四个稳定模块：
+			// reactor-netty / core / http / http-brave。incubator QUIC 属于独立 group
+			// 和版本线，禁止在此泛化替换，避免构造不存在的制品坐标。
+			else if (requested.group == 'io.projectreactor.netty'
+					&& (requested.name == 'reactor-netty'
+						|| requested.name == 'reactor-netty-core'
+						|| requested.name == 'reactor-netty-http'
+						|| requested.name == 'reactor-netty-http-brave')) {
+				def newArtifactId = requested.name.replaceFirst(/^reactor-netty/, 'bjca-footstone-beactor-netty')
+				details.useTarget("cn.bjca.footstone.beactor.netty:${newArtifactId}:${reactorNettyNesVersion}")
+			}
 		}
 	}
 }

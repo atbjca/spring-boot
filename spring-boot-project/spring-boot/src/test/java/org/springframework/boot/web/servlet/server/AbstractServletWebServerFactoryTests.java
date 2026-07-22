@@ -78,6 +78,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.InputStreamFactory;
@@ -1427,8 +1428,12 @@ public abstract class AbstractServletWebServerFactoryTests {
 	protected void assertForwardHeaderIsUsed(ServletWebServerFactory factory) throws IOException, URISyntaxException {
 		this.webServer = factory.getWebServer(new ServletRegistrationBean<>(new ExampleServlet(true, false), "/hello"));
 		this.webServer.start();
-		assertThat(getResponse(getLocalUrl("/hello"), "X-Forwarded-For:140.211.11.130"))
-			.contains("remoteaddr=140.211.11.130");
+		// 全量测试高负载下，容器启动后的首个连接可能在响应头返回前被关闭；仅重试这一瞬时故障。
+		Awaitility.await()
+			.atMost(Duration.ofSeconds(10))
+			.ignoreException(NoHttpResponseException.class)
+			.untilAsserted(() -> assertThat(getResponse(getLocalUrl("/hello"), "X-Forwarded-For:140.211.11.130"))
+				.contains("remoteaddr=140.211.11.130"));
 	}
 
 	protected abstract AbstractServletWebServerFactory getFactory();

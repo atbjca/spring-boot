@@ -448,6 +448,17 @@ dependencies {
 </dependency>
 ```
 
+## Reactor Netty NES（[需求-039]）
+
+| 官方坐标 | NES 坐标 | 版本 |
+|---|---|---|
+| `io.projectreactor.netty:reactor-netty` | `cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty` | `1.0.48-nes.patch.1-SNAPSHOT` |
+| `io.projectreactor.netty:reactor-netty-core` | `cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty-core` | 同上 |
+| `io.projectreactor.netty:reactor-netty-http` | `cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty-http` | 同上 |
+| `io.projectreactor.netty:reactor-netty-http-brave` | `cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty-http-brave` | 同上 |
+
+Spring Boot 内部对上述四个官方请求做精确白名单替换；starter 发布 POM 直接使用 NES HTTP 坐标。官方 Reactor BOM 保留用于 `reactor-core` 等非 fork 组件，incubator QUIC 不在本映射范围内。
+
 ### Gradle 引入示例
 
 ```groovy

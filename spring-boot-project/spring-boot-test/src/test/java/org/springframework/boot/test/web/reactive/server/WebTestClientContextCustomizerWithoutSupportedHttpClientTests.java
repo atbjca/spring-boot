@@ -32,7 +32,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Andy Wilkinson
  */
-@ClassPathExclusions({ "reactor-netty*.jar", "jetty-client*.jar" })
+// 同时排除官方与 NES artifactId，确保该测试真实模拟“无受支持 HTTP 客户端”。
+@ClassPathExclusions({ "reactor-netty*.jar", "bjca-footstone-beactor-netty*.jar", "jetty-client*.jar" })
 class WebTestClientContextCustomizerWithoutSupportedHttpClientTests {
 
 	@Test

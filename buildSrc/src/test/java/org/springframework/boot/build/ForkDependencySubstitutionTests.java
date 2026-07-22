@@ -55,10 +55,48 @@ class ForkDependencySubstitutionTests {
 		assertThat(build).contains("cn.bjca.footstone.bpring.data:${newArtifactId}:4.4.18-nes.patch.1-SNAPSHOT");
 	}
 
+	@Test
+	void reactorNettyDependenciesAreSubstitutedToNesCoordinates() throws IOException {
+		String properties = readRootFile("gradle.properties");
+		assertThat(properties).contains("reactorNettyNesVersion=1.0.48-nes.patch.1-SNAPSHOT");
+		String build = readRootBuildGradle();
+		assertThat(build).contains("requested.group == 'io.projectreactor.netty'");
+		assertThat(build).contains("requested.name == 'reactor-netty'");
+		assertThat(build).contains("requested.name == 'reactor-netty-core'");
+		assertThat(build).contains("requested.name == 'reactor-netty-http'");
+		assertThat(build).contains("requested.name == 'reactor-netty-http-brave'");
+		assertThat(build).contains("cn.bjca.footstone.beactor.netty:${newArtifactId}:${reactorNettyNesVersion}");
+	}
+
+	@Test
+	void reactorNettyNesModulesAndNetty136AreManagedByTheBom() throws IOException {
+		String bom = readRootFile("spring-boot-project/spring-boot-dependencies/build.gradle");
+		assertThat(bom).contains("library(\"Netty\", \"4.1.136.Final\")");
+		assertThat(bom).contains("library(\"Reactor Netty NES\", reactorNettyNesVersion)");
+		assertThat(bom).contains("group(\"cn.bjca.footstone.beactor.netty\")");
+		assertThat(bom).contains("\"bjca-footstone-beactor-netty\"");
+		assertThat(bom).contains("\"bjca-footstone-beactor-netty-core\"");
+		assertThat(bom).contains("\"bjca-footstone-beactor-netty-http\"");
+		assertThat(bom).contains("\"bjca-footstone-beactor-netty-http-brave\"");
+	}
+
+	@Test
+	void reactorNettyStarterPublishesTheNesHttpCoordinate() throws IOException {
+		String starter = readRootFile(
+				"spring-boot-project/spring-boot-starters/spring-boot-starter-reactor-netty/build.gradle");
+		assertThat(starter).contains(
+				"api(\"cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty-http:${reactorNettyNesVersion}\")");
+		assertThat(starter).doesNotContain("api(\"io.projectreactor.netty:reactor-netty-http\")");
+	}
+
 	private String readRootBuildGradle() throws IOException {
+		return readRootFile("build.gradle");
+	}
+
+	private String readRootFile(String path) throws IOException {
 		File projectDir = new File(System.getProperty("user.dir"));
-		File buildGradle = new File(projectDir.getParentFile(), "build.gradle");
-		return new String(Files.readAllBytes(buildGradle.toPath()), StandardCharsets.UTF_8);
+		File file = new File(projectDir.getParentFile(), path);
+		return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
 	}
 
 }
