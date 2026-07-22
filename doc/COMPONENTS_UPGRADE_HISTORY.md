@@ -7,6 +7,7 @@
 
 | 升级日期 | 组件名称 | 升级前版本 | 升级后版本 | 修复漏洞 / 原因 | 兼容性说明 |
 | :---: | :--- | :---: | :---: | :--- | :--- |
+| 2026-07-22 | Spring Kafka NES `DefaultKafkaHeaderMapper` | `2.9.13-nes.patch.1-SNAPSHOT` 旧时间戳制品 | **版本字符串不变；验证 `20260721.054238-2`** | fork commit `c119b8f62` 回移 CVE-2026-41731，受信包由父包前缀匹配收紧为精确包名匹配 | Java 8 variant；Boot 消费端行为回归覆盖；旧 SNAPSHOT 缓存需刷新（[需求-038]） |
 | 2026-07-21 | Spring Boot `ApplicationTemp` / Actuator `EndpointRequest` | 2.7.18 原始实现 | **NES Java 8 backport** | CVE-2026-40973 临时目录接管、CVE-2025-22235 `/null/**` 安全匹配器 | 公开 API/GAV 不变；servlet/reactive 回归测试覆盖（[需求-036]） |
 | 2026-07-21 | `org.postgresql:postgresql` | 42.3.8 | **42.7.13** | CVE-2024-1597 SQL 注入、CVE-2026-42198 SCRAM PBKDF2 CPU DoS | Java 8 兼容；跨 minor，执行 JDBC/JPA 回归（[需求-037]） |
 | 2026-07-21 | `com.h2database:h2` | 2.1.214 | **2.2.220** | CVE-2022-45868 Web Console 管理密码命令行泄露 | class major 52，Java 8 兼容 |

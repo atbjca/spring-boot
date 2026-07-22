@@ -4,6 +4,44 @@
 
 ---
 
+## 📅 2026年07月22日
+
+### [需求-038] Spring Kafka CVE-2026-41731 SNAPSHOT 修复采纳与消费端验证
+
+#### 背景与目的
+
+Spring Kafka NES fork 已在 commit `c119b8f62` 回移 CVE-2026-41731 修复，将 Kafka JSON Header 的受信包规则从父包前缀匹配收紧为精确包名匹配。Boot 已管理 `2.9.13-nes.patch.1-SNAPSHOT`，但该坐标在修复前后均发布过制品，旧构建缓存可能继续使用包含漏洞的 JAR，因此需要以实际解析时间戳和公开行为测试完成消费端闭环。
+
+#### 修改内容
+
+- 保持 Spring Kafka NES GAV、artifactId 和 `2.9.13-nes.patch.1-SNAPSHOT` 不变，不提前切换 RELEASE 或提升 patch 序号。
+- 在 `spring-boot-autoconfigure` 增加 `SpringKafkaHeaderSecurityTests`：
+  - `java.util.logging.FileHandler` 必须映射为 `NonTrustedHeaderType`；
+  - 精确默认包中的类型继续正常反序列化；
+  - 显式 `addTrustedPackages("*")` 的兼容行为保持不变。
+- 刷新 changing module 后确认主模块和 test 模块均解析到时间戳 `20260721.054238-2`，Gradle variant 为 JVM 8，且无双版本。
+- 新建 CVE-2026-41731 文档，并同步漏洞总览、组件维护历史和用户迁移说明。
+
+#### SNAPSHOT 约束
+
+- 同一 `2.9.13-nes.patch.1-SNAPSHOT` 下，2026-07-09 缓存 JAR 仍包含 `startsWith` 漏洞逻辑，2026-07-21 JAR 已只保留精确 `equals`。
+- 修复状态必须绑定 Spring Kafka commit `c119b8f62`、时间戳制品或等价行为测试，不能只写“该 SNAPSHOT 版本已修复”。
+- CI/验收环境至少执行一次 `--refresh-dependencies`，并由 Boot 侧安全回归防止旧缓存通过。
+- 将来发布 `2.9.13-nes.patch.1` RELEASE 后，另建小变更将根替换规则、BOM 和 OpenSpec 主规格切换到不可变版本。
+
+#### 下游兼容性
+
+依赖父包隐式信任业务子包的应用必须显式列出每个实际包，例如同时配置 `com.example` 与 `com.example.events`。不得将 `"*"` 作为常规迁移方案；Kafka ACL 仍需限制 Topic 写权限。
+
+#### 涉及文件
+
+- `spring-boot-project/spring-boot-autoconfigure/src/test/.../SpringKafkaHeaderSecurityTests.java`
+- `doc/CVE/CVE-2026-41731.md`
+- `doc/VULNERABILITY_REPORT.md`、`doc/COMPONENTS_UPGRADE_HISTORY.md`、`doc/USER_MANUAL.md`
+- `openspec/changes/adopt-spring-kafka-cve-2026-41731-fix/`
+
+---
+
 ## 📅 2026年07月21日
 
 ### [需求-037] Java 8 受管组件安全基线升级与漏洞台账纠偏
