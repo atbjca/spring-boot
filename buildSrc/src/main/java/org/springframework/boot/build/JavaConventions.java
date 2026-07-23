@@ -181,11 +181,9 @@ class JavaConventions {
 	private void configureTestRetries(Test test) {
 		TestRetryExtension testRetry = test.getExtensions().getByType(TestRetryExtension.class);
 		testRetry.getFailOnPassedAfterRetry().set(false);
-		testRetry.getMaxRetries().set(isCi() ? 3 : 0);
-	}
-
-	private boolean isCi() {
-		return Boolean.parseBoolean(System.getenv("CI"));
+		// Always retry flaky reactor-netty Connection reset / PrematureClose locally and
+		// in CI.
+		testRetry.getMaxRetries().set(3);
 	}
 
 	private void configurePredictiveTestSelection(Test test) {

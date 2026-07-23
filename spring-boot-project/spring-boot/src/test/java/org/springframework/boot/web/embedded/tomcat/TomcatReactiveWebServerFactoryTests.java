@@ -39,6 +39,8 @@ import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import org.springframework.boot.web.reactive.server.AbstractReactiveWebServerFactory;
 import org.springframework.boot.web.reactive.server.AbstractReactiveWebServerFactoryTests;
@@ -47,14 +49,12 @@ import org.springframework.boot.web.server.Shutdown;
 import org.springframework.boot.web.server.WebServerException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -257,10 +257,7 @@ class TomcatReactiveWebServerFactoryTests extends AbstractReactiveWebServerFacto
 		this.webServer = factory.getWebServer(new EchoHandler());
 		this.webServer.start();
 		ReactorClientHttpConnector connector = buildTrustAllSslConnector();
-		WebClient client = WebClient.builder()
-			.baseUrl("https://localhost:" + this.webServer.getPort())
-			.clientConnector(connector)
-			.build();
+		WebClient client = createWebClient(connector, "https://localhost:" + this.webServer.getPort());
 
 		Mono<String> result = client.post()
 			.uri("/test")

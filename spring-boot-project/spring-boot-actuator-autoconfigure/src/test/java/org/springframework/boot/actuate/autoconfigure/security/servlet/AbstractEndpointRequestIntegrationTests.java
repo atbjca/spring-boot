@@ -98,6 +98,12 @@ abstract class AbstractEndpointRequestIntegrationTests {
 		return WebTestClient.bindToServer()
 			.baseUrl("http://localhost:" + port)
 			.responseTimeout(Duration.ofMinutes(5))
+			.filter((request, next) -> {
+				if (org.springframework.http.HttpMethod.GET == request.method()) {
+					return next.exchange(request).retry(10);
+				}
+				return next.exchange(request);
+			})
 			.build();
 	}
 

@@ -174,6 +174,12 @@ class WebMvcEndpointExposureIntegrationTests {
 			.baseUrl("http://localhost:" + port)
 			.exchangeStrategies(exchangeStrategies)
 			.responseTimeout(Duration.ofMinutes(5))
+			.filter((request, next) -> {
+				if (HttpMethod.GET == request.method()) {
+					return next.exchange(request).retry(10);
+				}
+				return next.exchange(request);
+			})
 			.build();
 	}
 

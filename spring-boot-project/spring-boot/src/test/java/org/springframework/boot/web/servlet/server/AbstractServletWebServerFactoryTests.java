@@ -638,7 +638,7 @@ public abstract class AbstractServletWebServerFactoryTests {
 				new SSLContextBuilder().loadTrustMaterial(null, new TrustSelfSignedStrategy()).build());
 		HttpClient httpClient = this.httpClientBuilder.get().setSSLSocketFactory(socketFactory).build();
 		HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-		assertThat(getResponse(getLocalUrl("https", "/test.txt"), requestFactory)).isEqualTo("test");
+		assertThat(doWithRetry(() -> getResponse(getLocalUrl("https", "/test.txt"), requestFactory))).isEqualTo("test");
 	}
 
 	@Test

@@ -18,7 +18,6 @@ package org.springframework.boot.web.reactive.server;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
@@ -154,10 +153,7 @@ public abstract class AbstractReactiveWebServerFactoryTests {
 		this.webServer = factory.getWebServer(new EchoHandler());
 		this.webServer.start();
 		ReactorClientHttpConnector connector = buildTrustAllSslConnector();
-		WebClient client = WebClient.builder()
-			.baseUrl("https://localhost:" + this.webServer.getPort())
-			.clientConnector(connector)
-			.build();
+		WebClient client = createWebClient(connector, "https://localhost:" + this.webServer.getPort());
 		Mono<String> result = client.post()
 			.uri("/test")
 			.contentType(MediaType.TEXT_PLAIN)
@@ -181,10 +177,7 @@ public abstract class AbstractReactiveWebServerFactoryTests {
 		this.webServer = factory.getWebServer(new EchoHandler());
 		this.webServer.start();
 		ReactorClientHttpConnector connector = buildTrustAllSslConnector();
-		WebClient client = WebClient.builder()
-			.baseUrl("https://localhost:" + this.webServer.getPort())
-			.clientConnector(connector)
-			.build();
+		WebClient client = createWebClient(connector, "https://localhost:" + this.webServer.getPort());
 
 		Mono<String> result = client.post()
 			.uri("/test")
@@ -267,10 +260,7 @@ public abstract class AbstractReactiveWebServerFactoryTests {
 		factory.setSsl(sslConfiguration);
 		this.webServer = factory.getWebServer(new EchoHandler());
 		this.webServer.start();
-		WebClient client = WebClient.builder()
-			.baseUrl("https://localhost:" + this.webServer.getPort())
-			.clientConnector(clientConnector)
-			.build();
+		WebClient client = createWebClient(clientConnector, "https://localhost:" + this.webServer.getPort());
 		Mono<String> result = client.post()
 			.uri("/test")
 			.contentType(MediaType.TEXT_PLAIN)
@@ -335,9 +325,19 @@ public abstract class AbstractReactiveWebServerFactoryTests {
 	}
 
 	protected WebClient.Builder getWebClient(HttpClient client, int port) {
-		InetSocketAddress address = new InetSocketAddress(port);
-		String baseUrl = "http://" + address.getHostString() + ":" + address.getPort();
-		return WebClient.builder().clientConnector(new ReactorClientHttpConnector(client)).baseUrl(baseUrl);
+		String baseUrl = "http://localhost:" + port;
+		return WebClient.builder()
+			.clientConnector(new ReactorClientHttpConnector(client))
+			.baseUrl(baseUrl)
+			.filter((request, next) -> next.exchange(request).retry(10));
+	}
+
+	protected WebClient createWebClient(ReactorClientHttpConnector connector, String baseUrl) {
+		return WebClient.builder()
+			.baseUrl(baseUrl)
+			.clientConnector(connector)
+			.filter((request, next) -> next.exchange(request).retry(10))
+			.build();
 	}
 
 	@Test

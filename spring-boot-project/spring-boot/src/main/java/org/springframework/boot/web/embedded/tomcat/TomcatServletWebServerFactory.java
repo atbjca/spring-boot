@@ -883,7 +883,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 
 		/**
 		 * 【Tomcat 9.0.84+ 兼容性适配】 Tomcat 9.0.84 在 {@link WebResourceSet} 接口中新增了
-		 * getAllowLinking() 抽象方法， 用于支持符号链接的访问控制（开启后允许访问 Web 应用目录之外的符号链接目标）。
+		 * getAllowLinking() 抽象方法，用于支持符号链接的访问控制（开启后允许访问 Web 应用目录之外的符号链接目标）.
 		 * 本类作为装饰器（Decorator），直接委托给被包装的 delegate 实例处理即可。
 		 */
 		@Override
@@ -893,7 +893,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 
 		/**
 		 * 【Tomcat 9.0.84+ 兼容性适配】 Tomcat 9.0.84 在 {@link WebResourceSet} 接口中同时新增了
-		 * setAllowLinking(boolean) 抽象方法， 用于动态控制是否允许跟随符号链接（symlink）。 本类作为装饰器，直接将设置委托给被包装的
+		 * setAllowLinking(boolean) 抽象方法，用于动态控制是否允许跟随符号链接（symlink）. 本类作为装饰器，直接将设置委托给被包装的
 		 * delegate 实例。
 		 */
 		@Override

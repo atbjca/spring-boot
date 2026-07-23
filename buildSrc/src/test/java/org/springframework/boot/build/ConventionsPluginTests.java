@@ -191,7 +191,7 @@ class ConventionsPluginTests {
 	}
 
 	@Test
-	void testRetryIsConfiguredWithZeroRetriesLocally() throws IOException {
+	void testRetryIsConfiguredWithThreeRetriesLocally() throws IOException {
 		try (PrintWriter out = new PrintWriter(new FileWriter(this.buildFile))) {
 			out.println("plugins {");
 			out.println("    id 'java'");
@@ -208,7 +208,7 @@ class ConventionsPluginTests {
 			out.println("}");
 		}
 		assertThat(runGradle(Collections.singletonMap("CI", "local"), "retryConfig", "--stacktrace").getOutput())
-			.contains("maxRetries: 0")
+			.contains("maxRetries: 3")
 			.contains("failOnPassedAfterRetry: false");
 	}
 

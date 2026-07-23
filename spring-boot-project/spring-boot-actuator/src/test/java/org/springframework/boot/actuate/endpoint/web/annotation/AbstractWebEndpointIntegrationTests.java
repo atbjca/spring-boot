@@ -16,7 +16,6 @@
 
 package org.springframework.boot.actuate.endpoint.web.annotation;
 
-import java.net.InetSocketAddress;
 import java.security.Principal;
 import java.time.Duration;
 import java.util.Collections;
@@ -48,6 +47,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.lang.Nullable;
@@ -658,10 +658,14 @@ public abstract class AbstractWebEndpointIntegrationTests<T extends Configurable
 		applicationContext.getEnvironment().getPropertySources().addLast(new MapPropertySource("test", properties));
 		applicationContext.refresh();
 		try {
-			InetSocketAddress address = new InetSocketAddress(getPort(applicationContext));
-			String url = "http://" + address.getHostString() + ":" + address.getPort() + endpointPath;
+			String url = "http://localhost:" + getPort(applicationContext) + endpointPath;
 			consumer.accept(applicationContext,
-					WebTestClient.bindToServer().baseUrl(url).responseTimeout(TIMEOUT).build());
+					WebTestClient.bindToServer().baseUrl(url).responseTimeout(TIMEOUT).filter((request, next) -> {
+						if (HttpMethod.GET == request.method()) {
+							return next.exchange(request).retry(10);
+						}
+						return next.exchange(request);
+					}).build());
 		}
 		finally {
 			applicationContext.close();

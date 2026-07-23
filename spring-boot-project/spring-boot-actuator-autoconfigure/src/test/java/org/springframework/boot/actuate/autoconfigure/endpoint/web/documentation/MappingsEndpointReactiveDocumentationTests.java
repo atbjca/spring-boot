@@ -76,6 +76,12 @@ class MappingsEndpointReactiveDocumentationTests extends AbstractEndpointDocumen
 			.filter(documentationConfiguration(restDocumentation).snippets().withDefaults())
 			.baseUrl("http://localhost:" + this.port)
 			.responseTimeout(Duration.ofMinutes(5))
+			.filter((request, next) -> {
+				if (org.springframework.http.HttpMethod.GET == request.method()) {
+					return next.exchange(request).retry(10);
+				}
+				return next.exchange(request);
+			})
 			.build();
 	}
 

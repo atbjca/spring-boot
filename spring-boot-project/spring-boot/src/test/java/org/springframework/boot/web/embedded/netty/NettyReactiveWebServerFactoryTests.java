@@ -147,10 +147,7 @@ class NettyReactiveWebServerFactoryTests extends AbstractReactiveWebServerFactor
 		this.webServer = factory.getWebServer(new EchoHandler());
 		this.webServer.start();
 		ReactorClientHttpConnector connector = buildTrustAllSslConnector();
-		WebClient client = WebClient.builder()
-			.baseUrl("https://localhost:" + this.webServer.getPort())
-			.clientConnector(connector)
-			.build();
+		WebClient client = createWebClient(connector, "https://localhost:" + this.webServer.getPort());
 		return client.post()
 			.uri("/test")
 			.contentType(MediaType.TEXT_PLAIN)

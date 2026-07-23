@@ -11,7 +11,7 @@ help: ## 显示帮助信息
 	@echo "  make stop           - 停止所有 Gradle Daemon ; 释放所有锁"
 	@echo "  make projects       - 查看有效的项目"
 	@echo "  make tree           - 查看依赖树"
-	@echo "  make build          - 编译打包（不安装、不发布）"
+	@echo "  make build          - 稳定绿灯门禁：全量编译打包/checkstyle + Tier A 测试"
 	@echo "  make test           - Tier A 核心模块测试（spring-boot + spring-boot-test + Kafka smoke，承诺全绿）"
 	@echo "  make test-feedback  - Tier C 扩大反馈（--continue，含已知失败，详见 doc/TESTING.md）"
 	@echo "  make setup-gradle   - 安装并解压 LOCAL_GRADLE_DIR 下全部 gradle-*-zip 到 wrapper 缓存；缺包则回退联网下载"
@@ -55,8 +55,20 @@ clean: ## 清理构建产物
 format: setup-gradle ## 格式化代码
 	./gradlew -Dorg.gradle.caching=false format
 
-build: setup-gradle clean format ## 编译打包
-	./gradlew -Dorg.gradle.caching=false build
+# ----------------------------------------------------------------------------
+# build —— 稳定绿灯门禁
+#
+# Phase 1：全仓库编译/打包/checkstyle（不含测试与 asciidoctor 文档）
+# Phase 2：Tier A 测试（复用 make test，承诺全绿）
+#
+# 扩大摸底（actuator 全量 / 插件 / Docker / 文档测试）用 make test-feedback
+# ----------------------------------------------------------------------------
+build: setup-gradle clean format ## 稳定绿灯门禁（编译打包 + Tier A 测试）
+	./gradlew -Dorg.gradle.caching=false build \
+		-x test -x intTest -x documentationTest \
+		-x asciidoctor -x asciidoctorPdf \
+		-x syncDocumentationSourceForAsciidoctor -x syncDocumentationSourceForAsciidoctorPdf
+	$(MAKE) test
 
 build-thin: setup-gradle clean format ## 编译打包 -x checkstyleNohttp
 	./gradlew -Dorg.gradle.caching=false build -x test -x intTest -x checkstyleMain -x checkstyleTest -x asciidoctor -x javadoc

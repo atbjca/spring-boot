@@ -3,7 +3,7 @@
 > **分支**：`2.7.x-bjca-patch`  
 > **基线**：2.7.18（NES fork `2.7.18-nes.patch.1-SNAPSHOT`）  
 > **对齐参考**：3.5 fork 的 Tier 分层（`doc/TESTING.md`）  
-> **最后更新**：2026-07-22
+> **最后更新**：2026-07-23
 
 本文档说明 2.7 fork **测什么、不测什么、日常怎么验**，以及 `make test` 与 `make test-feedback` 的分工。
 
@@ -31,6 +31,7 @@
 |------|------|
 | 本地能跑测试吗？ | **能**（Java 8/11 + Gradle 7.6.3 本地 zip） |
 | 全量 `./gradlew test` 能全绿吗？ | **不能**，也不作为目标 |
+| `make build` / `make clean build` 能全绿吗？ | **能**（稳定门禁：全量编译打包 + checkstyle + Tier A 测试；TestRetry 默认开启） |
 | 日常 `make test` 要 Kafka/Redis/Docker 吗？ | **需要内嵌 Kafka（NES EmbeddedKafka），不需要外部 Kafka/Redis/Docker** |
 | 日常 merge 门槛？ | **`make build-thin` + `make test`（Tier A，核心模块 + Kafka smoke，承诺维护全绿）** |
 | 扩大反馈？ | **`make test-feedback`（Tier C，`--continue`，已知红可接受）** |
@@ -154,6 +155,7 @@ make stop
 
 | 命令 | 作用 | 外部服务 |
 |------|------|----------|
+| `make build` / `make clean build` | **稳定绿灯门禁**：全量编译/打包/checkstyle + Tier A 测试（与 `make test` 相同）；插件/Docker/文档/actuator 全量不在此门禁 | ❌ |
 | `make build-thin` | 编译打包，跳过 test / 文档 | ❌ |
 | `make test` | **Tier A**：核心两模块 + Kafka smoke，承诺全绿 | 内嵌 Kafka |
 | `make test-feedback` | **Tier C**：三子树扩大反馈，`--continue` | 部分 smoke 需 H2/Kafka 等 |
