@@ -180,7 +180,7 @@ Tier C   make test-feedback        → 2.7 风格扩大范围，--continue，非
 
 ## 6. Phase 1：当前已验证范围
 
-### 6.1 实测结果（2026-07-01，Java 17，3.5.15-nes.patch.1-SNAPSHOT）
+### 6.1 实测结果（2026-07-01，Java 17，3.5.15-nes.patch.1）
 
 **Phase 1（make test）**：
 

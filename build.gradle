@@ -76,11 +76,11 @@ allprojects {
 			}
 			// Spring Kafka NES 分支已完成 GAV 去特征化并发布私服：
 			// org.springframework.kafka:spring-kafka{,-test}
-			//   → cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka{,-test}:3.3.16-nes.patch.1-SNAPSHOT。
+			//   → cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka{,-test}:3.3.16-nes.patch.1。
 			// artifactId 通过 spring- 前缀替换得到，与上面 framework / security 规则同构。
 			else if (requested.group == 'org.springframework.kafka' && requested.name.startsWith('spring-kafka')) {
 				def newArtifactId = requested.name.replaceFirst(/^spring-/, "${forkArtifactPrefix}-")
-				details.useTarget("${forkGroupIdBase}.kafka:${newArtifactId}:3.3.16-nes.patch.1-SNAPSHOT")
+				details.useTarget("${forkGroupIdBase}.kafka:${newArtifactId}:3.3.16-nes.patch.1")
 			}
 			// Spring Data NES 分支仅将 commons / keyvalue / redis / elasticsearch 四模块去特征化并发布私服，
 			// 其余 spring-data-*（jpa / mongodb / neo4j / cassandra / couchbase / r2dbc / relational / rest 等）
@@ -96,8 +96,8 @@ allprojects {
 						|| requested.name == 'spring-data-elasticsearch')) {
 				def newArtifactId = requested.name.replaceFirst(/^spring-/, "${forkArtifactPrefix}-")
 				def dataVersion = (requested.name == 'spring-data-elasticsearch')
-						? '5.5.13-nes.patch.1-SNAPSHOT'
-						: '3.5.13-nes.patch.1-SNAPSHOT'
+						? '5.5.13-nes.patch.1'
+						: '3.5.13-nes.patch.1'
 				details.useTarget("${forkGroupIdBase}.data:${newArtifactId}:${dataVersion}")
 			}
 		}

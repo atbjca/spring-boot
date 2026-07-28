@@ -25,17 +25,17 @@ Logback 仍用官方 `ch.qos.logback:1.5.38`（不 fork bogback）。
 
 | 组件 | 官方坐标 | Fork 坐标 | 版本 |
 |------|----------|-----------|------|
-| Spring Boot | `org.springframework.boot:*` | `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-*` | `3.5.15-nes.patch.1-SNAPSHOT` |
-| Spring Framework | `org.springframework:*` | `cn.bjca.footstone.bpring:bjca-footstone-bpring-*` | `6.2.19-nes.patch.1-SNAPSHOT` |
-| Spring Security | `org.springframework.security:*` | `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-*` | `6.5.11-nes.patch.1-SNAPSHOT` |
-| Authorization Server | `org.springframework.security:spring-security-oauth2-authorization-server` | `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-oauth2-authorization-server` | `1.5.8-nes.patch.1-SNAPSHOT` |
-| Spring Data BOM | `org.springframework.data:spring-data-bom` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom` | `2025.0.13-nes.patch.1-SNAPSHOT` |
-| Spring Data Commons | `org.springframework.data:spring-data-commons` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-commons` | `3.5.13-nes.patch.1-SNAPSHOT` |
-| Spring Data KeyValue | `org.springframework.data:spring-data-keyvalue` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-keyvalue` | `3.5.13-nes.patch.1-SNAPSHOT` |
-| Spring Data Redis | `org.springframework.data:spring-data-redis` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-redis` | `3.5.13-nes.patch.1-SNAPSHOT` |
-| Spring Data Elasticsearch | `org.springframework.data:spring-data-elasticsearch` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-elasticsearch` | `5.5.13-nes.patch.1-SNAPSHOT` |
-| Spring Kafka | `org.springframework.kafka:spring-kafka` | `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka` | `3.3.16-nes.patch.1-SNAPSHOT` |
-| Spring Kafka Test | `org.springframework.kafka:spring-kafka-test` | `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka-test` | `3.3.16-nes.patch.1-SNAPSHOT` |
+| Spring Boot | `org.springframework.boot:*` | `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-*` | `3.5.15-nes.patch.1` |
+| Spring Framework | `org.springframework:*` | `cn.bjca.footstone.bpring:bjca-footstone-bpring-*` | `6.2.19-nes.patch.1` |
+| Spring Security | `org.springframework.security:*` | `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-*` | `6.5.11-nes.patch.1` |
+| Authorization Server | `org.springframework.security:spring-security-oauth2-authorization-server` | `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-oauth2-authorization-server` | `1.5.8-nes.patch.1` |
+| Spring Data BOM | `org.springframework.data:spring-data-bom` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom` | `2025.0.13-nes.patch.1` |
+| Spring Data Commons | `org.springframework.data:spring-data-commons` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-commons` | `3.5.13-nes.patch.1` |
+| Spring Data KeyValue | `org.springframework.data:spring-data-keyvalue` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-keyvalue` | `3.5.13-nes.patch.1` |
+| Spring Data Redis | `org.springframework.data:spring-data-redis` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-redis` | `3.5.13-nes.patch.1` |
+| Spring Data Elasticsearch | `org.springframework.data:spring-data-elasticsearch` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-elasticsearch` | `5.5.13-nes.patch.1` |
+| Spring Kafka | `org.springframework.kafka:spring-kafka` | `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka` | `3.3.16-nes.patch.1` |
+| Spring Kafka Test | `org.springframework.kafka:spring-kafka-test` | `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka-test` | `3.3.16-nes.patch.1` |
 | Logback | `ch.qos.logback:*` | 官方 | `1.5.38` |
 
 ### Fork 参数
@@ -45,19 +45,19 @@ Logback 仍用官方 `ch.qos.logback:1.5.38`（不 fork bogback）。
 | `forkGroupIdBase` | `cn.bjca.footstone.bpring` |
 | `forkArtifactPrefix` | `bjca-footstone-bpring` |
 | `springBootVersion` | `3.5.15` |
-| `springFrameworkVersion` | `6.2.19-nes.patch.1-SNAPSHOT` |
-| `springSecurityVersion` | `6.5.11-nes.patch.1-SNAPSHOT` |
-| `springAuthorizationServerVersion` | `1.5.8-nes.patch.1-SNAPSHOT` |
+| `springFrameworkVersion` | `6.2.19-nes.patch.1` |
+| `springSecurityVersion` | `6.5.11-nes.patch.1` |
+| `springAuthorizationServerVersion` | `1.5.8-nes.patch.1` |
 
 ### 映射示例
 
 | 官方 GAV | Fork GAV |
 |----------|----------|
-| `org.springframework:spring-context:6.2.19` | `cn.bjca.footstone.bpring:bjca-footstone-bpring-context:6.2.19-nes.patch.1-SNAPSHOT` |
-| `org.springframework.security:spring-security-core:6.5.11` | `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-core:6.5.11-nes.patch.1-SNAPSHOT` |
-| `org.springframework.boot:spring-boot-starter-web:3.5.15` | `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-starter-web:3.5.15-nes.patch.1-SNAPSHOT` |
-| `org.springframework.data:spring-data-redis:3.5.13` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-redis:3.5.13-nes.patch.1-SNAPSHOT` |
-| `org.springframework.kafka:spring-kafka:3.3.16` | `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka:3.3.16-nes.patch.1-SNAPSHOT` |
+| `org.springframework:spring-context:6.2.19` | `cn.bjca.footstone.bpring:bjca-footstone-bpring-context:6.2.19-nes.patch.1` |
+| `org.springframework.security:spring-security-core:6.5.11` | `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-core:6.5.11-nes.patch.1` |
+| `org.springframework.boot:spring-boot-starter-web:3.5.15` | `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-starter-web:3.5.15-nes.patch.1` |
+| `org.springframework.data:spring-data-redis:3.5.13` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-redis:3.5.13-nes.patch.1` |
+| `org.springframework.kafka:spring-kafka:3.3.16` | `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka:3.3.16-nes.patch.1` |
 
 ### SCA 规避说明
 

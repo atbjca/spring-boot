@@ -6,7 +6,7 @@
 |------|------|
 | 状态 | 已完成 |
 | 基线 | Spring Boot 3.5.15（commit `5bafd0a6bf1`） |
-| Fork 版本 | `3.5.15-nes.patch.1-SNAPSHOT` |
+| Fork 版本 | `3.5.15-nes.patch.1` |
 | 范围 | Boot 层 GAV rebranding、Nexus 发布链路、Makefile 工具链 |
 | 非目标 | Framework 6.2.x / Security 6.5.x / Logback fork（Phase B） |
 
@@ -51,9 +51,9 @@ nexusPassword=your-password
 |------|------|
 | 状态 | 已完成 |
 | 基线 | Phase A 完成后的 `3.5.x-bjca-patch` |
-| Framework 版本 | `6.2.19-nes.patch.1-SNAPSHOT` |
-| Security 版本 | `6.5.11-nes.patch.1-SNAPSHOT` |
-| Authorization Server 版本 | `1.5.8-nes.patch.1-SNAPSHOT` |
+| Framework 版本 | `6.2.19-nes.patch.1` |
+| Security 版本 | `6.5.11-nes.patch.1` |
+| Authorization Server 版本 | `1.5.8-nes.patch.1` |
 | 范围 | `resolutionStrategy` 映射、BOM 条目、buildSrc 坐标切换、ClassPathExclusions fork 适配 |
 | 前提 | Framework / Security fork 制品已发布到 Nexus |
 

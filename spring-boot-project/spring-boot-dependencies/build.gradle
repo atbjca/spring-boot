@@ -2314,7 +2314,7 @@ bom {
 			releaseNotes("https://github.com/spring-projects/spring-batch/releases/tag/v{version}")
 		}
 	}
-	library("Spring Data Bom", "2025.0.13-nes.patch.1-SNAPSHOT") {
+	library("Spring Data Bom", "2025.0.13-nes.patch.1") {
 		prohibit {
 			versionRange "[2025.1.0-M1,)"
 			because "it exceeds our baseline"
@@ -2323,7 +2323,7 @@ bom {
 		calendarName = "Spring Data Release"
 		// Spring Data BOM 已在 fork 仓库（spring-data-bom NES 分支）完成去特征化并发布私服：
 		//   org.springframework.data:spring-data-bom
-		//     → cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom（版本 2025.0.13-nes.patch.1-SNAPSHOT）。
+		//     → cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom（版本 2025.0.13-nes.patch.1）。
 		// 原始官方坐标在私服中不存在，必须引用 fork 坐标。fork BOM 内部将
 		// commons/keyvalue/redis/elasticsearch 四模块切至 NES 制品（内部依赖已 fork 化，
 		// 不再传递官方 org.springframework:* 坐标，故无需再声明 A 类 exclude），
@@ -2438,7 +2438,7 @@ bom {
 			releaseNotes("https://github.com/spring-projects/spring-integration/releases/tag/v{version}")
 		}
 	}
-	library("Spring Kafka", "3.3.16-nes.patch.1-SNAPSHOT") {
+	library("Spring Kafka", "3.3.16-nes.patch.1") {
 		considerSnapshots()
 		group("cn.bjca.footstone.bpring.kafka") {
 			// Spring Kafka NES 分支仅改 GAV，发布 POM 中仍以官方 org.springframework:* 声明

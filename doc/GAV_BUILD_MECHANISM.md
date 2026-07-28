@@ -44,7 +44,7 @@ eachDependency 拦截请求
          │
          ▼
 匹配规则 → 替换为 fork GAV
-（cn.bjca.footstone.bpring:bjca-footstone-bpring-context:6.2.19-nes.patch.1-SNAPSHOT）
+（cn.bjca.footstone.bpring:bjca-footstone-bpring-context:6.2.19-nes.patch.1）
          │
          ▼
 解析后的依赖传入子模块构建脚本

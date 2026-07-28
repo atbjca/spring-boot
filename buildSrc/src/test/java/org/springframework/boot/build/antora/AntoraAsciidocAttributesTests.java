@@ -122,10 +122,10 @@ class AntoraAsciidocAttributesTests {
 		Map<String, String> dependencyVersions = mockDependencyVersions("3.5.13");
 		dependencyVersions.remove("org.springframework.data:spring-data-commons");
 		dependencyVersions.put("cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-commons",
-				"3.5.13-nes.patch.1-SNAPSHOT");
+				"3.5.13-nes.patch.1");
 		AntoraAsciidocAttributes attributes = new AntoraAsciidocAttributes("1.2.3", true, BuildType.OPEN_SOURCE, null,
 				dependencyVersions, null);
-		assertThat(attributes.get()).containsEntry("version-spring-data-commons", "3.5.13-nes.patch.1-SNAPSHOT");
+		assertThat(attributes.get()).containsEntry("version-spring-data-commons", "3.5.13-nes.patch.1");
 		assertThat(attributes.get()).containsEntry("url-spring-data-commons-javadoc",
 				"https://docs.spring.io/spring-data/commons/docs/3.5.x/api");
 	}
