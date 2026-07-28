@@ -181,7 +181,7 @@ class BomPluginIntegrationTests {
 			out.println("    id 'org.springframework.boot.bom'");
 			out.println("}");
 			out.println("bom {");
-			out.println("    library('Spring Kafka', '2.9.13-nes.patch.1-SNAPSHOT') {");
+			out.println("    library('Spring Kafka', '2.9.13-nes.patch.1') {");
 			out.println("        group('cn.bjca.footstone.bpring.kafka') {");
 			out.println("            modules = [");
 			out.println("                'spring-kafka' {");
@@ -196,7 +196,7 @@ class BomPluginIntegrationTests {
 			out.println("}");
 		}
 		generatePom((pom) -> {
-			assertThat(pom).textAtPath("//properties/spring-kafka.version").isEqualTo("2.9.13-nes.patch.1-SNAPSHOT");
+			assertThat(pom).textAtPath("//properties/spring-kafka.version").isEqualTo("2.9.13-nes.patch.1");
 			NodeAssert springKafka = pom.nodeAtPath("//dependencyManagement/dependencies/dependency[1]");
 			assertThat(springKafka).textAtPath("groupId").isEqualTo("cn.bjca.footstone.bpring.kafka");
 			assertThat(springKafka).textAtPath("artifactId").isEqualTo("spring-kafka");

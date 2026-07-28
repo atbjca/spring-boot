@@ -1,7 +1,7 @@
 # Spring Boot 2.7 测试策略与开发验证指南
 
 > **分支**：`2.7.x-bjca-patch`  
-> **基线**：2.7.18（NES fork `2.7.18-nes.patch.1-SNAPSHOT`）  
+> **基线**：2.7.18（NES fork `2.7.18-nes.patch.1`）  
 > **对齐参考**：3.5 fork 的 Tier 分层（`doc/TESTING.md`）  
 > **最后更新**：2026-07-23
 

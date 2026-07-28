@@ -1833,7 +1833,7 @@ bom {
 			]
 		}
 	}
-	library("Spring Data Bom", "2021.2.18-nes.patch.1-SNAPSHOT") {
+	library("Spring Data Bom", "2021.2.18-nes.patch.1") {
 		considerSnapshots()
 		calendarName = "Spring Data Release"
 		prohibit {
@@ -1842,7 +1842,7 @@ bom {
 		}
 		// Spring Data BOM 已在 fork 仓库（spring-data-bom NES 分支）完成去特征化并发布到私服：
 		//   org.springframework.data:spring-data-bom
-		//     → cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom（version 2021.2.18-nes.patch.1-SNAPSHOT 不变）。
+		//     → cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom（version 2021.2.18-nes.patch.1 不变）。
 		// 原始 org.springframework.data:spring-data-bom 坐标在私服中不存在，必须引用 fork 坐标。
 		// fork BOM 内部仅将 spring-data-commons / spring-data-keyvalue 切至 NES 制品，其余
 		// spring-data-* 模块保持官方坐标 + 官方版本（由 mavenCentral / 私服代理解析）。
@@ -1914,7 +1914,7 @@ bom {
 			]
 		}
 	}
-	library("Spring Kafka", "2.9.13-nes.patch.1-SNAPSHOT") {
+	library("Spring Kafka", "2.9.13-nes.patch.1") {
 		considerSnapshots()
 		group("cn.bjca.footstone.bpring.kafka") {
 			// Spring Kafka NES 分支仍在发布 POM 中传递依赖官方 org.springframework:*。
@@ -2005,7 +2005,7 @@ bom {
 	}
 	// 2026-03-06: Spring Authorization Server fork（独立于 Spring Security，版本号独立管理）
 	// 该组件属于 Spring Authorization Server 项目，非 Spring Security 核心模块，因此需单独定义 library 条目
-	library("Spring Security OAuth2 Authorization Server", "0.4.5-nes.patch.1-SNAPSHOT") {
+	library("Spring Security OAuth2 Authorization Server", "0.4.5-nes.patch.1") {
 		considerSnapshots()
 		group(forkGroupIdBase + ".security") {
 			modules = [

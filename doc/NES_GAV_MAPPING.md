@@ -30,11 +30,11 @@
 
 | 组件 | 官方基线版本 | NES Fork 版本 |
 | :--- | :--- | :--- |
-| Spring Boot | `2.7.18` | `2.7.18-nes.patch.1-SNAPSHOT` |
-| Spring Framework | `5.3.39` | `5.3.39-nes.patch.1-SNAPSHOT` |
-| Spring Security | `5.8.16` | `5.8.16-nes.patch.1-SNAPSHOT` |
-| Spring Authorization Server | `0.4.5` | `0.4.5-nes.patch.1-SNAPSHOT` |
-| Spring Kafka | `2.9.13` | `2.9.13-nes.patch.1-SNAPSHOT` |
+| Spring Boot | `2.7.18` | `2.7.18-nes.patch.1` |
+| Spring Framework | `5.3.39` | `5.3.39-nes.patch.1` |
+| Spring Security | `5.8.16` | `5.8.16-nes.patch.1` |
+| Spring Authorization Server | `0.4.5` | `0.4.5-nes.patch.1` |
+| Spring Kafka | `2.9.13` | `2.9.13-nes.patch.1` |
 
 ### 1.2 BOM 层级继承关系
 
@@ -42,10 +42,10 @@
 bjca-footstone-bpring-boot-dependencies (Spring Boot BOM — 版本管理中心)
 ├── bjca-footstone-bpring-framework-bom (Spring Framework BOM)
 │     GroupId:  cn.bjca.footstone.bpring
-│     Version: 5.3.39-nes.patch.1-SNAPSHOT
+│     Version: 5.3.39-nes.patch.1
 ├── bjca-footstone-bpring-security-bom (Spring Security BOM)
 │     GroupId:  cn.bjca.footstone.bpring.security
-│     Version: 5.8.16-nes.patch.1-SNAPSHOT
+│     Version: 5.8.16-nes.patch.1
 └── 第三方依赖版本（Jackson、Tomcat、JUnit 等）
       └── 由 Spring Boot BOM 统一管控
 ```
@@ -75,7 +75,7 @@ bjca-footstone-bpring-boot-dependencies (Spring Boot BOM — 版本管理中心)
 <parent>
     <groupId>cn.bjca.footstone.bpring.boot</groupId>
     <artifactId>bjca-footstone-bpring-boot-starter-parent</artifactId>
-    <version>2.7.18-nes.patch.1-SNAPSHOT</version>
+    <version>2.7.18-nes.patch.1</version>
     <relativePath/> <!-- lookup parent from repository -->
 </parent>
 ```
@@ -115,7 +115,7 @@ bjca-footstone-bpring-boot-dependencies (Spring Boot BOM — 版本管理中心)
         <dependency>
             <groupId>cn.bjca.footstone.bpring.boot</groupId>
             <artifactId>bjca-footstone-bpring-boot-dependencies</artifactId>
-            <version>2.7.18-nes.patch.1-SNAPSHOT</version>
+            <version>2.7.18-nes.patch.1</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -153,7 +153,7 @@ plugins {
 
 dependencyManagement {
     imports {
-        mavenBom "cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-dependencies:2.7.18-nes.patch.1-SNAPSHOT"
+        mavenBom "cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-dependencies:2.7.18-nes.patch.1"
     }
 }
 
@@ -185,7 +185,7 @@ plugins {
 
 dependencyManagement {
     imports {
-        mavenBom("cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-dependencies:2.7.18-nes.patch.1-SNAPSHOT")
+        mavenBom("cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-dependencies:2.7.18-nes.patch.1")
     }
 }
 
@@ -205,7 +205,7 @@ dependencies {
             <groupId>cn.bjca.footstone.bpring.boot</groupId>
             <artifactId>bjca-footstone-bpring-boot-maven-plugin</artifactId>
             <!-- 如使用 starter-parent 则无需版本号；否则需指定 -->
-            <version>2.7.18-nes.patch.1-SNAPSHOT</version>
+            <version>2.7.18-nes.patch.1</version>
             <executions>
                 <execution>
                     <goals>
@@ -224,7 +224,7 @@ dependencies {
 
 > **GroupId 映射**：`org.springframework.boot` → `cn.bjca.footstone.bpring.boot`
 >
-> **Version**：`2.7.18-nes.patch.1-SNAPSHOT`
+> **Version**：`2.7.18-nes.patch.1`
 >
 > **ArtifactId 映射规则**：`spring-boot-{name}` → `bjca-footstone-bpring-boot-{name}`
 >
@@ -315,7 +315,7 @@ dependencies {
 
 > **GroupId 映射**：`org.springframework` → `cn.bjca.footstone.bpring`
 >
-> **Version**：`5.3.39-nes.patch.1-SNAPSHOT`
+> **Version**：`5.3.39-nes.patch.1`
 >
 > **ArtifactId 映射规则**：`spring-{name}` → `bjca-footstone-bpring-{name}`
 
@@ -378,7 +378,7 @@ dependencies {
 
 > **GroupId 映射**：`org.springframework.security` → `cn.bjca.footstone.bpring.security`
 >
-> **Version**：`5.8.16-nes.patch.1-SNAPSHOT`
+> **Version**：`5.8.16-nes.patch.1`
 >
 > **ArtifactId 映射规则**：`spring-security-{name}` → `bjca-footstone-bpring-security-{name}`
 
@@ -429,7 +429,7 @@ dependencies {
 
 > **GroupId 映射**：`org.springframework.security` → `cn.bjca.footstone.bpring.security`
 >
-> **Version**：`0.4.5-nes.patch.1-SNAPSHOT`（**独立版本号**，与 Spring Security 不同）
+> **Version**：`0.4.5-nes.patch.1`（**独立版本号**，与 Spring Security 不同）
 >
 > **注意**：Spring Authorization Server 是独立项目，虽然 GroupId 与 Spring Security 相同，但版本号独立管理。
 
@@ -444,7 +444,7 @@ dependencies {
 <dependency>
     <groupId>cn.bjca.footstone.bpring.security</groupId>
     <artifactId>bjca-footstone-bpring-security-oauth2-authorization-server</artifactId>
-    <version>0.4.5-nes.patch.1-SNAPSHOT</version>
+    <version>0.4.5-nes.patch.1</version>
 </dependency>
 ```
 
@@ -452,7 +452,7 @@ dependencies {
 
 | 官方坐标 | NES 坐标 | 版本 |
 |---|---|---|
-| `io.projectreactor.netty:reactor-netty` | `cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty` | `1.0.48-nes.patch.1-SNAPSHOT` |
+| `io.projectreactor.netty:reactor-netty` | `cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty` | `1.0.48-nes.patch.1` |
 | `io.projectreactor.netty:reactor-netty-core` | `cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty-core` | 同上 |
 | `io.projectreactor.netty:reactor-netty-http` | `cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty-http` | 同上 |
 | `io.projectreactor.netty:reactor-netty-http-brave` | `cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty-http-brave` | 同上 |
@@ -462,7 +462,7 @@ Spring Boot 内部对上述四个官方请求做精确白名单替换；starter 
 ### Gradle 引入示例
 
 ```groovy
-implementation 'cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-oauth2-authorization-server:0.4.5-nes.patch.1-SNAPSHOT'
+implementation 'cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-oauth2-authorization-server:0.4.5-nes.patch.1'
 ```
 
 > **提示**：Authorization Server 的版本需要显式声明，不在 Spring Boot BOM 的自动管理范围内。
@@ -510,13 +510,13 @@ Spring Data 仅对 **BOM、commons、keyvalue** 三项完成 fork 去特征化�
 
 | 原始 GroupId | 原始 ArtifactId | NES Fork GroupId | NES Fork ArtifactId | NES Fork Version |
 | :--- | :--- | :--- | :--- | :--- |
-| `org.springframework.data` | `spring-data-bom` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-bom` | `2021.2.18-nes.patch.1-SNAPSHOT` |
-| `org.springframework.data` | `spring-data-commons` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-commons` | `2.7.18-nes.patch.1-SNAPSHOT` |
-| `org.springframework.data` | `spring-data-keyvalue` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-keyvalue` | `2.7.18-nes.patch.1-SNAPSHOT` |
-| `org.springframework.data` | `spring-data-redis` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-redis` | `2.7.18-nes.patch.1-SNAPSHOT` |
-| `org.springframework.data` | `spring-data-elasticsearch` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-elasticsearch` | `4.4.18-nes.patch.1-SNAPSHOT` |
+| `org.springframework.data` | `spring-data-bom` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-bom` | `2021.2.18-nes.patch.1` |
+| `org.springframework.data` | `spring-data-commons` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-commons` | `2.7.18-nes.patch.1` |
+| `org.springframework.data` | `spring-data-keyvalue` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-keyvalue` | `2.7.18-nes.patch.1` |
+| `org.springframework.data` | `spring-data-redis` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-redis` | `2.7.18-nes.patch.1` |
+| `org.springframework.data` | `spring-data-elasticsearch` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-elasticsearch` | `4.4.18-nes.patch.1` |
 
-> **说明**：`commons` / `keyvalue` / `redis` 的去特征化由本项目根 `build.gradle` 的 `resolutionStrategy` **规则五**透明完成（同 `2.7.18-nes.patch.1-SNAPSHOT` 版本线）；`elasticsearch` 因版本线为 `4.4.18-nes.patch.1-SNAPSHOT`（ES 4.4.x），由独立的 **规则六** 处理。源码中对 `org.springframework.data:spring-data-{commons,keyvalue,redis,elasticsearch}` 的声明会在依赖解析期自动重写为上表 NES 坐标，各子模块 `build.gradle` 无需修改。规则五同时堵住未 fork 的 `spring-data-jpa` 等模块通过传递依赖回拉官方 `spring-data-commons` 的链路。见 [需求-034]、[需求-035]。
+> **说明**：`commons` / `keyvalue` / `redis` 的去特征化由本项目根 `build.gradle` 的 `resolutionStrategy` **规则五**透明完成（同 `2.7.18-nes.patch.1` 版本线）；`elasticsearch` 因版本线为 `4.4.18-nes.patch.1`（ES 4.4.x），由独立的 **规则六** 处理。源码中对 `org.springframework.data:spring-data-{commons,keyvalue,redis,elasticsearch}` 的声明会在依赖解析期自动重写为上表 NES 坐标，各子模块 `build.gradle` 无需修改。规则五同时堵住未 fork 的 `spring-data-jpa` 等模块通过传递依赖回拉官方 `spring-data-commons` 的链路。见 [需求-034]、[需求-035]。
 
 > **CVE 覆盖**：commons — CVE-2026-41711 / 41716 / 41721（DoS）；keyvalue — CVE-2026-41719（SpEL 排序注入）。redis / elasticsearch 所修为**传递依赖** CVE（Kotlin 29582 / Jackson 35116 / commons-beanutils 48734 / SnakeYAML 1471 / Elasticsearch 46673 / Netty 批），本项目 spring-boot BOM 版本已高于修复线，属坐标一致性对齐（[需求-035]）。详见 `doc/VULNERABILITY_REPORT.md` 与 `doc/CVE/`。
 
@@ -525,7 +525,7 @@ Spring Data 仅对 **BOM、commons、keyvalue** 三项完成 fork 去特征化�
 ```groovy
 dependencies {
     // 引入 fork Spring Data BOM 平台，版本由其统一管理
-    implementation platform('cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom:2021.2.18-nes.patch.1-SNAPSHOT')
+    implementation platform('cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom:2021.2.18-nes.patch.1')
     // 源码可继续声明官方坐标，resolutionStrategy 规则五会重写为 NES 坐标
     implementation 'org.springframework.data:spring-data-commons'
 }
@@ -574,7 +574,7 @@ NES BOM 对 8 个 **A 类第三方库** 执行了 `<exclusions>`，排除其对 
 
 | 序号 | A 类库 | 版本 | Starter 状态 |
 | :--- | :--- | :--- | :--- |
-| 1 | Spring Kafka NES | 2.9.13-nes.patch.1-SNAPSHOT | 无 Starter |
+| 1 | Spring Kafka NES | 2.9.13-nes.patch.1 | 无 Starter |
 | 2 | Spring Batch Core | 4.3.10 | 活跃 Starter（`spring-boot-starter-batch`） |
 | 3 | Spring HATEOAS | 1.5.6 | 已排除 Starter（`spring-boot-starter-hateoas`） |
 | 4 | Spring LDAP Core | 2.4.1 | 已排除 Starter（`spring-boot-starter-data-ldap`） |
@@ -870,8 +870,8 @@ NES fork 项目**仅修改了 Maven/Gradle 制品坐标（GAV）**，**不修改
 NES 版本号遵循格式：`{官方基线版本}-nes.patch.{补丁序号}-SNAPSHOT`
 
 示例：
-- `2.7.18-nes.patch.1-SNAPSHOT` → 基于官方 Spring Boot 2.7.18，NES 第 1 次补丁
-- `5.3.39-nes.patch.1-SNAPSHOT` → 基于官方 Spring Framework 5.3.39，NES 第 1 次补丁
+- `2.7.18-nes.patch.1` → 基于官方 Spring Boot 2.7.18，NES 第 1 次补丁
+- `5.3.39-nes.patch.1` → 基于官方 Spring Framework 5.3.39，NES 第 1 次补丁
 
 NES 的定位：
 - 官方已停止维护（EOL）的版本，由内部团队继续提供**安全补丁和漏洞修复**
@@ -908,7 +908,7 @@ A: 返回 `2.7.18`（官方基线版本号），不包含 NES 补丁后缀。这
 
 **Q: Authorization Server 为什么不在 Spring Boot BOM 管控范围内？**
 
-A: Spring Authorization Server 是独立项目，官方原版在 Spring Boot 2.7.x 时代尚未纳入 BOM 统一管理。NES fork 保持了这一独立性，使用者需显式声明其版本号 `0.4.5-nes.patch.1-SNAPSHOT`。
+A: Spring Authorization Server 是独立项目，官方原版在 Spring Boot 2.7.x 时代尚未纳入 BOM 统一管理。NES fork 保持了这一独立性，使用者需显式声明其版本号 `0.4.5-nes.patch.1`。
 
 ### 10.5 常用依赖坐标速查
 
@@ -984,6 +984,6 @@ A: Spring Authorization Server 是独立项目，官方原版在 Spring Boot 2.7
 <dependency>
     <groupId>cn.bjca.footstone.bpring.security</groupId>
     <artifactId>bjca-footstone-bpring-security-oauth2-authorization-server</artifactId>
-    <version>0.4.5-nes.patch.1-SNAPSHOT</version>
+    <version>0.4.5-nes.patch.1</version>
 </dependency>
 ```

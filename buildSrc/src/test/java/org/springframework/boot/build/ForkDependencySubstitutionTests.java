@@ -35,7 +35,7 @@ class ForkDependencySubstitutionTests {
 		String build = readRootBuildGradle();
 		assertThat(build).contains("requested.group == 'org.springframework.kafka'");
 		assertThat(build).contains("requested.name.startsWith('spring-kafka')");
-		assertThat(build).contains("cn.bjca.footstone.bpring.kafka:${newArtifactId}:2.9.13-nes.patch.1-SNAPSHOT");
+		assertThat(build).contains("cn.bjca.footstone.bpring.kafka:${newArtifactId}:2.9.13-nes.patch.1");
 	}
 
 	@Test
@@ -45,20 +45,20 @@ class ForkDependencySubstitutionTests {
 		assertThat(build).contains("requested.name == 'spring-data-commons'");
 		assertThat(build).contains("requested.name == 'spring-data-keyvalue'");
 		assertThat(build).contains("requested.name == 'spring-data-redis'");
-		assertThat(build).contains("cn.bjca.footstone.bpring.data:${newArtifactId}:2.7.18-nes.patch.1-SNAPSHOT");
+		assertThat(build).contains("cn.bjca.footstone.bpring.data:${newArtifactId}:2.7.18-nes.patch.1");
 	}
 
 	@Test
 	void springDataElasticsearchIsSubstitutedOnItsOwnVersionLine() throws IOException {
 		String build = readRootBuildGradle();
 		assertThat(build).contains("requested.name == 'spring-data-elasticsearch'");
-		assertThat(build).contains("cn.bjca.footstone.bpring.data:${newArtifactId}:4.4.18-nes.patch.1-SNAPSHOT");
+		assertThat(build).contains("cn.bjca.footstone.bpring.data:${newArtifactId}:4.4.18-nes.patch.1");
 	}
 
 	@Test
 	void reactorNettyDependenciesAreSubstitutedToNesCoordinates() throws IOException {
 		String properties = readRootFile("gradle.properties");
-		assertThat(properties).contains("reactorNettyNesVersion=1.0.48-nes.patch.1-SNAPSHOT");
+		assertThat(properties).contains("reactorNettyNesVersion=1.0.48-nes.patch.1");
 		String build = readRootBuildGradle();
 		assertThat(build).contains("requested.group == 'io.projectreactor.netty'");
 		assertThat(build).contains("requested.name == 'reactor-netty'");

@@ -73,10 +73,10 @@ build: setup-gradle clean format ## 稳定绿灯门禁（编译打包 + Tier A �
 build-thin: setup-gradle clean format ## 编译打包 -x checkstyleNohttp
 	./gradlew -Dorg.gradle.caching=false build -x test -x intTest -x checkstyleMain -x checkstyleTest -x asciidoctor -x javadoc
 
-install: setup-gradle clean ## 编译并安装到本地 Maven 仓库 # ./gradlew -Dorg.gradle.caching=false clean build publishToMavenLocal
+install: setup-gradle ## 编译并安装到本地 Maven 仓库 # ./gradlew -Dorg.gradle.caching=false clean build publishToMavenLocal
 	./gradlew -Dorg.gradle.caching=false publishToMavenLocal -x test
 
-deploy: setup-gradle clean ## 发布到 Nexus 私服
+deploy: setup-gradle ## 发布到 Nexus 私服
 	./gradlew -Dorg.gradle.caching=false publish -x test
 
 stop: ## 停止所有 Gradle Daemon ; 释放所有锁

@@ -10,7 +10,7 @@ Maven 项目可通过 Parent POM 或 dependencyManagement 引入 NES Spring Boot
         <dependency>
             <groupId>cn.bjca.footstone.bpring.boot</groupId>
             <artifactId>bjca-footstone-bpring-boot-dependencies</artifactId>
-            <version>2.7.18-nes.patch.1-SNAPSHOT</version>
+            <version>2.7.18-nes.patch.1</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -63,11 +63,11 @@ Gradle：
 
 ```groovy
 dependencies {
-    implementation platform("cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-dependencies:2.7.18-nes.patch.1-SNAPSHOT")
+    implementation platform("cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-dependencies:2.7.18-nes.patch.1")
     implementation "cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-starter-reactor-netty"
 }
 ```
 
-下游只需配置 NES Nexus，不需要复制 Spring Boot 源码仓库中的 `resolutionStrategy`。最终依赖应解析为 Reactor Netty NES `1.0.48-nes.patch.1-SNAPSHOT` 和 Netty `4.1.136.Final`。
+下游只需配置 NES Nexus，不需要复制 Spring Boot 源码仓库中的 `resolutionStrategy`。最终依赖应解析为 Reactor Netty NES `1.0.48-nes.patch.1` 和 Netty `4.1.136.Final`。
 
 > 安全提示：生产者 commit `da3c7cf2` 已修复 CVE-2025-22227、CVE-2026-41715；Nexus HTTP 制品 `20260722.053243-4` 已验证包含跨 origin 和 HTTPS→HTTP 降级剥头逻辑。当前版本仍为 SNAPSHOT，首次使用和升级验收时请强制刷新依赖并核对实际解析时间戳。

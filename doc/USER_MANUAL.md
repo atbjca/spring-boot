@@ -6,7 +6,7 @@ NES Spring Boot 的响应式 HTTP starter 已直接发布 Reactor Netty NES 坐�
 
 | 模块 | GroupId | ArtifactId | 版本 |
 |------|---------|------------|------|
-| 聚合模块 | `cn.bjca.footstone.beactor.netty` | `bjca-footstone-beactor-netty` | `1.0.48-nes.patch.1-SNAPSHOT` |
+| 聚合模块 | `cn.bjca.footstone.beactor.netty` | `bjca-footstone-beactor-netty` | `1.0.48-nes.patch.1` |
 | Core | `cn.bjca.footstone.beactor.netty` | `bjca-footstone-beactor-netty-core` | 同上 |
 | HTTP | `cn.bjca.footstone.beactor.netty` | `bjca-footstone-beactor-netty-http` | 同上 |
 | HTTP Brave | `cn.bjca.footstone.beactor.netty` | `bjca-footstone-beactor-netty-http-brave` | 同上 |
@@ -61,4 +61,4 @@ mapper.addTrustedPackages(
 
 不要使用 `addTrustedPackages("*")` 代替迁移。该配置会显式信任所有类型，只适用于 Producer 和 Topic 写权限完全可信的环境。
 
-当前 Boot 仍管理可变版本 `2.9.13-nes.patch.1-SNAPSHOT`。已验证的安全时间戳为 `20260721.054238-2`；旧构建环境可能缓存修复前的同版本 JAR，升级或发布前应刷新 changing module 并运行 Kafka 安全回归测试。
+当前 Boot 仍管理可变版本 `2.9.13-nes.patch.1`。已验证的安全时间戳为 `20260721.054238-2`；旧构建环境可能缓存修复前的同版本 JAR，升级或发布前应刷新 changing module 并运行 Kafka 安全回归测试。
