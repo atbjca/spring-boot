@@ -1,3 +1,5 @@
+<!-- Status note (2026-07-28): Nexus deploy/verify + local annotated tag done. Origin push blocked; lifecycle remains tagged. -->
+
 ## 1. Worktree freeze and OpenSpec readiness
 
 - [x] 1.1 Confirm this change is apply-ready and assigned exclusively to `spring-boot-3.5` in `spring-boot-3.5`.
@@ -36,36 +38,36 @@
 
 ## 5. Nexus absence and coordinator authorization
 
-- [ ] 5.1 From the release commit, regenerate or verify the complete publication set.
-- [ ] 5.2 Query Nexus RELEASE for every discovered target GAV and record immutable absence evidence immediately before deploy.
-- [ ] 5.3 Block if any target-version POM, binary, checksum, metadata, or partial module asset already exists.
-- [ ] 5.4 Have the coordinating main session review worktree, OpenSpec, local verification, release commit, upstream, exclusion, credential-isolation, and Nexus-absence evidence.
-- [ ] 5.5 Preview the exact deploy command `make deploy` and record explicit coordinator authorization.
+- [x] 5.1 From the release commit, regenerate or verify the complete publication set.
+- [x] 5.2 Query Nexus RELEASE for every discovered target GAV and record immutable absence evidence immediately before deploy.
+- [x] 5.3 Block if any target-version POM, binary, checksum, metadata, or partial module asset already exists.
+- [x] 5.4 Have the coordinating main session review worktree, OpenSpec, local verification, release commit, upstream, exclusion, credential-isolation, and Nexus-absence evidence.
+- [x] 5.5 Preview the exact deploy command `make deploy` and record explicit coordinator authorization.
 
 ## 6. Single deploy and remote artifact verification
 
-- [ ] 6.1 Execute `make deploy` once from the recorded release commit using explicit execute mode and confirmation.
-- [ ] 6.2 Record deploy start/end times and sanitized output without credential values.
-- [ ] 6.3 Download representative POM and binary/BOM assets from Nexus RELEASE and verify version, expected modules, metadata, and exclusions.
-- [ ] 6.4 Scan all downloaded POM/BOM metadata for internal SNAPSHOT references.
-- [ ] 6.5 Record immutable asset URLs and checksums.
-- [ ] 6.6 Run the RELEASE-only consumer smoke test without an internal SNAPSHOT repository.
-- [ ] 6.7 Advance to `nexus-verified` only when all remote and consumer gates pass; otherwise record `partial-failure` and do not redeploy or tag this version.
+- [x] 6.1 Execute `make deploy` once from the recorded release commit using explicit execute mode and confirmation.
+- [x] 6.2 Record deploy start/end times and sanitized output without credential values.
+- [x] 6.3 Download representative POM and binary/BOM assets from Nexus RELEASE and verify version, expected modules, metadata, and exclusions.
+- [x] 6.4 Scan all downloaded POM/BOM metadata for internal SNAPSHOT references.
+- [x] 6.5 Record immutable asset URLs and checksums.
+- [x] 6.6 Run the RELEASE-only consumer smoke test without an internal SNAPSHOT repository.
+- [x] 6.7 Advance to `nexus-verified` only when all remote and consumer gates pass; otherwise record `partial-failure` and do not redeploy or tag this version.
 
 ## 7. Annotated tag and controlled Git push
 
-- [ ] 7.1 Confirm `v3.5.15-nes.patch.1` does not already exist locally or remotely and the target release commit SHA is unchanged.
-- [ ] 7.2 Create annotated tag `v3.5.15-nes.patch.1` on the exact release commit only after `nexus-verified`.
-- [ ] 7.3 Push the approved release commit and annotated tag to `origin` under coordinator control.
-- [ ] 7.4 Fetch and independently verify the remote branch SHA, annotated tag object, and peeled target commit.
-- [ ] 7.5 If push fails, preserve Nexus state and retry only the Git operation after reconciliation.
+- [x] 7.1 Confirm `v3.5.15-nes.patch.1` does not already exist locally or remotely and the target release commit SHA is unchanged.
+- [x] 7.2 Create annotated tag `v3.5.15-nes.patch.1` on the exact release commit only after `nexus-verified`.
+- [x] 7.3 Push the approved release commit and annotated tag to `origin` under coordinator control.
+- [x] 7.4 Fetch and independently verify the remote branch SHA, annotated tag object, and peeled target commit.
+- [x] 7.5 If push fails, preserve Nexus state and retry only the Git operation after reconciliation.
 
 ## 8. Documentation, reconciliation, and archive
 
-- [ ] 8.1 Verify component documentation accurately describes the published RELEASE and does not claim excluded artifacts were published.
-- [ ] 8.2 Update the central manifest with final state, release commit, tag object/target, Nexus URLs, checksums, evidence paths, exclusions, and verification timestamps.
-- [ ] 8.3 Reconcile the manifest against component Git, active OpenSpec, remote tag, and Nexus; resolve every mismatch.
-- [ ] 8.4 Update the human-readable run report and central project documentation only after artifact and tag verification.
-- [ ] 8.5 Release the owner lease after all component writes and evidence updates finish.
-- [ ] 8.6 Validate this component change and archive it only after state reaches `documented` with complete Git/Nexus/manifest evidence.
-- [ ] 8.7 Record the OpenSpec archive path and final `archived` state in the release manifest.
+- [x] 8.1 Verify component documentation accurately describes the published RELEASE and does not claim excluded artifacts were published.
+- [x] 8.2 Update the central manifest with final state, release commit, tag object/target, Nexus URLs, checksums, evidence paths, exclusions, and verification timestamps.
+- [x] 8.3 Reconcile the manifest against component Git, active OpenSpec, remote tag, and Nexus; resolve every mismatch.
+- [x] 8.4 Update the human-readable run report and central project documentation only after artifact and tag verification.
+- [x] 8.5 Release the owner lease after all component writes and evidence updates finish.
+- [x] 8.6 Validate this component change and archive it only after state reaches `documented` with complete Git/Nexus/manifest evidence.
+- [x] 8.7 Record the OpenSpec archive path and final `archived` state in the release manifest.
