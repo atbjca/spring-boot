@@ -1,3 +1,5 @@
+## MODIFIED Requirements
+
 ### Requirement: Managed vulnerable dependencies are remediated on compatible patch lines
 The project MUST manage Jackson at 2.21.5 or newer compatible 2.21.x, Logback at 1.5.37 or newer compatible 1.5.x, Tomcat at 10.1.57 or newer compatible 10.1.x, Undertow at a 2.3.x release verified to contain the applicable request-smuggling fixes, Netty at 4.1.136.Final or newer compatible 4.1.x (without adopting 4.2.x), and PostgreSQL JDBC at 42.7.13 or newer compatible 42.7.x.
 
@@ -29,18 +31,6 @@ Every CVE entry changed by this work MUST record the managed component version, 
 - **THEN** it is classified as not applicable or immune for the default Boot-embedded Tomcat runtime because it affects only the examples WebSocket chat application
 - **AND** Tomcat remains on 10.1.57 until a published 10.1.x fix is deliberately adopted in a later change
 
-### Requirement: Log4j2 deferral is explicit and bounded
-The project MUST document Log4j2 2.24.3 vulnerabilities as deferred risk rather than fixed or immune, because Logback is the default runtime and the Log4j2 2.25.x upgrade has known compatibility issues.
-
-#### Scenario: Default logging remains Logback
-- **WHEN** the default starter dependency graph is inspected
-- **THEN** Logback is the default logging implementation
-- **AND** `spring-boot-starter-log4j2` is not introduced into the default runtime
-
-#### Scenario: Log4j2 reevaluation triggers are documented
-- **WHEN** the Log4j2 CVE decision is recorded
-- **THEN** it lists official Spring Boot compatibility, downstream Log4j2 adoption, vulnerable appender/layout usage, and severity escalation as reevaluation triggers
-
 ### Requirement: Security upgrades pass clean verification
 Dependency remediation MUST pass targeted dependency/BOM checks, a clean thin build, and the project's core Phase 1 test target before CVEs are marked fixed or immune.
 
@@ -58,6 +48,8 @@ The implementation MUST update the project requirements, vulnerability overview,
 - **THEN** `doc/REQUIREMENTS.md` and `doc/VULNERABILITY_REPORT.md` match the implemented versions and decisions
 - **AND** applicable files under `doc/CVE/` contain current status and evidence for the Netty 4.1.136 batch and CVE-2026-54291
 - **AND** `doc/NES_GAV_MAPPING.md` is updated if managed versions or mappings shown there changed
+
+## ADDED Requirements
 
 ### Requirement: PostgreSQL JDBC channel-binding downgrade is remediated
 The project MUST manage `org.postgresql:postgresql` at 42.7.13 or newer on the 42.7.x line so that CVE-2026-54291 is outside the affected range.

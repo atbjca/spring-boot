@@ -45,6 +45,21 @@ nexusPassword=your-password
 - 必须同步 `doc/VULNERABILITY_REPORT.md` 与 `doc/CVE/` 明细。
 - Log4j2 2.24.3 本轮不升级；默认运行时使用 Logback，并记录风险接受边界和复核触发条件。
 
+## [需求-005] 2026-07-29 Netty / PostgreSQL JDBC 安全修复
+
+| 组件 | 要求版本 | 说明 |
+|------|----------|------|
+| Netty | 4.1.136.Final | 修复 CVE-2026-59901 及 4.1.136 公告整批安全项；保持 4.1.x，禁止 4.2.x |
+| PostgreSQL JDBC | 42.7.13 | 修复 CVE-2026-54291（固定于 42.7.12+） |
+
+验收要求：
+
+- 生成 BOM 必须显示 Netty `4.1.136.Final` 与 PostgreSQL JDBC `42.7.13`。
+- 必须执行 clean `make build-thin` 和 `make test` 并记录结果。
+- 必须同步 `doc/VULNERABILITY_REPORT.md` 与 `doc/CVE/` 明细（含 Netty 批次与 CVE-2026-54291）。
+- Tomcat CVE-2026-66299（examples-only）记为免疫；本轮不升 Tomcat。
+- 发布 / Nexus redeploy 不在本需求范围内。
+
 ## [需求-002] Framework / Security GAV 映射 Phase B
 
 | 字段 | 内容 |
