@@ -458,6 +458,25 @@ class DataSourceBuilderTests {
 		assertThat(c3p0DataSource.getDriverClass()).isEqualTo("com.example.Driver");
 	}
 
+	@Test
+	void buildWhenC3P0TypeSpecifiedSupportsPooledConnectionLifecycle() throws SQLException {
+		ComboPooledDataSource c3p0DataSource = DataSourceBuilder.create()
+			.url("jdbc:h2:mem:c3p0-lifecycle")
+			.type(ComboPooledDataSource.class)
+			.username("sa")
+			.password("")
+			.driverClassName(Driver.class.getName())
+			.build();
+		try {
+			try (Connection connection = c3p0DataSource.getConnection()) {
+				assertThat(connection.isValid(1)).isTrue();
+			}
+		}
+		finally {
+			c3p0DataSource.close();
+		}
+	}
+
 	final class HidePackagesClassLoader extends URLClassLoader {
 
 		private final String[] hiddenPackages;

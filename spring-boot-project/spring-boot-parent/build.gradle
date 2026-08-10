@@ -27,7 +27,7 @@ bom {
 			]
 		}
 	}
-	library("C3P0", "0.9.5.5") {
+	library("C3P0", "0.14.0") {
 		group("com.mchange") {
 			modules = [
 					"c3p0"

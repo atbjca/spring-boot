@@ -1,8 +1,5 @@
-# managed-security-baseline Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change upgrade-managed-security-baseline-2026-07. Update Purpose after archive.
-## Requirements
 ### Requirement: Managed vulnerable components MUST use Java 8 compatible security versions
 The dependency management BOM SHALL manage PostgreSQL JDBC 42.7.13, H2 2.2.220, Hazelcast 5.2.5, RabbitMQ Java Client 5.18.0, Spring LDAP 2.4.4, Sun/Jakarta Mail 1.6.8, Undertow 2.2.40.Final, Tomcat 9.0.120, Netty 4.1.136.Final, c3p0 0.14.0, and `at.yawk.lz4:lz4-java` 1.11.1 unless validation proves a target incompatible and the design is updated before completion. The repository Gradle build SHALL substitute legacy `org.lz4:lz4-java` requests with `at.yawk.lz4:lz4-java:1.11.1`. Derby SHALL remain at 10.14.2.0 because no Java 8 security-fix artifact is published to Maven Central.
 
@@ -35,24 +32,6 @@ The dependency management BOM SHALL manage PostgreSQL JDBC 42.7.13, H2 2.2.220, 
 - **WHEN** Spring Boot artifacts containing this security baseline are generated during development
 - **THEN** their project version is `2.7.18-nes.patch.2-SNAPSHOT`
 - **AND** independently versioned NES dependency forks retain their existing versions
-
-### Requirement: Security baseline upgrades MUST preserve Java 8
-Every upgraded runtime component SHALL be usable on the project Java 8 baseline. Bytecode or documented compiler target MUST be checked before acceptance.
-
-#### Scenario: Candidate requires Java 11
-- **WHEN** a candidate security version has class major 55 or otherwise requires Java 11+
-- **THEN** it MUST NOT replace the Java 8 managed version and the unresolved risk MUST be documented
-
-### Requirement: Derby and HSQLDB MUST remain explicitly constrained
-Derby SHALL remain at 10.14.2.0 while no Java 8 security-fix artifact is publicly available. HSQLDB SHALL remain at 2.5.2 while the project supports Java 8 because the public CVE fix line requires Java 11. Their vulnerability statuses MUST remain mitigated or deferred rather than fixed, and their use MUST be limited to trusted test/development scenarios.
-
-#### Scenario: HSQLDB documentation audit
-- **WHEN** the managed security baseline is published
-- **THEN** no document claims that HSQLDB 2.5.2 contains the CVE-2022-41853 fix
-
-#### Scenario: Derby artifact audit
-- **WHEN** the managed security baseline is published
-- **THEN** no document or BOM entry claims that an unpublished Derby 10.14 security artifact fixes CVE-2022-46337
 
 ### Requirement: Vulnerability status MUST reflect evidence and scope
 Each upgraded or constrained component SHALL have CVE documentation that records affected versions, fix or mitigation evidence, project scope, Java compatibility, and final status. A version bump alone MUST NOT imply a fixed status when the advisory has no confirmed fix mapping.

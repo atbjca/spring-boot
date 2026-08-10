@@ -1,9 +1,9 @@
 # Spring Boot 2.7 测试策略与开发验证指南
 
 > **分支**：`2.7.x-bjca-patch`  
-> **基线**：2.7.18（NES fork `2.7.18-nes.patch.1`）  
+> **基线**：2.7.18（当前开发版本 `2.7.18-nes.patch.2-SNAPSHOT`；已发布版本 `2.7.18-nes.patch.1`）
 > **对齐参考**：3.5 fork 的 Tier 分层（`doc/TESTING.md`）  
-> **最后更新**：2026-07-23
+> **最后更新**：2026-08-10
 
 本文档说明 2.7 fork **测什么、不测什么、日常怎么验**，以及 `make test` 与 `make test-feedback` 的分工。
 

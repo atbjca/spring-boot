@@ -79,10 +79,11 @@ allprojects {
 		// kafka-clients 3.9.2 迁移到 at.yawk.lz4:lz4-java（原 org.lz4:lz4-java 的
 		// 活跃 fork），而 elasticsearch 7.17.x 仍依赖旧 org.lz4:lz4-java。
 		// 两者声明了相同的 Gradle capability，产生冲突。
-		// 统一替换为新版 fork，同时修复 CVE-2025-12183 和 CVE-2025-66566。
+		// 统一替换为新版 fork，同时修复 CVE-2025-12183、CVE-2025-66566
+		// 和 CVE-2026-59949。
 		// ====================================================================
 		resolutionStrategy.dependencySubstitution {
-			substitute module('org.lz4:lz4-java') using module('at.yawk.lz4:lz4-java:1.10.1')
+			substitute module('org.lz4:lz4-java') using module('at.yawk.lz4:lz4-java:1.11.1')
 		}
 
 		// ====================================================================

@@ -1210,6 +1210,13 @@ bom {
 			]
 		}
 	}
+	library("LZ4 Java", "1.11.1") {
+		group("at.yawk.lz4") {
+			modules = [
+				"lz4-java"
+			]
+		}
+	}
 	// 2026-07-01: 升级到 2.25.4 以修复 CVE-2026-34478 CRLF注入 + CVE-2026-34480 XmlLayout字符转义
 	library("Log4j2", "2.25.4") {
 		group("org.apache.logging.log4j") {

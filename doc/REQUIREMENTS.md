@@ -4,6 +4,57 @@
 
 ---
 
+## 📅 2026年08月06日
+
+### [需求-040] c3p0 / lz4-java Java 8 安全基线升级
+
+#### 背景与目的
+
+项目仍管理并发布 c3p0 可选支持，原版本 0.9.5.5 会传递引入旧 mchange-commons-java，不能以 Quartz 2.4.1 的 `provided` scope 或已移除的 Quartz exclude 作为全局免疫依据。同时，Kafka 3.9.2 使用的 `at.yawk.lz4` 1.10.1 新披露 JNI XXHash 参数校验漏洞，且 Elasticsearch 7.17.x 仍声明旧 `org.lz4` 坐标，需要同时处理版本管理、Gradle 收敛和 Maven 下游迁移。
+
+#### 版本调整
+
+| 组件 | 原版本 | 新版本 | 安全目的 |
+|------|:------:|:------:|---------|
+| `com.mchange:c3p0` | 0.9.5.5 | **0.14.0** | 修复 CVE-2026-27830、CVE-2026-55223 |
+| `com.mchange:mchange-commons-java` | c3p0 传递旧版本 | **0.6.0**（由 c3p0 0.14.0 声明） | 修复 CVE-2026-27727 |
+| `at.yawk.lz4:lz4-java` | 1.10.1 | **1.11.1** | 修复 CVE-2026-59949 |
+
+#### 发布与依赖解析语义
+
+- Spring Boot fork 开发版本递增为 `2.7.18-nes.patch.2-SNAPSHOT`，承载本次安全基线并与已发布的 `2.7.18-nes.patch.1` 制品区分；Spring Framework、Spring Security、Spring Data、Spring Kafka、Reactor Netty 等独立 fork 版本不随之修改。
+- `spring-boot-parent` 管理 c3p0 0.14.0；解析图必须得到 mchange-commons-java 0.6.0，不能存在旧版本并存。
+- `spring-boot-dependencies` 发布 BOM 显式管理 `at.yawk.lz4:lz4-java:1.11.1`，覆盖 Kafka Client POM 中的 1.10.1。
+- 根 Gradle 构建继续用 `dependencySubstitution` 将 `org.lz4:lz4-java` 替换为 `at.yawk.lz4:lz4-java:1.11.1`，使 Kafka 与 Elasticsearch 图只保留一个实现。
+- Maven BOM 无法表达 groupId/artifactId 替换。Maven 应用同时引入 Kafka 与 Elasticsearch 时，必须在引入 Elasticsearch 的依赖路径上显式排除 `org.lz4:lz4-java`；不得仅凭 BOM 中管理了 `at.yawk` 1.11.1 就宣称已经收敛。
+- 下游 Gradle 构建不会继承本仓库的 substitution 规则，应自行配置等价替换或排除旧坐标。
+
+#### 兼容性与验证
+
+- c3p0 0.14.0、mchange-commons-java 0.6.0、lz4-java 1.11.1 的代表类均为 class major 51，兼容 Java 8。
+- Spring Boot `DataSourceBuilderTests` 覆盖 c3p0 属性映射和真实 H2 池化连接生命周期；Hibernate 5.6.15 `C3P0ConnectionProvider` 完成连接、SQL、归还和停止验证。
+- 代表性 Gradle 运行时图确认 Kafka 的 `at.yawk` 1.10.1 请求升级至 1.11.1，Elasticsearch 的 `org.lz4` 1.8.0 请求替换至同一实现。
+- 独立 Maven 消费者确认：未排除时两个 groupId 同时存在；排除 Elasticsearch 的旧 `org.lz4` 路径后仅保留 `at.yawk` 1.11.1。
+- lz4 安全 Java/JNI 实现通过压缩往返、32/64 位 XXHash、有效攻击者可控内容以及无效数组范围拒绝测试。
+
+#### 下游迁移与范围
+
+- c3p0 0.14.0 移除了部分上游旧 API（例如 `PoolConfig`）；Spring Boot 支持面和 Hibernate 5.6 路径已验证，但直接使用已移除 API 的业务代码需自行迁移。
+- CVE-2026-59949 仅在攻击者能控制数组引用、offset 或 length 且应用使用 JNI XXHash 时触发；仅控制合法数组内容不受影响。
+- 本需求不修改 ActiveMQ/Artemis、Spring LDAP/Kafka/Framework/Security、Infinispan 或 Jetty。Spring Security CVE-2026-40988、41003、41706、22746、47838 由 `spring-security-5.8` 项目单独处理。
+
+#### 涉及文件
+
+- `spring-boot-project/spring-boot-parent/build.gradle`
+- `spring-boot-project/spring-boot-dependencies/build.gradle`
+- 根 `build.gradle`
+- `spring-boot-project/spring-boot/src/test/java/.../DataSourceBuilderTests.java`
+- `doc/CVE/`、`doc/VULNERABILITY_REPORT.md`、`doc/COMPONENTS_UPGRADE_HISTORY.md`
+- `doc/USER_MANUAL.md`、`doc/QUICK_START.md`
+- `openspec/changes/upgrade-c3p0-lz4-security-baseline-2026-08/`
+
+---
+
 ## 📅 2026年07月22日
 
 ### [需求-039] 采用 Reactor Netty NES fork 并对齐 Netty 4.1.136
@@ -472,7 +523,7 @@ logback fork 仓库（`/nes/logback`）已于 2026-06-25 正式发布 `1.2.13-ne
 | CVE 编号 | 组件 | 漏洞类型 | CVSS | 修复版本 | 备注 |
 |---|---|---|---|---|---|
 | CVE-2023-39017 | quartz-jobs ≤ 2.3.2 | 代码注入（CWE-94） | 9.8 CRITICAL | Quartz 2.4.0 | **DISPUTED** |
-| CVE-2026-27727 | mchange-commons-java < 0.4.0 | JNDI 注入 RCE（CWE-74） | 9.8 CRITICAL / 8.9 HIGH | mchange-commons-java 0.4.0 | BOM 已 exclude c3p0 |
+| CVE-2026-27727 | mchange-commons-java < 0.4.0 | JNDI 注入 RCE（CWE-74/CWE-502） | 9.8 CRITICAL / 8.9 HIGH | mchange-commons-java 0.4.0 | [需求-040] 以 c3p0 0.14.0 → mchange 0.6.0 闭环；Quartz exclude 不构成全局修复 |
 | CVE-2025-48924 | commons-lang3 < 3.18.0 | 不受控递归 DoS（CWE-674） | 5.3 MEDIUM | Commons Lang3 3.18.0 | — |
 
 ##### 3. 兼容性说明
@@ -483,6 +534,7 @@ logback fork 仓库（`/nes/logback`）已于 2026-06-25 正式发布 `1.2.13-ne
 ##### 4. 构建修复 — Quartz exclude 声明清理
 - **问题**：Quartz 2.4.1 将 c3p0/HikariCP 改为 `provided` scope，BOM 中原有的 `exclude com.mchange:c3p0` 和 `exclude com.zaxxer:*` 被 bomrCheck 报告为 Unnecessary
 - **修复**：移除 Quartz library 声明中对 `com.mchange:c3p0` 和 `com.zaxxer:*` 的 exclude，将 Quartz 声明简化为 plain string 格式
+- **后续纠偏**：[需求-040] 确认 Spring Boot 自身仍发布并测试显式 c3p0 支持，因此上述 Quartz 依赖清理只说明 Quartz 路径变化，不能说明 c3p0/mchange 已从项目范围移除
 
 ##### 5. CVE 文档归档
 - 新建 `doc/CVE/` 目录，为本次涉及的 3 个 CVE 各创建独立文档：
@@ -652,6 +704,7 @@ logback fork 仓库（`/nes/logback`）已于 2026-06-25 正式发布 `1.2.13-ne
 - **传递依赖版本变化**：
   - snappy-java：~1.1.8.x → **1.1.10.5**（修复 CVE-2023-34453/34454/34455、CVE-2023-43642）
   - lz4-java：org.lz4 1.7.x → **at.yawk.lz4 1.10.1**（修复 CVE-2025-12183、CVE-2025-66566）
+  - 当前安全基线已由 [需求-040] 进一步提升至 **at.yawk.lz4 1.11.1**（修复 CVE-2026-59949）
 
 ##### 2. lz4-java 依赖冲突解决
 - **文件**：`build.gradle`（根项目）

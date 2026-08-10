@@ -7,6 +7,9 @@
 
 | 升级日期 | 组件名称 | 升级前版本 | 升级后版本 | 修复漏洞 / 原因 | 兼容性说明 |
 | :---: | :--- | :---: | :---: | :--- | :--- |
+| 2026-08-10 | Spring Boot NES fork 开发版本 | `2.7.18-nes.patch.1` | **`2.7.18-nes.patch.2-SNAPSHOT`** | 为 c3p0 / mchange / lz4-java 安全基线生成独立、可审计的开发制品，避免复用已发布 RELEASE 坐标 | 仅递增 Boot 制品版本；Spring Framework、Security、Data、Kafka、Reactor Netty 等独立 fork 版本保持不变 |
+| 2026-08-06 | `com.mchange:c3p0` / `mchange-commons-java` | 0.9.5.5 / 旧传递版本 | **0.14.0 / 0.6.0** | CVE-2026-27727、CVE-2026-27830、CVE-2026-55223；纠正“Quartz exclude 已移除全部暴露”的旧台账结论 | class major 51；Boot DataSourceBuilder、H2 池生命周期及 Hibernate 5.6 provider 验证通过；直接使用已移除 c3p0 旧 API 的下游需迁移 |
+| 2026-08-06 | `at.yawk.lz4:lz4-java` | 1.10.1 | **1.11.1** | CVE-2026-59949 JNI XXHash 无效数组范围导致 JVM 崩溃/越界读取；发布 BOM 管理活跃 fork，Gradle 将旧 `org.lz4` 坐标替换到新版本 | class major 51；Java/JNI 压缩和 XXHash 冒烟通过；Maven 同时使用 Kafka/Elasticsearch 时须排除 Elasticsearch 的旧 `org.lz4` 路径 |
 | 2026-07-22 | `io.projectreactor.netty:reactor-netty-*` → Reactor Netty NES | 官方 1.0.48 | **`cn.bjca.footstone.beactor.netty:bjca-footstone-beactor-netty-*:1.0.48-nes.patch.1-SNAPSHOT`** | 统一 NES GAV；starter POM 直接发布 NES HTTP 坐标；commit `da3c7cf2` 修复 CVE-2025-22227/41715，Nexus HTTP 制品 `20260722.053243-4` 已验证安全字节码（[需求-039]） | Java package 不变；关键 class major 52；源码、测试与制品证据闭环 |
 | 2026-07-22 | `io.netty:netty-bom` 等 | 4.1.135.Final | **4.1.136.Final** | 与 Reactor Netty NES 已验证组合对齐，覆盖修复线不高于 4.1.136 的 Netty 漏洞 | Java 8 兼容；HTTP/2 `maxStreams` 回归覆盖 |
 | 2026-07-22 | Spring Kafka NES `DefaultKafkaHeaderMapper` | `2.9.13-nes.patch.1-SNAPSHOT` 旧时间戳制品 | **版本字符串不变；验证 `20260721.054238-2`** | fork commit `c119b8f62` 回移 CVE-2026-41731，受信包由父包前缀匹配收紧为精确包名匹配 | Java 8 variant；Boot 消费端行为回归覆盖；旧 SNAPSHOT 缓存需刷新（[需求-038]） |

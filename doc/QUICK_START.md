@@ -39,6 +39,25 @@ Maven 项目可通过 Parent POM 或 dependencyManagement 引入 NES Spring Boot
 
 当前私服未发布 `bjca-footstone-bpring-kafka-bom`。版本由 `bjca-footstone-bpring-boot-dependencies` 统一管理。
 
+## Kafka 与 Elasticsearch 同时使用时的 lz4 排除
+
+NES Boot BOM 将 Kafka 使用的 `at.yawk.lz4:lz4-java` 管理为 1.11.1，但 Maven BOM 不能替换 Elasticsearch 的旧 `org.lz4:lz4-java` 坐标。请在引入 Elasticsearch 的依赖上排除旧坐标：
+
+```xml
+<dependency>
+    <groupId>org.elasticsearch</groupId>
+    <artifactId>elasticsearch</artifactId>
+    <exclusions>
+        <exclusion>
+            <groupId>org.lz4</groupId>
+            <artifactId>lz4-java</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+```
+
+执行 `mvn dependency:tree` 后应只看到 `at.yawk.lz4:lz4-java:1.11.1`。Gradle 下游也不会自动继承 NES Boot 源码仓库中的 substitution 规则，应自行配置等价替换或排除。
+
 ## 引入 Reactor Netty NES
 
 推荐通过 NES WebFlux starter 间接使用：

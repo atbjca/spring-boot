@@ -19,6 +19,45 @@ NES Spring Boot 的响应式 HTTP starter 已直接发布 Reactor Netty NES 坐�
 
 若需回滚，应同时恢复官方 Reactor Netty HTTP 坐标、BOM 管理语义和 Netty 版本。不要只替换单个 JAR，否则可能形成官方/NES双份 classpath。
 
+## c3p0 0.14.0 迁移说明
+
+NES Boot 当前管理 `com.mchange:c3p0:0.14.0`，其传递依赖为 `com.mchange:mchange-commons-java:0.6.0`。Spring Boot 的 `DataSourceBuilder` 和 Hibernate 5.6 c3p0 provider 已完成兼容验证。
+
+c3p0 0.14.0 移除了部分旧 API，例如 `PoolConfig`。通过 Spring Boot 标准数据源配置使用 c3p0 的应用无需改动；直接编译调用已移除 API 的应用需按 c3p0 上游 API 迁移，NES Boot 不提供兼容回填。
+
+## lz4-java 1.11.1 与 Elasticsearch 排除
+
+NES Boot BOM 管理 `at.yawk.lz4:lz4-java:1.11.1`，用于覆盖 Kafka Client 声明的旧 fork 版本。Spring Boot 源码仓库内部还配置了 Gradle substitution，把 Elasticsearch 请求的 `org.lz4:lz4-java` 替换为该活跃 fork；这条规则**不会传播给下游**。
+
+Maven BOM 只能管理同一坐标的版本，不能把 `org.lz4:lz4-java` 改成 `at.yawk.lz4:lz4-java`。Maven 应用同时使用 Kafka 与 Elasticsearch 时，必须在引入 Elasticsearch 的依赖路径上排除旧坐标。例如直接依赖 Elasticsearch 时：
+
+```xml
+<dependency>
+    <groupId>org.elasticsearch</groupId>
+    <artifactId>elasticsearch</artifactId>
+    <exclusions>
+        <exclusion>
+            <groupId>org.lz4</groupId>
+            <artifactId>lz4-java</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+```
+
+如果 Elasticsearch 由 starter、Spring Data 或其他客户端间接引入，应把同一 exclusion 配置在实际引入该路径的顶层依赖上。验收时执行 `mvn dependency:tree`，最终只能出现 `at.yawk.lz4:lz4-java:1.11.1`。
+
+下游 Gradle 应用可使用等价 substitution，或在 Elasticsearch 路径排除旧坐标：
+
+```groovy
+configurations.all {
+    resolutionStrategy.dependencySubstitution {
+        substitute module("org.lz4:lz4-java") using module("at.yawk.lz4:lz4-java:1.11.1")
+    }
+}
+```
+
+CVE-2026-59949 只影响 JNI XXHash 且要求攻击者能控制数组引用、offset 或 length；仅控制合法数组内容不受影响。无论是否使用 native 实现，仍建议统一升级到 1.11.1。
+
 ## Spring Kafka NES 坐标
 
 Spring Kafka NES 分支使用以下 Maven 坐标：
