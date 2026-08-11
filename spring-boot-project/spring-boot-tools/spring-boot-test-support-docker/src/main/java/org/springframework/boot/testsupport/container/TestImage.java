@@ -79,7 +79,7 @@ public enum TestImage {
 	/**
 	 * A container image suitable for testing Artemis.
 	 */
-	ARTEMIS("apache/artemis", "2.53.0", () -> ArtemisContainer.class),
+	ARTEMIS("apache/artemis", "2.54.0", () -> ArtemisContainer.class),
 
 	/**
 	 * A container image suitable for testing Artemis using the legacy

@@ -31,7 +31,7 @@ bom {
 			]
 		}
 	}
-	library("ActiveMQ", "6.1.8") {
+	library("ActiveMQ", "6.2.8") {
 		group("org.apache.activemq") {
 			modules = [
 					"activemq-console" {
@@ -69,8 +69,8 @@ bom {
 			releaseNotes("https://github.com/eclipse-ee4j/angus-mail/releases/tag/{version}")
 		}
 	}
-	library("Artemis", "2.40.0") {
-		group("org.apache.activemq") {
+	library("Artemis", "2.54.0") {
+		group("org.apache.artemis") {
 			bom("artemis-bom") {
 				permit("org.apache.maven.plugin-tools:maven-plugin-annotations")
 			}
@@ -1826,6 +1826,17 @@ bom {
 		}
 		links {
 			releaseNotes("https://github.com/oracle/oracle-r2dbc/releases/tag/{version}")
+		}
+	}
+	library("Parsson", "1.1.9") {
+		group("org.eclipse.parsson") {
+			modules = [
+				"parsson"
+			]
+		}
+		links {
+			site("https://github.com/eclipse-ee4j/parsson")
+			releaseNotes("https://github.com/eclipse-ee4j/parsson/releases/tag/{version}")
 		}
 	}
 	library("Pooled JMS", "3.1.9") {

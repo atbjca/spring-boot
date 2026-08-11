@@ -1,8 +1,4 @@
-## Purpose
-
-Define transparent Spring Security fork dependency and BOM coordinate mapping for the active NES Security version.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Security 依赖透明映射
 
@@ -26,12 +22,3 @@ Define transparent Spring Security fork dependency and BOM coordinate mapping fo
 - **THEN** Security BOM 和相关 managed dependency 的 groupId 为 `cn.bjca.footstone.bpring.security`
 - **AND** artifactId 使用 `bjca-footstone-bpring-security-*` 命名
 - **AND** version 为 `6.5.11-nes.patch.2-SNAPSHOT`
-
-### Requirement: Authorization Server 特殊处理
-
-若 BOM 管理 `spring-security-oauth2-authorization-server`，MUST 使用 `${forkGroupIdBase}.security` groupId 及对应的 fork artifactId（`${forkArtifactPrefix}-security-oauth2-authorization-server`），版本独立管理。
-
-#### Scenario: Authorization Server 使用 fork 坐标
-- **WHEN** BOM 包含 Spring Authorization Server 条目
-- **THEN** groupId 为 `cn.bjca.footstone.bpring.security`
-- **AND** artifactId 以 `bjca-footstone-bpring-security-` 开头

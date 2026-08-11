@@ -1,4 +1,8 @@
-## ADDED Requirements
+## Purpose
+
+Define the stable project test-gate scope and success criteria used by maintenance changes.
+
+## Requirements
 
 ### Requirement: test-gate 目标定义
 

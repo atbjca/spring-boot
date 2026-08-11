@@ -1,8 +1,4 @@
-## Purpose
-
-Define the authoritative NES fork version properties and compatible third-party fork coordinate policy.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: NES 版本号格式
 

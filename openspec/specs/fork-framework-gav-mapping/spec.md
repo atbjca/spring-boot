@@ -1,4 +1,8 @@
-## ADDED Requirements
+## Purpose
+
+Define transparent Spring Framework fork dependency and BOM coordinate mapping for the active NES Framework version.
+
+## Requirements
 
 ### Requirement: Framework 依赖透明映射
 
@@ -6,11 +10,11 @@
 
 #### Scenario: spring-context 解析为 fork 坐标
 - **WHEN** 任意子模块声明 `org.springframework:spring-context`
-- **THEN** Gradle 解析结果为 `cn.bjca.footstone.bpring:bjca-footstone-bpring-context:6.2.19-nes.patch.1-SNAPSHOT`
+- **THEN** Gradle 解析结果为 `cn.bjca.footstone.bpring:bjca-footstone-bpring-context:6.2.19-nes.patch.1`
 
 #### Scenario: spring-framework-bom 解析为 fork BOM
 - **WHEN** 构建脚本引用 `org.springframework:spring-framework-bom`
-- **THEN** Gradle 解析结果为 `cn.bjca.footstone.bpring:bjca-footstone-bpring-framework-bom:6.2.19-nes.patch.1-SNAPSHOT`
+- **THEN** Gradle 解析结果为 `cn.bjca.footstone.bpring:bjca-footstone-bpring-framework-bom:6.2.19-nes.patch.1`
 
 ### Requirement: Framework BOM 条目使用 fork 坐标
 

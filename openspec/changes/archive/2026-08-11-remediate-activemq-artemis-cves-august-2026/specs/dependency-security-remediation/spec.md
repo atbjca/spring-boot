@@ -1,8 +1,4 @@
-## Purpose
-
-Define evidence-based dependency security maintenance, compatible-line upgrade constraints, verification gates, and synchronized project documentation.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Managed vulnerable dependencies are remediated on compatible patch lines
 The project MUST manage Jackson at 2.21.5 or newer compatible 2.21.x, Logback at 1.5.37 or newer compatible 1.5.x, Tomcat at 10.1.57 or newer compatible 10.1.x, Undertow at a 2.3.x release verified to contain the applicable request-smuggling fixes, Netty at 4.1.136.Final or newer compatible 4.1.x (without adopting 4.2.x), PostgreSQL JDBC at 42.7.13 or newer compatible 42.7.x, ActiveMQ Classic at 6.2.8 or newer compatible 6.2.x, and ActiveMQ Artemis at 2.54.0 or newer compatible 2.x verified by the project's messaging tests.
@@ -49,26 +45,14 @@ Every CVE entry changed by this work MUST record the managed component version, 
 - **THEN** the Core federation, OpenWire, and STOMP authorization trigger conditions are recorded with the affected 2.40.0 managed version
 - **AND** Artemis 2.54.0 verification evidence is recorded before all three findings are marked fixed
 
-### Requirement: Log4j2 deferral is explicit and bounded
-The project MUST document Log4j2 2.24.3 vulnerabilities as deferred risk rather than fixed or immune, because Logback is the default runtime and the Log4j2 2.25.x upgrade has known compatibility issues.
-
-#### Scenario: Default logging remains Logback
-- **WHEN** the default starter dependency graph is inspected
-- **THEN** Logback is the default logging implementation
-- **AND** `spring-boot-starter-log4j2` is not introduced into the default runtime
-
-#### Scenario: Log4j2 reevaluation triggers are documented
-- **WHEN** the Log4j2 CVE decision is recorded
-- **THEN** it lists official Spring Boot compatibility, downstream Log4j2 adoption, vulnerable appender/layout usage, and severity escalation as reevaluation triggers
-
 ### Requirement: Security upgrades pass clean verification
-Dependency remediation MUST pass targeted dependency/BOM checks, a clean thin build, and the project's core Phase 1 test target before CVEs are marked fixed or immune.
+Dependency remediation MUST pass targeted dependency/BOM checks, affected-component regression tests, a clean thin build, and the project's core Phase 1 test target before CVEs are marked fixed or immune.
 
 #### Scenario: Clean build and tests succeed
 - **WHEN** the dependency changes are complete
 - **THEN** `make clean build-thin` completes with BUILD SUCCESSFUL
 - **AND** `make test` completes with BUILD SUCCESSFUL
-- **AND** generated dependency/BOM evidence shows Netty 4.1.136.Final and PostgreSQL JDBC 42.7.13
+- **AND** generated dependency/BOM evidence shows Netty 4.1.136.Final, PostgreSQL JDBC 42.7.13, ActiveMQ Classic 6.2.8, and ActiveMQ Artemis 2.54.0
 
 #### Scenario: Messaging regression tests succeed
 - **WHEN** ActiveMQ Classic and ActiveMQ Artemis are upgraded
@@ -81,41 +65,6 @@ The implementation MUST update the project requirements, vulnerability overview,
 #### Scenario: Documentation reflects implemented state
 - **WHEN** the change is ready for archive
 - **THEN** `doc/REQUIREMENTS.md` and `doc/VULNERABILITY_REPORT.md` match the implemented versions and decisions
-- **AND** applicable files under `doc/CVE/` contain current status and evidence for the Netty 4.1.136 batch and CVE-2026-54291
+- **AND** applicable files under `doc/CVE/` contain current status, applicability, authoritative references, and verification evidence for the ActiveMQ Classic and ActiveMQ Artemis findings
+- **AND** the vulnerability overview uses an audit cutoff of 2026-08-06 or later
 - **AND** `doc/NES_GAV_MAPPING.md` is updated if managed versions or mappings shown there changed
-
-### Requirement: Parsson JSON-P provider is explicitly managed
-
-The project MUST manage `org.eclipse.parsson:parsson` at version 1.1.9 in the Spring Boot dependency BOM while preserving Yasson 3.0.4, Jakarta JSON API 2.1.3, and Jakarta JSON Bind API 3.0.2.
-
-#### Scenario: Generated BOM manages Parsson 1.1.9
-
-- **WHEN** the `spring-boot-dependencies` Maven POM is generated
-- **THEN** it defines `parsson.version` as `1.1.9`
-- **AND** dependency management contains `org.eclipse.parsson:parsson` using that property
-- **AND** the Yasson and Jakarta JSON API versions remain unchanged
-
-#### Scenario: Yasson transitive Parsson is upgraded consistently
-
-- **WHEN** a representative JSON-B test runtime graph resolves `org.eclipse:yasson:3.0.4`
-- **THEN** Yasson's transitive `org.eclipse.parsson:parsson:1.1.7` request resolves to `1.1.9`
-- **AND** representative Elasticsearch Java client requests for Parsson 1.0.5 also resolve to 1.1.9
-- **AND** the graph contains no selected Parsson 1.1.7 or alternate Parsson coordinate
-
-### Requirement: Parsson maintenance rationale is evidence based
-
-Project documentation MUST describe the Parsson 1.1.9 change as proactive compatible-line maintenance unless an authoritative advisory identifies an applicable vulnerability.
-
-#### Scenario: Documentation does not invent a Parsson CVE
-
-- **WHEN** the Parsson upgrade is documented
-- **THEN** the current and previous resolved versions and the transitive Yasson path are recorded
-- **AND** the documentation does not claim a CVE, affected range, or fixed vulnerability absent authoritative evidence
-
-### Requirement: PostgreSQL JDBC channel-binding downgrade is remediated
-The project MUST manage `org.postgresql:postgresql` at 42.7.13 or newer on the 42.7.x line so that CVE-2026-54291 is outside the affected range.
-
-#### Scenario: Managed pgjdbc meets fixed version
-- **WHEN** the Spring Boot dependency BOM POM is generated
-- **THEN** the managed PostgreSQL JDBC version is 42.7.13 or a newer compatible 42.7.x release
-- **AND** CVE-2026-54291 is recorded as fixed with authoritative affected range `>= 42.7.4, < 42.7.12`

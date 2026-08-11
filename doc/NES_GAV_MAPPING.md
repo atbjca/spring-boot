@@ -21,13 +21,33 @@
 
 Logback 仍用官方 `ch.qos.logback:1.5.38`（不 fork bogback）。
 
+## Messaging BOM 坐标兼容（2026-08-06）
+
+| 组件 | BOM 坐标 | 模块消费策略 | 版本 |
+|------|----------|--------------|------|
+| ActiveMQ Classic | `org.apache.activemq` 下的模块清单 | 保持既有模块坐标，由单一 ActiveMQ library pin 管理 | `6.2.8` |
+| ActiveMQ Artemis | `org.apache.artemis:artemis-bom` | 新 BOM 同时管理 `org.apache.artemis:artemis-*` 与兼容的 `org.apache.activemq:artemis-*` 模块；现有 starter/auto-config 的旧组模块坐标暂时保留 | `2.54.0` |
+
+Artemis 2.54.0 的权威 BOM 已从 `org.apache.activemq:artemis-bom` 迁移到 `org.apache.artemis:artemis-bom`。旧组 BOM 在该版本只是 relocation POM，不能作为本项目 Gradle dependency management 的有效版本源。因此 BOM import 使用新 groupId，而模块消费者继续使用现有旧组坐标以缩小兼容性变更面；不得为这些模块声明单独版本。生成 BOM 复核确认新 BOM 对两个 groupId 各管理 39 个模块，全部解析为 2.54.0。
+
+## 官方第三方 JSON 坐标（2026-08-11）
+
+| 组件 | 官方坐标 | 管理策略 | 版本 |
+|------|----------|----------|------|
+| Eclipse Parsson | `org.eclipse.parsson:parsson` | Boot BOM 显式管理；覆盖 Yasson 3.0.4 的 1.1.7 与 Elasticsearch Java client 的 1.0.5 传递请求 | `1.1.9` |
+| Eclipse Yasson | `org.eclipse:yasson` | 保持现有官方坐标；本轮不迁移到 3.0.5 的 `org.eclipse.yasson` 新 groupId | `3.0.4` |
+| Jakarta JSON API | `jakarta.json:jakarta.json-api` | 官方坐标 | `2.1.3` |
+| Jakarta JSON Bind API | `jakarta.json.bind:jakarta.json.bind-api` | 官方坐标 | `3.0.2` |
+
+Parsson 不是 NES fork，不参与根 `resolutionStrategy` GAV 重写。版本仅由 `spring-boot-dependencies` 的 `Parsson` library 拥有，保证直接声明和 Yasson 传递路径统一解析为 1.1.9。
+
 ## Phase B（已完成）
 
 | 组件 | 官方坐标 | Fork 坐标 | 版本 |
 |------|----------|-----------|------|
-| Spring Boot | `org.springframework.boot:*` | `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-*` | `3.5.15-nes.patch.1` |
+| Spring Boot | `org.springframework.boot:*` | `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-*` | `3.5.15-nes.patch.2-SNAPSHOT` |
 | Spring Framework | `org.springframework:*` | `cn.bjca.footstone.bpring:bjca-footstone-bpring-*` | `6.2.19-nes.patch.1` |
-| Spring Security | `org.springframework.security:*` | `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-*` | `6.5.11-nes.patch.1` |
+| Spring Security | `org.springframework.security:*` | `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-*` | `6.5.11-nes.patch.2-SNAPSHOT` |
 | Authorization Server | `org.springframework.security:spring-security-oauth2-authorization-server` | `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-oauth2-authorization-server` | `1.5.8-nes.patch.1` |
 | Spring Data BOM | `org.springframework.data:spring-data-bom` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom` | `2025.0.13-nes.patch.1` |
 | Spring Data Commons | `org.springframework.data:spring-data-commons` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-commons` | `3.5.13-nes.patch.1` |
@@ -46,7 +66,7 @@ Logback 仍用官方 `ch.qos.logback:1.5.38`（不 fork bogback）。
 | `forkArtifactPrefix` | `bjca-footstone-bpring` |
 | `springBootVersion` | `3.5.15` |
 | `springFrameworkVersion` | `6.2.19-nes.patch.1` |
-| `springSecurityVersion` | `6.5.11-nes.patch.1` |
+| `springSecurityVersion` | `6.5.11-nes.patch.2-SNAPSHOT` |
 | `springAuthorizationServerVersion` | `1.5.8-nes.patch.1` |
 
 ### 映射示例
@@ -54,8 +74,8 @@ Logback 仍用官方 `ch.qos.logback:1.5.38`（不 fork bogback）。
 | 官方 GAV | Fork GAV |
 |----------|----------|
 | `org.springframework:spring-context:6.2.19` | `cn.bjca.footstone.bpring:bjca-footstone-bpring-context:6.2.19-nes.patch.1` |
-| `org.springframework.security:spring-security-core:6.5.11` | `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-core:6.5.11-nes.patch.1` |
-| `org.springframework.boot:spring-boot-starter-web:3.5.15` | `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-starter-web:3.5.15-nes.patch.1` |
+| `org.springframework.security:spring-security-core:6.5.11` | `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-core:6.5.11-nes.patch.2-SNAPSHOT` |
+| `org.springframework.boot:spring-boot-starter-web:3.5.15` | `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-starter-web:3.5.15-nes.patch.2-SNAPSHOT` |
 | `org.springframework.data:spring-data-redis:3.5.13` | `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-redis:3.5.13-nes.patch.1` |
 | `org.springframework.kafka:spring-kafka:3.3.16` | `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka:3.3.16-nes.patch.1` |
 
