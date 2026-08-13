@@ -2,6 +2,8 @@
 
 本文件记录了本项目所有 fork 组件的原始官方 GAV 坐标与自定义 GAV 坐标之间的完整映射关系，涵盖 Spring Boot、Spring Framework、Spring Security、Spring Kafka 等组件系列。
 
+> 当前仓库开发线将 Spring Security 映射到 `5.8.16-nes.patch.2-SNAPSHOT`。文件中的 Boot `2.7.18-nes.patch.1` 和 Security patch.1 兼容关系表示已发布组合及回滚基线，不应替换为尚未发布的 patch.2 RELEASE。
+
 > **全局属性**
 > - **GroupId**: `cn.bjca.footstone.bpring.boot`
 > - **Version**: `2.7.18-nes.patch.1`
@@ -194,11 +196,13 @@
 
 > **映射规则**：`org.springframework.security:spring-security-{name}` → `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-{name}`
 >
-> **版本**：`5.8.16-nes.patch.1`
+> **版本**：`5.8.16-nes.patch.2-SNAPSHOT`（当前仓库开发候选）
 >
 > **映射方式**：由根 `build.gradle` 的 `resolutionStrategy.eachDependency` **自动完成**，无需手动声明。
 >
 > **版本管理**：通过 BOM 导入 `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-bom` 自动覆盖所有子模块版本。
+>
+> **发布边界**：`5.8.16-nes.patch.1` 仍是已发布、可回滚的 Security 基线。正式 Boot RELEASE 必须等待 `5.8.16-nes.patch.2` 制品和 `v5.8.16-nes.patch.2` tag 完成，并通过内部 SNAPSHOT 检查。
 
 ### 6.1 核心模块
 

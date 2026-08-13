@@ -4,6 +4,49 @@
 
 ---
 
+## 📅 2026年08月11日
+
+### [需求-041] 采用 Spring Security patch.2 安全开发候选
+
+#### 背景与目的
+
+Spring Boot 开发线原先管理已发布的 Spring Security `5.8.16-nes.patch.1`。Spring Security NES 已在 Java 8/OpenSAML 3 基线上回移 CVE-2026-22732、22746、40988、41003、41694、41706、47838，并发布 `5.8.16-nes.patch.2-SNAPSHOT` 候选。Boot 需要验证并采用该候选，同时严格区分开发 SNAPSHOT 与正式 RELEASE。
+
+#### 依赖管理契约
+
+- `gradle.properties` 的 `springSecurityVersion` 是唯一版本源，当前值为 `5.8.16-nes.patch.2-SNAPSHOT`。
+- 继续复用根构建现有的官方 Spring Security 坐标到 NES GAV 映射，以及 `spring-boot-dependencies` 中现有的 NES Security BOM import；不得增加第二份 Boot BOM、模块版本清单或宽泛替换规则。
+- 生成的 Boot BOM、Security starter 和 OAuth2 starter 发布元数据必须只暴露 patch.2-SNAPSHOT NES Security，不得混入官方实现或 patch.1 实现。
+- 实际验证的 Nexus 候选为 `5.8.16-nes.patch.2-20260811.065312-1`；timestamp 仅用于绑定本次证据，逻辑版本仍保持 SNAPSHOT。
+
+#### Java 8 与集成验证
+
+- Producer 已对七项 CVE 的实现 commit、针对性测试、候选 JAR SHA-256、class major 52 和真实 Java 8 消费路径建立证据。
+- Boot 侧须验证自身发布元数据、OAuth2/SAML filter chain、servlet/reactive/X.509/通用 Security 自动配置以及独立 Maven/Gradle 消费行为；不得以 producer 测试替代消费者集成门禁。
+- Maven/Gradle Java 8 组合 smoke 已验证 SendGrid 邮件构造、Bouncy Castle AES-GCM、Security Crypto 和 OpenSAML 3；Boot `SendGridAutoConfigurationTests` 已在 SendGrid 4.10.1 上通过。
+
+#### Bouncy Castle 边界
+
+- 旧版 SendGrid 4.9.3 会引入 `bcprov-jdk15on:1.70`，与 Security `jdk18on:1.84` 存在 1,475 个重叠 class；该图仅作为已验证的基线风险证据保留。
+- 最终处置已选择并实施 SendGrid 4.10.1：其 Maven/Gradle 图只含 `bcpkix-jdk18on`、`bcprov-jdk18on`、`bcutil-jdk18on` 1.84，真实 Java 8 smoke和 Boot `SendGridAutoConfigurationTests`均通过。
+
+#### 发布与回滚门禁
+
+- `5.8.16-nes.patch.2-SNAPSHOT` 仅是 Boot 开发候选。正式 Boot RELEASE 必须等待 Nexus 中的 Security `5.8.16-nes.patch.2` RELEASE 和精确 tag `v5.8.16-nes.patch.2`，并通过现有内部 SNAPSHOT 扫描。
+- `5.8.16-nes.patch.1` RELEASE、tag、历史示例和用户消费说明保持不可变；回滚时恢复 `springSecurityVersion` 到 patch.1 并重新验证发布元数据。
+- 本需求不提供面向用户的 Security SNAPSHOT 试用承诺，因此 `QUICK_START.md` 和 `USER_MANUAL.md` 的 RELEASE 示例保持不变。
+
+#### 涉及文件
+
+- `gradle.properties`
+- `spring-boot-project/spring-boot-autoconfigure` 的 OAuth2/SAML 测试适配
+- `scripts/verify-spring-security-adoption.sh`
+- `tests/spring-security-adoption/`
+- Security GAV、升级历史、漏洞总表、七项 CVE 和测试证据文档
+- `openspec/changes/adopt-spring-security-patch-2-security-baseline/`
+
+---
+
 ## 📅 2026年08月06日
 
 ### [需求-040] c3p0 / lz4-java Java 8 安全基线升级
@@ -41,7 +84,7 @@
 
 - c3p0 0.14.0 移除了部分上游旧 API（例如 `PoolConfig`）；Spring Boot 支持面和 Hibernate 5.6 路径已验证，但直接使用已移除 API 的业务代码需自行迁移。
 - CVE-2026-59949 仅在攻击者能控制数组引用、offset 或 length 且应用使用 JNI XXHash 时触发；仅控制合法数组内容不受影响。
-- 本需求不修改 ActiveMQ/Artemis、Spring LDAP/Kafka/Framework/Security、Infinispan 或 Jetty。Spring Security CVE-2026-40988、41003、41706、22746、47838 由 `spring-security-5.8` 项目单独处理。
+- 需求 040 本身不修改 ActiveMQ/Artemis、Spring LDAP/Kafka/Framework/Security、Infinispan 或 Jetty；其中 Spring Security CVE 由 `spring-security-5.8` producer 单独回移，并由后续 [需求-041] 在 Boot 开发线采用和验证。
 
 #### 涉及文件
 
@@ -1076,7 +1119,7 @@ org.springframework.security:spring-security-{name}
   → ${forkGroupIdBase}.security:${forkArtifactPrefix}-security-{name}:${springSecurityVersion}
 ```
 - 触发条件：`requested.group == 'org.springframework.security'` 且 `requested.name.startsWith('spring-security-')`
-- 示例：`org.springframework.security:spring-security-core:5.7.11` → `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-core:5.8.16-nes.patch.1-SNAPSHOT`
+- 示例：`org.springframework.security:spring-security-core:5.7.11` → `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-core:5.8.16-nes.patch.2-SNAPSHOT`
 
 这两条规则在 Gradle 依赖解析阶段全局生效，所有子模块 `build.gradle` 中的上游原始坐标声明不受影响，构建系统自动完成透明替换。
 
@@ -1103,14 +1146,14 @@ Spring Boot 2.7.18 (fork: 2.7.18-nes.patch.1-SNAPSHOT)
   ├── Spring Framework 5.3.39 (fork: 5.3.39-nes.patch.1-SNAPSHOT)
   │     GroupId: cn.bjca.footstone.bpring
   │     BOM: bjca-footstone-bpring-framework-bom
-  └── Spring Security 5.8.16 (fork: 5.8.16-nes.patch.1-SNAPSHOT)
+  └── Spring Security 5.8.16 (fork: 5.8.16-nes.patch.2-SNAPSHOT; current development candidate)
         GroupId: cn.bjca.footstone.bpring.security
         BOM: bjca-footstone-bpring-security-bom
 ```
 
 各组件版本号通过 `gradle.properties` 统一管理：
 - `springFrameworkVersion=5.3.39-nes.patch.1-SNAPSHOT`
-- `springSecurityVersion=5.8.16-nes.patch.1-SNAPSHOT`
+- `springSecurityVersion=5.8.16-nes.patch.2-SNAPSHOT`
 
 #### buildSrc 特殊处理说明
 `buildSrc` 是 Gradle 的独立构建单元，先于主项目编译，不受根 `build.gradle` 中 `resolutionStrategy.eachDependency` 规则的作用。因此 `buildSrc/build.gradle` 中必须直接使用 fork 坐标：

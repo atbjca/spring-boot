@@ -42,13 +42,17 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistration;
 import org.springframework.security.saml2.provider.service.registration.RelyingPartyRegistrationRepository;
 import org.springframework.security.saml2.provider.service.registration.Saml2MessageBinding;
-import org.springframework.security.saml2.provider.service.servlet.filter.Saml2WebSsoAuthenticationFilter;
+import org.springframework.security.saml2.provider.service.web.authentication.Saml2WebSsoAuthenticationFilter;
 import org.springframework.security.saml2.provider.service.web.authentication.logout.Saml2LogoutRequestFilter;
 import org.springframework.security.web.FilterChainProxy;
 import org.springframework.security.web.SecurityFilterChain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+
+// FORK: spring-security 5.8 moved Saml2WebSsoAuthenticationFilter from the
+// deprecated servlet.filter compatibility stub to web.authentication. The
+// filter chain installs the new-package class, so the test must inspect it.
 
 /**
  * Tests for {@link Saml2RelyingPartyAutoConfiguration}.

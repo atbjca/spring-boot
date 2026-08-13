@@ -1,0 +1,89 @@
+plugins {
+	id "application"
+	id "java"
+}
+
+repositories {
+	maven {
+		url = "http://192.168.131.36:8088/repository/maven-public/"
+		allowInsecureProtocol = true
+	}
+	maven {
+		url = "http://192.168.131.36:8088/repository/snapshots/"
+		allowInsecureProtocol = true
+		mavenContent {
+			snapshotsOnly()
+		}
+	}
+}
+
+def securityVersion = findProperty("springSecurityVersion") ?: "5.8.16-nes.patch.2-SNAPSHOT"
+def sendGridVersion = findProperty("sendGridVersion") ?: "4.10.1"
+def excludeLegacyBc = (findProperty("excludeLegacyBc") ?: "false").toBoolean()
+
+dependencies {
+	implementation(platform("cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-bom:${securityVersion}"))
+	implementation("com.sendgrid:sendgrid-java:${sendGridVersion}") {
+		if (excludeLegacyBc) {
+			exclude group: "org.bouncycastle", module: "bcprov-jdk15on"
+		}
+	}
+	implementation("cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-saml2-service-provider")
+	implementation("cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-crypto")
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+sourceSets {
+	main {
+		java {
+			srcDir("../src/main/java")
+		}
+	}
+}
+
+application {
+	mainClass = "org.springframework.boot.tests.security.BouncyCastleSendGridSmoke"
+}
+
+tasks.named("run") {
+	if (project.hasProperty("expectedBcArtifact")) {
+		systemProperty("expected.bc.artifact", project.property("expectedBcArtifact"))
+	}
+}
+
+tasks.register("printBouncyCastleGraph") {
+	doLast {
+		def artifacts = configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts
+			.findAll { it.moduleVersion.id.group == "org.bouncycastle" }
+			.collect { "${it.moduleVersion.id.group}:${it.name}:${it.moduleVersion.id.version}" }
+			.toSorted()
+		artifacts.each { println(it) }
+	}
+}
+
+tasks.register("assertBouncyCastleGraph") {
+	doLast {
+		def sendGridArtifacts = configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts
+			.findAll { it.moduleVersion.id.group == "com.sendgrid" && it.name == "sendgrid-java" }
+			.collect { it.moduleVersion.id.version }
+		if (sendGridArtifacts != ["4.10.1"]) {
+			throw new GradleException("Expected SendGrid 4.10.1, found ${sendGridArtifacts}")
+		}
+		def actual = configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts
+			.findAll { it.moduleVersion.id.group == "org.bouncycastle" }
+			.collect { "${it.moduleVersion.id.group}:${it.name}:${it.moduleVersion.id.version}" }
+			.toSorted()
+		def expected = [
+			"org.bouncycastle:bcpkix-jdk18on:1.84",
+			"org.bouncycastle:bcprov-jdk18on:1.84",
+			"org.bouncycastle:bcutil-jdk18on:1.84"
+		]
+		if (actual != expected) {
+			throw new GradleException("Unexpected Bouncy Castle graph. Expected ${expected}, found ${actual}")
+		}
+		println("com.sendgrid:sendgrid-java:4.10.1")
+		actual.each { println(it) }
+	}
+}

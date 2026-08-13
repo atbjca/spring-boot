@@ -4,6 +4,8 @@
 >
 > 本文档面向**下游组件使用者**，整合了四个 NES fork 项目的 GAV（GroupId / ArtifactId / Version）映射信息，
 > 帮助您快速将项目从官方 Spring 依赖迁移到 NES 内部维护版本。
+>
+> **版本状态**：当前仓库开发线管理 Spring Security `5.8.16-nes.patch.2-SNAPSHOT`；下文 `2.7.18-nes.patch.1` 示例仍表示已发布、可回滚的 Boot/Security patch.1 组合。本 change 不提供面向用户的 Security SNAPSHOT 试用承诺，patch.2 正式 RELEASE/tag 完成前不得将开发候选用于正式发布。
 
 ---
 
@@ -32,7 +34,7 @@
 | :--- | :--- | :--- |
 | Spring Boot | `2.7.18` | `2.7.18-nes.patch.1` |
 | Spring Framework | `5.3.39` | `5.3.39-nes.patch.1` |
-| Spring Security | `5.8.16` | `5.8.16-nes.patch.1` |
+| Spring Security | `5.8.16` | `5.8.16-nes.patch.2-SNAPSHOT`（当前开发候选；已发布基线为 patch.1） |
 | Spring Authorization Server | `0.4.5` | `0.4.5-nes.patch.1` |
 | Spring Kafka | `2.9.13` | `2.9.13-nes.patch.1` |
 
@@ -45,7 +47,7 @@ bjca-footstone-bpring-boot-dependencies (Spring Boot BOM — 版本管理中心)
 │     Version: 5.3.39-nes.patch.1
 ├── bjca-footstone-bpring-security-bom (Spring Security BOM)
 │     GroupId:  cn.bjca.footstone.bpring.security
-│     Version: 5.8.16-nes.patch.1
+│     Version: 5.8.16-nes.patch.2-SNAPSHOT (当前开发候选)
 └── 第三方依赖版本（Jackson、Tomcat、JUnit 等）
       └── 由 Spring Boot BOM 统一管控
 ```
@@ -378,7 +380,9 @@ dependencies {
 
 > **GroupId 映射**：`org.springframework.security` → `cn.bjca.footstone.bpring.security`
 >
-> **Version**：`5.8.16-nes.patch.1`
+> **Version**：`5.8.16-nes.patch.2-SNAPSHOT`（当前仓库开发候选）
+>
+> **发布边界**：`5.8.16-nes.patch.1` 仍是不可变的已发布版本和回滚目标。patch.2 RELEASE 制品及 `v5.8.16-nes.patch.2` tag 尚未完成，因此本节的开发版本不得解读为正式发布或用户试用坐标。
 >
 > **ArtifactId 映射规则**：`spring-security-{name}` → `bjca-footstone-bpring-security-{name}`
 

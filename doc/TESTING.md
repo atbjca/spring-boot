@@ -3,7 +3,7 @@
 > **分支**：`2.7.x-bjca-patch`  
 > **基线**：2.7.18（当前开发版本 `2.7.18-nes.patch.2-SNAPSHOT`；已发布版本 `2.7.18-nes.patch.1`）
 > **对齐参考**：3.5 fork 的 Tier 分层（`doc/TESTING.md`）  
-> **最后更新**：2026-08-10
+> **最后更新**：2026-08-13
 
 本文档说明 2.7 fork **测什么、不测什么、日常怎么验**，以及 `make test` 与 `make test-feedback` 的分工。
 
@@ -113,6 +113,30 @@
 - 2026-07-22 修复后连续两轮 `make clean test` 均通过：分别为 `BUILD SUCCESSFUL in 6m 56s`、`BUILD SUCCESSFUL in 8m 29s`，退出码均为 0；随后 `make build-thin` 约 14m49s 完成，退出码 0。Tier A 与 build 门禁现可如实标记为全绿。
 - Nexus 上尚未部署本次新的 Boot SNAPSHOT，因此直接消费 Nexus 仍会得到旧 starter；正式部署后必须再做一次不使用临时本地仓库的 Maven/Gradle 依赖树验收。
 - Reactor Netty 生产者已提交并推送 `da3c7cf2`。重新部署后，使用全新 Maven 本地仓库从 Nexus 解析到 HTTP 制品 `20260722.053243-4`，SHA-256 为 `19adc757f94b426c8654afdedb27eb67a0f4e40b7a35957411686524f2a4d5cc`；`javap` 确认字节码包含两次 `UriEndpoint.isSecure()` 调用，跨 origin 与 HTTPS→HTTP 降级剥头修复已进入制品。
+
+### 2.6 Spring Security patch.2 候选专项门禁
+
+当前开发基线采用 `5.8.16-nes.patch.2-SNAPSHOT`，但它仍是候选而非正式 RELEASE。采用或升级 NES Spring Security 时至少验证：
+
+- `springSecurityVersion` 继续作为唯一版本源，现有官方到 NES 坐标映射和 Boot dependency-management 中的 Security BOM import 均由它驱动；
+- 生成的 Boot BOM、Security starter POM和 Gradle Module Metadata只包含 patch.2 NES Security，不得残留 patch.1 或官方 Security 实现；
+- OAuth2 resource-server、SAML2、servlet、reactive、OAuth2 client、X.509 和通用 Security auto-configuration 完成代表性 Boot 回归；
+- 发布所需 Boot 模块到隔离临时 Maven 仓库后，独立 Maven/Gradle consumers 只依靠发布元数据解析，不复制根构建 `resolutionStrategy` 或源码 substitution；
+- Maven/Gradle consumers 在真实 Java 8 上完成 Security、OAuth2、SAML/OpenSAML、Crypto和 Bouncy Castle smoke，代表性主 artifact 的 class major 不高于 52；
+- SendGrid 与 Security SAML/Crypto 的 Bouncy Castle 图有唯一且经过 Maven、Gradle、Boot自动配置和 Java 8 行为验证的处置；当前选择 SendGrid 4.10.1并统一到 jdk18on 1.84；不同 artifactId 能共存不等于图已收敛；
+- 正式 Boot RELEASE 必须等待 Nexus 中的 Security `5.8.16-nes.patch.2` RELEASE和精确 `v5.8.16-nes.patch.2` tag，内部 SNAPSHOT 残留必须阻止发布。
+
+#### 2026-08-13 阶段记录
+
+- patch.1 与 patch.2 在测试适配前均出现相同的 14 个唯一失败：12 个 OAuth2 resource-server和 2 个 SAML filter-chain断言。两者失败集合一致，根因是测试仍引用 Spring Security 5.8 的旧包兼容 stub；测试已改为实际安装的新包 filter 类。
+- `scripts/verify-spring-security-adoption.sh all` 已通过版本单点、Boot BOM import、Security/OAuth2 starter POM、Gradle Module Metadata以及代表性 compile/runtime图断言。解析到的 Security 候选为 `5.8.16-nes.patch.2-20260811.065312-1`，producer source为 `9c5e51ee66dc47bc02bb25e803f5bccc71b7cd5a`。
+- OAuth2/SAML 目标测试首轮在 `compileTestJava` 阶段因主机内存压力以 exit 137 终止，未产生测试结果；解除暂停后使用 `--no-daemon --no-parallel --max-workers=1`、`-Xmx2g` 受限复跑，两个目标类均通过（`BUILD SUCCESSFUL in 1m 20s`）。随后 servlet/reactive、OAuth2 client/resource-server、SAML2 和通用 Security auto-configuration 代表性测试也通过（`BUILD SUCCESSFUL in 39s`）；仓库该包下没有独立 X.509 Boot 测试类，因此未虚构单独结果。
+- 使用 Amazon Corretto `1.8.0_482` 的 Maven/Gradle baseline smoke确认 SendGrid `4.9.3` 图同时含 `bcprov-jdk15on:1.70`和 Security `jdk18on:1.84`；两者有 1,475 个重叠 class。该基线风险已被记录。
+- SendGrid `4.10.1` 的 Maven/Gradle 图断言均通过，只含 `jdk18on:1.84` family；Java 8 SendGrid/Security/OpenSAML smoke和 Boot `SendGridAutoConfigurationTests`均通过，最终 BC 处置为小版本升级。
+- 独立 Maven/Gradle consumers 已从同一隔离仓库解析 Boot BOM、Boot core/autoconfigure、Security starter、OAuth2 resource-server starter、Security SAML/Crypto、OpenSAML、BC 和 SendGrid。发布运行的七个 Boot 项目统一使用 timestamp/build `20260813.054327-1`；Security candidate 解析为 `5.8.16-nes.patch.2-20260811.065312-1`。
+- Amazon Corretto `1.8.0_482` 上 Maven 和 Gradle smoke 均通过，直接运行共享 smoke（Maven 使用真实 Java classpath，避免 exec 插件 classloader 隔离）。Boot、Security、OAuth2、SAML、Crypto、BC 和 SendGrid 均从预期制品加载，OpenSAML 初始化、Security Crypto、BC AES-GCM 和 SendGrid 构造均成功。
+- Maven/Gradle 关键图一致：只含 NES Security `5.8.16-nes.patch.2-SNAPSHOT`，无官方 Security、无 patch.1、无 `bcprov-jdk15on`，SendGrid 为 `4.10.1`，BC 为 `bcpkix/bcprov/bcutil-jdk18on:1.84`。代表性 Boot、Security、OAuth2、SAML、Crypto 和 BC class major 均为 52；Java 8 runtime、依赖树、timestamp/build 和 SHA-256 明细在验证运行时生成到 `build/spring-security-adoption/evidence/`，最终 `make build` 的 `clean` 已清理该临时目录，关键摘要已固化在本 change 的 `evidence.md`，可由验证脚本重建。
+- 代表性 consumers 和 BC 处置自动检查已解除此前的 Gradle 暂停并通过。随后按 Java 17、Gradle 7.6.3、单 worker、禁用并行和受限 JVM 配置运行 `make build`：全量非测试 build 退出码 0（`BUILD SUCCESSFUL in 19m 11s`，2167 actionable tasks），Tier A 测试退出码 0（`BUILD SUCCESSFUL in 5m 16s`，67 actionable tasks）。输出中的 Java 17 removal/Javadoc 警告和未认证 build scan 不影响退出码；远程 build cache 403 被 Gradle 当作可恢复 cache miss。首次重跑曾发现本 change SAML 测试 import 分组 Checkstyle 错误并退出码 2，修正后定点 checkstyle 及完整 `make build` 均通过。
 
 **单模块示例**：
 
