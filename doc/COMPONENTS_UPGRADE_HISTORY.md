@@ -7,6 +7,7 @@
 
 | 升级日期 | 组件名称 | 升级前版本 | 升级后版本 | 修复漏洞 / 原因 | 兼容性说明 |
 | :---: | :--- | :---: | :---: | :--- | :--- |
+| 2026-08-13 | NES Elasticsearch 客户端闭包 + Spring Data patch.2 | 官方 ES 7.17.29 / SDE patch.1 | **NES `7.17.29-nes.patch.1-SNAPSHOT` + Data BOM/SDE patch.2-SNAPSHOT** | 对齐已验证 NES 客户端闭包、Java API Client、Barsson、Jakarta JSON-P 2.0.2；停止管理 Transport Client / integ-test / 官方 elasticsearch-java；starter 显式 LZ4 替换（[需求-042]） | Java package 不变；内部依赖仍为 SNAPSHOT，正式 Boot RELEASE 保持阻断 |
 | 2026-08-11 | Spring Security NES（Boot 开发候选） | `5.8.16-nes.patch.1` RELEASE | **`5.8.16-nes.patch.2-SNAPSHOT`** | Boot 开发线采用包含七项 2026 CVE backport 的 Security 候选；已验证实际 Nexus 制品 `5.8.16-nes.patch.2-20260811.065312-1`、现有 BOM/GAV 映射、Maven/Gradle Java 8 SAML/Crypto smoke和 SendGrid 4.10.1 BC 统一 | 仅为开发候选，不是 RELEASE；patch.1 制品、tag、用户示例和回滚目标保持不变；正式 Boot 发布仍等待 Security patch.2 RELEASE/tag及剩余发布门禁 |
 | 2026-08-10 | Spring Boot NES fork 开发版本 | `2.7.18-nes.patch.1` | **`2.7.18-nes.patch.2-SNAPSHOT`** | 为 c3p0 / mchange / lz4-java 安全基线生成独立、可审计的开发制品，避免复用已发布 RELEASE 坐标 | 仅递增 Boot 制品版本；Spring Framework、Security、Data、Kafka、Reactor Netty 等独立 fork 版本保持不变 |
 | 2026-08-06 | `com.mchange:c3p0` / `mchange-commons-java` | 0.9.5.5 / 旧传递版本 | **0.14.0 / 0.6.0** | CVE-2026-27727、CVE-2026-27830、CVE-2026-55223；纠正“Quartz exclude 已移除全部暴露”的旧台账结论 | class major 51；Boot DataSourceBuilder、H2 池生命周期及 Hibernate 5.6 provider 验证通过；直接使用已移除 c3p0 旧 API 的下游需迁移 |

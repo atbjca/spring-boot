@@ -332,9 +332,18 @@ forkGroupIdBase=cn.bjca.footstone.bpring
           && requested.name == spring-data-elasticsearch
 转换逻辑：
   ArtifactId:  spring-data-elasticsearch           → ${forkArtifactPrefix}-data-elasticsearch
-  Version:     (任意)                               → 4.4.18-nes.patch.1（硬编码，≠ 规则五）
+  Version:     (任意)                               → ${springDataElasticsearchNesVersion}（当前 4.4.18-nes.patch.2-SNAPSHOT，≠ 规则五）
 ```
-> commons/keyvalue/redis/elasticsearch 四个模块完成 fork（commons/keyvalue 含本体 CVE 修复），其余 `spring-data-*` 保持官方坐标 + 官方版本，由私服/mavenCentral 代理解析。redis 与 commons/keyvalue 同版本线（2.7.18）并入规则五；elasticsearch 版本线不同（4.4.18）故独立为规则六。规则五同时堵住未 fork 的 `spring-data-jpa` 等模块经传递依赖回拉官方 `spring-data-commons` 的链路。见 [需求-034]、[需求-035]。
+> commons/keyvalue/redis/elasticsearch 四个模块完成 fork（commons/keyvalue 含本体 CVE 修复），其余 `spring-data-*` 保持官方坐标 + 官方版本，由私服/mavenCentral 代理解析。redis 与 commons/keyvalue 同版本线（2.7.18）并入规则五；elasticsearch 版本线不同（4.4.18 patch.2）故独立为规则六。规则五同时堵住未 fork 的 `spring-data-jpa` 等模块经传递依赖回拉官方 `spring-data-commons` 的链路。见 [需求-034]、[需求-035]、[需求-042]。
+
+**规则八 —— Elasticsearch 生产闭包 allowlist：**
+```
+触发条件：requested GAV 属于已发布的 16 个 NES 生产模块或 Java API Client
+转换逻辑：
+  按模块精确映射到 cn.bjca.footstone.blasticsearch{,.client,.plugin}:bjca-footstone-blasticsearch-*
+  Version: ${elasticsearchNesVersion}（当前 7.17.29-nes.patch.1-SNAPSHOT）
+禁止：Transport Client、transport-netty4-client、integ-test 发行物、整组 org.elasticsearch / co.elastic.clients 替换
+```
 
 **关键特性：**
 - 所有子模块 `build.gradle` **无需任何修改**，仍使用上游原始坐标声明依赖

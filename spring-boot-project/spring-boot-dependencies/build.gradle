@@ -324,39 +324,58 @@ bom {
 			]
 		}
 	}
-	library("Elasticsearch", "7.17.29") {
-		group("org.elasticsearch") {
+	library("Elasticsearch", elasticsearchNesVersion) {
+		considerSnapshots()
+		// 只管理已验证的 NES 生产闭包。不再管理 Transport Client、Netty transport
+		// client、integ-test 发行物和官方 co.elastic.clients:elasticsearch-java。
+		group("cn.bjca.footstone.blasticsearch") {
 			modules = [
-				"elasticsearch"
+				"bjca-footstone-blasticsearch" {
+					exclude group: "org.lz4", module: "lz4-java"
+				},
+				"bjca-footstone-blasticsearch-core",
+				"bjca-footstone-blasticsearch-secure-sm",
+				"bjca-footstone-blasticsearch-x-content",
+				"bjca-footstone-blasticsearch-geo",
+				"bjca-footstone-blasticsearch-lz4" {
+					exclude group: "org.lz4", module: "lz4-java"
+				},
+				"bjca-footstone-blasticsearch-cli",
+				"bjca-footstone-blasticsearch-plugin-classloader"
 			]
 		}
-		group("org.elasticsearch.client") {
+		group("cn.bjca.footstone.blasticsearch.client") {
 			modules = [
-				"transport",
-				"elasticsearch-rest-client" {
+				"bjca-footstone-blasticsearch-rest-client" {
 					exclude group: "commons-logging", module: "commons-logging"
 				},
-				"elasticsearch-rest-client-sniffer" {
+				"bjca-footstone-blasticsearch-rest-client-sniffer" {
 					exclude group: "commons-logging", module: "commons-logging"
 				},
-				"elasticsearch-rest-high-level-client"
-			]
-		}
-		group("org.elasticsearch.distribution.integ-test-zip") {
-			modules = [
-				"elasticsearch" {
-					type = 'zip'
+				"bjca-footstone-blasticsearch-rest-high-level-client" {
+					exclude group: "commons-logging", module: "commons-logging"
+					exclude group: "org.lz4", module: "lz4-java"
+				},
+				"bjca-footstone-blasticsearch-java" {
+					exclude group: "commons-logging", module: "commons-logging"
 				}
 			]
 		}
-		group("org.elasticsearch.plugin") {
+		group("cn.bjca.footstone.blasticsearch.plugin") {
 			modules = [
-				"transport-netty4-client"
+				"bjca-footstone-blasticsearch-mapper-extras-client",
+				"bjca-footstone-blasticsearch-parent-join-client",
+				"bjca-footstone-blasticsearch-aggs-matrix-stats-client",
+				"bjca-footstone-blasticsearch-rank-eval-client",
+				"bjca-footstone-blasticsearch-lang-mustache-client"
 			]
 		}
-		group("co.elastic.clients") {
+	}
+	library("Barsson NES", barssonNesVersion) {
+		considerSnapshots()
+		group("cn.bjca.footstone.barsson") {
 			modules = [
-				"elasticsearch-java"
+				"bjca-footstone-barsson"
 			]
 		}
 	}
@@ -678,11 +697,7 @@ bom {
 			]
 		}
 	}
-	library("Jakarta Json", "1.1.6") {
-		prohibit {
-			versionRange "[2.0.0-RC1,)"
-			because "it uses the jakarta.* namespace"
-		}
+	library("Jakarta Json", "2.0.2") {
 		group("jakarta.json") {
 			modules = [
 				"jakarta.json-api"
@@ -1840,22 +1855,19 @@ bom {
 			]
 		}
 	}
-	library("Spring Data Bom", "2021.2.18-nes.patch.1") {
+	library("Spring Data Bom", springDataBomNesVersion) {
 		considerSnapshots()
 		calendarName = "Spring Data Release"
 		prohibit {
 			versionRange "[2022.0.0-M1,)"
 			because "it uses Spring Framework 6"
 		}
-		// Spring Data BOM 已在 fork 仓库（spring-data-bom NES 分支）完成去特征化并发布到私服：
+		// Spring Data BOM 已在 fork 仓库完成去特征化并发布到私服：
 		//   org.springframework.data:spring-data-bom
-		//     → cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom（version 2021.2.18-nes.patch.1 不变）。
+		//     → cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom:${springDataBomNesVersion}
 		// 原始 org.springframework.data:spring-data-bom 坐标在私服中不存在，必须引用 fork 坐标。
-		// fork BOM 内部仅将 spring-data-commons / spring-data-keyvalue 切至 NES 制品，其余
-		// spring-data-* 模块保持官方坐标 + 官方版本（由 mavenCentral / 私服代理解析）。
-		// 与 root build.gradle 中 resolutionStrategy 规则五协作：BOM 提供版本管理，
-		// resolutionStrategy 将源码中 org.springframework.data:spring-data-{commons,keyvalue}
-		// 声明重写为 NES 坐标，并堵住 redis 等模块回拉官方 commons 的传递链。
+		// patch.2 将 elasticsearch 切至 4.4.18-nes.patch.2-SNAPSHOT；commons/keyvalue/redis
+		// 仍为 2.7.18-nes.patch.1。其余 spring-data-* 保持官方坐标。
 		group("cn.bjca.footstone.bpring.data") {
 			imports = [
 				"bjca-footstone-bpring-data-bom"

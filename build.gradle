@@ -9,6 +9,28 @@ description = "Spring Boot Build"
 
 defaultTasks 'build'
 
+// 仅替换已发布的 16 个 NES Elasticsearch 生产模块 + Java API Client。
+// 禁止把 Transport Client、Netty transport client、integ-test 发行物做成整组替换。
+def elasticsearchNesAllowlist = [
+		'org.elasticsearch:elasticsearch': 'cn.bjca.footstone.blasticsearch:bjca-footstone-blasticsearch',
+		'org.elasticsearch:elasticsearch-core': 'cn.bjca.footstone.blasticsearch:bjca-footstone-blasticsearch-core',
+		'org.elasticsearch:elasticsearch-secure-sm': 'cn.bjca.footstone.blasticsearch:bjca-footstone-blasticsearch-secure-sm',
+		'org.elasticsearch:elasticsearch-x-content': 'cn.bjca.footstone.blasticsearch:bjca-footstone-blasticsearch-x-content',
+		'org.elasticsearch:elasticsearch-geo': 'cn.bjca.footstone.blasticsearch:bjca-footstone-blasticsearch-geo',
+		'org.elasticsearch:elasticsearch-lz4': 'cn.bjca.footstone.blasticsearch:bjca-footstone-blasticsearch-lz4',
+		'org.elasticsearch:elasticsearch-cli': 'cn.bjca.footstone.blasticsearch:bjca-footstone-blasticsearch-cli',
+		'org.elasticsearch:elasticsearch-plugin-classloader': 'cn.bjca.footstone.blasticsearch:bjca-footstone-blasticsearch-plugin-classloader',
+		'org.elasticsearch.client:elasticsearch-rest-high-level-client': 'cn.bjca.footstone.blasticsearch.client:bjca-footstone-blasticsearch-rest-high-level-client',
+		'org.elasticsearch.client:elasticsearch-rest-client': 'cn.bjca.footstone.blasticsearch.client:bjca-footstone-blasticsearch-rest-client',
+		'org.elasticsearch.client:elasticsearch-rest-client-sniffer': 'cn.bjca.footstone.blasticsearch.client:bjca-footstone-blasticsearch-rest-client-sniffer',
+		'org.elasticsearch.plugin:mapper-extras-client': 'cn.bjca.footstone.blasticsearch.plugin:bjca-footstone-blasticsearch-mapper-extras-client',
+		'org.elasticsearch.plugin:parent-join-client': 'cn.bjca.footstone.blasticsearch.plugin:bjca-footstone-blasticsearch-parent-join-client',
+		'org.elasticsearch.plugin:aggs-matrix-stats-client': 'cn.bjca.footstone.blasticsearch.plugin:bjca-footstone-blasticsearch-aggs-matrix-stats-client',
+		'org.elasticsearch.plugin:rank-eval-client': 'cn.bjca.footstone.blasticsearch.plugin:bjca-footstone-blasticsearch-rank-eval-client',
+		'org.elasticsearch.plugin:lang-mustache-client': 'cn.bjca.footstone.blasticsearch.plugin:bjca-footstone-blasticsearch-lang-mustache-client',
+		'co.elastic.clients:elasticsearch-java': 'cn.bjca.footstone.blasticsearch.client:bjca-footstone-blasticsearch-java'
+]
+
 nohttp {
 	allowlistFile = project.file("src/nohttp/allowlist.lines")
 	source.exclude "**/bin/**"
@@ -166,15 +188,15 @@ allprojects {
 
 			// 规则六：org.springframework.data:spring-data-elasticsearch 映射
 			// 将 org.springframework.data:spring-data-elasticsearch 替换为
-			//   cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-elasticsearch:4.4.18-nes.patch.1
-			// elasticsearch NES fork 跟随 Spring Data Elasticsearch 4.4.x 版本线，其制品版本为
-			// 【4.4.18-nes.patch.1】——与规则五的 2.7.18 版本线不同，故独立成一条分支，
+			//   cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-elasticsearch:${springDataElasticsearchNesVersion}
+			// elasticsearch NES fork 跟随 Spring Data Elasticsearch 4.4.x 版本线，当前为
+			// 【4.4.18-nes.patch.2-SNAPSHOT】——与规则五的 2.7.18 版本线不同，故独立成一条分支，
 			// 不能并入规则五（否则会解析到不存在的 ...-elasticsearch:2.7.18-... 坐标而失败）。
 			// artifactId 同样走 spring- 前缀替换。
 			else if (requested.group == 'org.springframework.data'
 					&& requested.name == 'spring-data-elasticsearch') {
 				def newArtifactId = requested.name.replaceFirst(/^spring-/, "${forkArtifactPrefix}-")
-				details.useTarget("cn.bjca.footstone.bpring.data:${newArtifactId}:4.4.18-nes.patch.1")
+				details.useTarget("cn.bjca.footstone.bpring.data:${newArtifactId}:${springDataElasticsearchNesVersion}")
 			}
 
 			// 规则七：Reactor Netty 官方坐标映射
@@ -188,6 +210,14 @@ allprojects {
 						|| requested.name == 'reactor-netty-http-brave')) {
 				def newArtifactId = requested.name.replaceFirst(/^reactor-netty/, 'bjca-footstone-beactor-netty')
 				details.useTarget("cn.bjca.footstone.beactor.netty:${newArtifactId}:${reactorNettyNesVersion}")
+			}
+
+			// 规则八：Elasticsearch 生产闭包 allowlist 映射
+			// 只替换已发布的 16 个 NES 生产模块和 Java API Client，禁止对
+			// org.elasticsearch / co.elastic.clients 做整组替换（Transport Client、
+			// integ-test 发行物等没有对应 NES 制品）。
+			else if (elasticsearchNesAllowlist.containsKey("${requested.group}:${requested.name}")) {
+				details.useTarget("${elasticsearchNesAllowlist["${requested.group}:${requested.name}"]}:${elasticsearchNesVersion}")
 			}
 		}
 	}

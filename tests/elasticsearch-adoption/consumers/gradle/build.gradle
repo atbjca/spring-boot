@@ -1,0 +1,63 @@
+plugins {
+	id "application"
+	id "java"
+}
+
+def bootVersion = providers.gradleProperty("bootVersion").getOrElse("2.7.18-nes.patch.2-SNAPSHOT")
+def defaultBootRepository = file("../../../../build/elasticsearch-adoption/repository").toURI().toString()
+def bootRepository = providers.gradleProperty("bootRepository").getOrElse(defaultBootRepository)
+
+repositories {
+	maven {
+		name = "bootCandidate"
+		url = uri(bootRepository)
+	}
+	maven {
+		name = "nesPublic"
+		url = uri("http://192.168.131.36:8088/repository/maven-public/")
+		allowInsecureProtocol = true
+	}
+	maven {
+		name = "nesSnapshots"
+		url = uri("http://192.168.131.36:8088/repository/snapshots/")
+		allowInsecureProtocol = true
+		mavenContent {
+			snapshotsOnly()
+		}
+	}
+}
+
+dependencies {
+	implementation(platform("cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-dependencies:${bootVersion}"))
+	implementation("cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-starter-data-elasticsearch")
+	implementation("cn.bjca.footstone.blasticsearch.client:bjca-footstone-blasticsearch-java")
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+sourceSets {
+	main {
+		java {
+			srcDir("../src/main/java")
+		}
+	}
+}
+
+application {
+	mainClass = "org.springframework.boot.tests.elasticsearch.PublishedBootElasticsearchSmoke"
+}
+
+tasks.register("writeRuntimeArtifacts") {
+	doLast {
+		def outputFile = providers.gradleProperty("runtimeArtifactsFile")
+			.map { file(it) }
+			.getOrElse(layout.buildDirectory.file("runtime-artifacts.txt").get().asFile)
+		outputFile.parentFile.mkdirs()
+		def artifacts = configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts
+			.collect { "${it.moduleVersion.id.group}:${it.name}:${it.moduleVersion.id.version}|${it.file.absolutePath}" }
+			.toSorted()
+		outputFile.text = artifacts.join(System.lineSeparator()) + System.lineSeparator()
+		artifacts.each { println(it) }
+	}
+}

@@ -352,3 +352,4 @@ Tier C   make test-feedback         → 2.7 风格扩大范围，--continue，�
 | 2026-06-30 | 拆分为 **`make test`（Tier A）** + **`make test-feedback`（Tier C）**；借鉴 3.5 分层策略 |
 | 2026-06-30 | `gradle-plugin` TestKit：Jackson 2.13.5、`bin/main` 优先级、离线 Gradle 分发包 |
 | 2026-07-08 | NES `spring-kafka-test` 已兼容 fork Kafka 3.9.2 EmbeddedKafka，`spring-boot-smoke-test-kafka` 纳入 `make test` |
+| 2026-08-13 | 采用 NES Elasticsearch 客户端闭包：BOM allowlist、JSON-P 双轨、Spring Data patch.2、starter LZ4；独立 Maven/`platform()`/`dependency-management` 夹具位于 `tests/elasticsearch-adoption/`。focused 测试与三套独立消费者已在 JDK 11 / Java 8 上通过；直接 SDE/HLRC 消费者的 LZ4 替换仍受生产者 POM 阻断，见 OpenSpec change evidence |

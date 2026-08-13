@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.springframework.boot.tests</groupId>
+	<artifactId>direct-sde-lz4-consumer</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<properties>
+		<sde.nes.version>4.4.18-nes.patch.2-SNAPSHOT</sde.nes.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	<repositories>
+		<repository>
+			<id>nes-snapshots</id>
+			<url>http://192.168.131.36:8088/repository/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>nes-public</id>
+			<url>http://192.168.131.36:8088/repository/maven-public/</url>
+		</repository>
+	</repositories>
+	<dependencies>
+		<dependency>
+			<groupId>cn.bjca.footstone.bpring.data</groupId>
+			<artifactId>bjca-footstone-bpring-data-elasticsearch</artifactId>
+			<version>${sde.nes.version}</version>
+		</dependency>
+	</dependencies>
+</project>

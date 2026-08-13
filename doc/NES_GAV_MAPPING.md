@@ -510,17 +510,17 @@ implementation 'cn.bjca.footstone.bogback:bjca-footstone-bogback-core:1.2.13-nes
 
 ## 7A. Spring Data GAV 映射表
 
-Spring Data 仅对 **BOM、commons、keyvalue** 三项完成 fork 去特征化（含本体 CVE 修复）；其余 spring-data-* 模块（redis / jpa / mongodb / rest / neo4j 等）**保持官方坐标 + 官方 `2.7.18` 版本**，由私服 `maven-public` / `mavenCentral` 代理解析。
+Spring Data 仅对 **BOM、commons、keyvalue、redis、elasticsearch** 完成 fork 去特征化；其余 `spring-data-*` 模块（jpa / mongodb / rest / neo4j / r2dbc 等）**保持官方坐标 + 官方 `2.7.18` 版本**，由私服 `maven-public` / `mavenCentral` 代理解析。
 
 | 原始 GroupId | 原始 ArtifactId | NES Fork GroupId | NES Fork ArtifactId | NES Fork Version |
 | :--- | :--- | :--- | :--- | :--- |
-| `org.springframework.data` | `spring-data-bom` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-bom` | `2021.2.18-nes.patch.1` |
+| `org.springframework.data` | `spring-data-bom` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-bom` | `2021.2.18-nes.patch.2-SNAPSHOT` |
 | `org.springframework.data` | `spring-data-commons` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-commons` | `2.7.18-nes.patch.1` |
 | `org.springframework.data` | `spring-data-keyvalue` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-keyvalue` | `2.7.18-nes.patch.1` |
 | `org.springframework.data` | `spring-data-redis` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-redis` | `2.7.18-nes.patch.1` |
-| `org.springframework.data` | `spring-data-elasticsearch` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-elasticsearch` | `4.4.18-nes.patch.1` |
+| `org.springframework.data` | `spring-data-elasticsearch` | `cn.bjca.footstone.bpring.data` | `bjca-footstone-bpring-data-elasticsearch` | `4.4.18-nes.patch.2-SNAPSHOT` |
 
-> **说明**：`commons` / `keyvalue` / `redis` 的去特征化由本项目根 `build.gradle` 的 `resolutionStrategy` **规则五**透明完成（同 `2.7.18-nes.patch.1` 版本线）；`elasticsearch` 因版本线为 `4.4.18-nes.patch.1`（ES 4.4.x），由独立的 **规则六** 处理。源码中对 `org.springframework.data:spring-data-{commons,keyvalue,redis,elasticsearch}` 的声明会在依赖解析期自动重写为上表 NES 坐标，各子模块 `build.gradle` 无需修改。规则五同时堵住未 fork 的 `spring-data-jpa` 等模块通过传递依赖回拉官方 `spring-data-commons` 的链路。见 [需求-034]、[需求-035]。
+> **说明**：`commons` / `keyvalue` / `redis` 的去特征化由本项目根 `build.gradle` 的 `resolutionStrategy` **规则五**透明完成（同 `2.7.18-nes.patch.1` 版本线）；`elasticsearch` 因版本线为 `4.4.18-nes.patch.2-SNAPSHOT`（ES 4.4.x），由独立的 **规则六** 处理。源码中对 `org.springframework.data:spring-data-{commons,keyvalue,redis}` 的声明会在依赖解析期自动重写为上表 NES 坐标。`spring-boot-starter-data-elasticsearch` 直接发布 NES SDE GAV，供独立 Maven 消费者使用。其余 `spring-data-*` 保持官方坐标。见 [需求-034]、[需求-035]、[需求-042]。
 
 > **CVE 覆盖**：commons — CVE-2026-41711 / 41716 / 41721（DoS）；keyvalue — CVE-2026-41719（SpEL 排序注入）。redis / elasticsearch 所修为**传递依赖** CVE（Kotlin 29582 / Jackson 35116 / commons-beanutils 48734 / SnakeYAML 1471 / Elasticsearch 46673 / Netty 批），本项目 spring-boot BOM 版本已高于修复线，属坐标一致性对齐（[需求-035]）。详见 `doc/VULNERABILITY_REPORT.md` 与 `doc/CVE/`。
 
@@ -529,13 +529,37 @@ Spring Data 仅对 **BOM、commons、keyvalue** 三项完成 fork 去特征化�
 ```groovy
 dependencies {
     // 引入 fork Spring Data BOM 平台，版本由其统一管理
-    implementation platform('cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom:2021.2.18-nes.patch.1')
+    implementation platform('cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom:2021.2.18-nes.patch.2-SNAPSHOT')
     // 源码可继续声明官方坐标，resolutionStrategy 规则五会重写为 NES 坐标
     implementation 'org.springframework.data:spring-data-commons'
 }
 ```
 
-> **提示**：引入 `bjca-footstone-bpring-boot-dependencies` BOM 的下游项目，Spring Data BOM 已被间接导入，无需重复声明。Java 包名（`org.springframework.data.*`）与 JPMS 模块名（`spring.data.commons` 等）保持不变，import 语句无需修改。
+> **提示**：引入 `bjca-footstone-bpring-boot-dependencies` BOM 的下游项目，Spring Data BOM 已被间接导入，无需重复声明。Java 包名（`org.springframework.data.*`）与 JPMS 模块名（`spring.data.commons` 等）保持不变，import 语句无需修改。当前 Data BOM / SDE 仍是开发 SNAPSHOT，正式 Boot RELEASE 在内部依赖全部变为已验证 RELEASE 之前保持阻断。
+
+---
+
+## 7B. Elasticsearch 客户端闭包 GAV 映射表
+
+Boot BOM 显式管理已验证的 16 个 NES Elasticsearch 生产模块、NES Java API Client、NES Barsson 和 Jakarta JSON-P 2.0.2。**不再管理** Transport Client、`transport-netty4-client`、integ-test 发行物和官方 `co.elastic.clients:elasticsearch-java`。
+
+当前开发版本：`7.17.29-nes.patch.1-SNAPSHOT`。Java package 仍为 `org.elasticsearch.*` / `co.elastic.clients.*`。
+
+| 角色 | 官方 GAV | NES / 批准 GAV |
+| :--- | :--- | :--- |
+| REST High Level Client | `org.elasticsearch.client:elasticsearch-rest-high-level-client` | `cn.bjca.footstone.blasticsearch.client:bjca-footstone-blasticsearch-rest-high-level-client` |
+| REST Client | `org.elasticsearch.client:elasticsearch-rest-client` | `cn.bjca.footstone.blasticsearch.client:bjca-footstone-blasticsearch-rest-client` |
+| REST Sniffer | `org.elasticsearch.client:elasticsearch-rest-client-sniffer` | `cn.bjca.footstone.blasticsearch.client:bjca-footstone-blasticsearch-rest-client-sniffer` |
+| Elasticsearch | `org.elasticsearch:elasticsearch` | `cn.bjca.footstone.blasticsearch:bjca-footstone-blasticsearch` |
+| core / secure-sm / x-content / geo / lz4 / cli / plugin-classloader | `org.elasticsearch:elasticsearch-*` | `cn.bjca.footstone.blasticsearch:bjca-footstone-blasticsearch-*` |
+| mapper-extras / parent-join / aggs-matrix-stats / rank-eval / lang-mustache clients | `org.elasticsearch.plugin:*-client` | `cn.bjca.footstone.blasticsearch.plugin:bjca-footstone-blasticsearch-*-client` |
+| Java API Client | `co.elastic.clients:elasticsearch-java` | `cn.bjca.footstone.blasticsearch.client:bjca-footstone-blasticsearch-java` |
+| JSON-P provider | `org.eclipse.parsson:parsson` | `cn.bjca.footstone.barsson:bjca-footstone-barsson:1.0.5-nes.patch.1-SNAPSHOT` |
+| Jakarta JSON-P API | `jakarta.json:jakarta.json-api:1.1.6`（旧 javax 别名） | `jakarta.json:jakarta.json-api:2.0.2` |
+| 遗留 JSON-P API | `javax.json:javax.json-api:1.1.4` | 保持不变，供 Johnzon / JSON-B |
+| JCL | `commons-logging:commons-logging` | `cn.bjca.footstone.bpring:bjca-footstone-bpring-jcl:5.3.39-nes.patch.1` |
+
+根构建 **规则八** 只对上表 16 个生产模块和 Java API Client 做 allowlist 替换，禁止整组 `org.elasticsearch` / `co.elastic.clients` 替换。
 
 ---
 

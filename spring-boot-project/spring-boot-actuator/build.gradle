@@ -30,7 +30,7 @@ dependencies {
 	optional("io.r2dbc:r2dbc-pool")
 	optional("io.r2dbc:r2dbc-spi")
 	optional("io.reactivex:rxjava-reactive-streams")
-	optional("org.elasticsearch.client:elasticsearch-rest-client") {
+	optional("cn.bjca.footstone.blasticsearch.client:bjca-footstone-blasticsearch-rest-client") {
 		exclude(group: "commons-logging", module: "commons-logging")
 	}
 	optional("io.undertow:undertow-servlet") {
@@ -50,7 +50,7 @@ dependencies {
 	optional("org.eclipse.jetty:jetty-server") {
 		exclude(group: "javax.servlet", module: "javax.servlet-api")
 	}
-	optional("org.elasticsearch:elasticsearch")
+	optional("cn.bjca.footstone.blasticsearch:bjca-footstone-blasticsearch")
 	optional("org.flywaydb:flyway-core")
 	optional("org.glassfish.jersey.core:jersey-server")
 	optional("org.glassfish.jersey.containers:jersey-container-servlet-core")

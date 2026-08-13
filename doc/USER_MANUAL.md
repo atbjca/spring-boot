@@ -27,14 +27,14 @@ c3p0 0.14.0 移除了部分旧 API，例如 `PoolConfig`。通过 Spring Boot �
 
 ## lz4-java 1.11.1 与 Elasticsearch 排除
 
-NES Boot BOM 管理 `at.yawk.lz4:lz4-java:1.11.1`，用于覆盖 Kafka Client 声明的旧 fork 版本。Spring Boot 源码仓库内部还配置了 Gradle substitution，把 Elasticsearch 请求的 `org.lz4:lz4-java` 替换为该活跃 fork；这条规则**不会传播给下游**。
+NES Boot BOM 管理 `at.yawk.lz4:lz4-java:1.11.1`，用于覆盖 Kafka Client 声明的旧 fork 版本，并在 NES Elasticsearch 生产模块上排除 `org.lz4:lz4-java`。`bjca-footstone-bpring-boot-starter-data-elasticsearch` 会显式加入替换实现。Spring Boot 源码仓库内部还配置了 Gradle substitution；这条规则**不会传播给下游**。
 
-Maven BOM 只能管理同一坐标的版本，不能把 `org.lz4:lz4-java` 改成 `at.yawk.lz4:lz4-java`。Maven 应用同时使用 Kafka 与 Elasticsearch 时，必须在引入 Elasticsearch 的依赖路径上排除旧坐标。例如直接依赖 Elasticsearch 时：
+Maven BOM 只能管理同一坐标的版本，不能把 `org.lz4:lz4-java` 改成 `at.yawk.lz4:lz4-java`。直接依赖 NES SDE 或 HLRC、不走 starter 的消费者，在 Elasticsearch 生产者 POM 发布替换依赖之前仍须自行排除旧坐标：
 
 ```xml
 <dependency>
-    <groupId>org.elasticsearch</groupId>
-    <artifactId>elasticsearch</artifactId>
+    <groupId>cn.bjca.footstone.blasticsearch</groupId>
+    <artifactId>bjca-footstone-blasticsearch</artifactId>
     <exclusions>
         <exclusion>
             <groupId>org.lz4</groupId>
@@ -44,7 +44,7 @@ Maven BOM 只能管理同一坐标的版本，不能把 `org.lz4:lz4-java` 改�
 </dependency>
 ```
 
-如果 Elasticsearch 由 starter、Spring Data 或其他客户端间接引入，应把同一 exclusion 配置在实际引入该路径的顶层依赖上。验收时执行 `mvn dependency:tree`，最终只能出现 `at.yawk.lz4:lz4-java:1.11.1`。
+如果 Elasticsearch 由 starter 引入，starter 已带替换依赖。验收时执行 `mvn dependency:tree`，starter 路径最终只能出现 `at.yawk.lz4:lz4-java:1.11.1`。
 
 下游 Gradle 应用可使用等价 substitution，或在 Elasticsearch 路径排除旧坐标：
 
@@ -57,6 +57,12 @@ configurations.all {
 ```
 
 CVE-2026-59949 只影响 JNI XXHash 且要求攻击者能控制数组引用、offset 或 length；仅控制合法数组内容不受影响。无论是否使用 native 实现，仍建议统一升级到 1.11.1。
+
+## JSON-P 双轨与 Elasticsearch NES
+
+Boot / Johnzon / JSON-B 继续使用 `javax.json.*`，依赖 `javax.json:javax.json-api`。NES Java API Client 使用 `jakarta.json.*`，依赖 `jakarta.json:jakarta.json-api:2.0.2` 和 NES Barsson。旧坐标 `jakarta.json:jakarta.json-api:1.1.6` 只是 javax API 的别名，不能再当作运行时。Java import 保持 `org.elasticsearch.*`。
+
+当前 Elasticsearch 闭包、Barsson 和 Spring Data patch.2 仍是 SNAPSHOT。下游必须配置 NES Nexus public/snapshots 仓库，升级或验收时刷新依赖缓存。正式 Boot RELEASE 在这些内部 SNAPSHOT 清零之前保持阻断。回滚需同时恢复官方 Elasticsearch 管理块、Jakarta JSON-P 1.1.6 禁止规则、Spring Data patch.1 和 starter 依赖。
 
 ## Spring Kafka NES 坐标
 

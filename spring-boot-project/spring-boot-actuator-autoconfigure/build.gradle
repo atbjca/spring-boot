@@ -93,8 +93,8 @@ dependencies {
 	optional("org.eclipse.jetty:jetty-server") {
 		exclude group: "javax.servlet", module: "javax.servlet-api"
 	}
-	optional("org.elasticsearch:elasticsearch")
-	optional("org.elasticsearch.client:elasticsearch-rest-client") {
+	optional("cn.bjca.footstone.blasticsearch:bjca-footstone-blasticsearch")
+	optional("cn.bjca.footstone.blasticsearch.client:bjca-footstone-blasticsearch-rest-client") {
 		exclude group: "commons-logging", module: "commons-logging"
 	}
 	optional("org.flywaydb:flyway-core")

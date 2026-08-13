@@ -4,11 +4,11 @@
 TBD - created by archiving change adopt-nes-spring-data-dependencies. Update Purpose after archive.
 ## Requirements
 ### Requirement: Boot BOM imports the NES Spring Data BOM
-The Spring Boot NES dependency BOM SHALL import the Spring Data release-train BOM using the published NES BOM coordinate, not the upstream coordinate.
+The Spring Boot NES dependency BOM SHALL import the Spring Data release-train BOM using the published NES BOM coordinate, not the upstream coordinate. The managed version SHALL be `2021.2.18-nes.patch.2-SNAPSHOT`.
 
-#### Scenario: Spring Data BOM is imported as NES GAV
+#### Scenario: Spring Data BOM is imported as the patch.2 NES GAV
 - **WHEN** the Spring Boot NES dependency BOM is generated
-- **THEN** it imports `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom:2021.2.18-nes.patch.1-SNAPSHOT`
+- **THEN** it imports `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-bom:2021.2.18-nes.patch.2-SNAPSHOT`
 - **AND** it does not import `org.springframework.data:spring-data-bom`.
 
 ### Requirement: Build resolves Spring Data commons and keyvalue to NES modules
@@ -40,24 +40,25 @@ The remediation ledger SHALL record that Spring Data Commons CVE-2026-41711 / 41
 - **AND** the vulnerability report counts reflect the move (fixed +1, immune −1).
 
 ### Requirement: Spring Data fork boundary is documented consistently
-NES GAV mapping documentation SHALL describe the Spring Data fork boundary accurately: BOM, commons, keyvalue, redis, and elasticsearch are forked; all other Spring Data modules remain official.
+NES GAV mapping documentation SHALL describe the Spring Data fork boundary accurately: BOM, commons, keyvalue, redis, and elasticsearch are forked; all other Spring Data modules remain official. The BOM and Elasticsearch entries SHALL identify the patch.2 SNAPSHOT line.
 
 #### Scenario: GAV mapping documents the Spring Data boundary
 - **WHEN** maintainers read the NES GAV mapping documentation
-- **THEN** Spring Data BOM, commons, keyvalue, redis, and elasticsearch appear with their NES coordinates and versions (redis `2.7.18-nes.patch.1-SNAPSHOT`, elasticsearch `4.4.18-nes.patch.1-SNAPSHOT`)
+- **THEN** Spring Data BOM, commons, keyvalue, redis, and elasticsearch appear with their NES coordinates and versions, including BOM `2021.2.18-nes.patch.2-SNAPSHOT`, redis `2.7.18-nes.patch.1-SNAPSHOT`, and elasticsearch `4.4.18-nes.patch.2-SNAPSHOT`
 - **AND** the documentation states that other `spring-data-*` modules keep official coordinates resolved via the private/central mirror.
 
 ### Requirement: Only forked Spring Data modules are rewritten to NES coordinates
-The build SHALL rewrite exactly the forked Spring Data modules — commons, keyvalue, redis, and elasticsearch — to NES coordinates during Gradle dependency resolution, and SHALL NOT rewrite any other Spring Data module, because only these four are published as NES artifacts.
+The build SHALL rewrite exactly the forked Spring Data modules — commons, keyvalue, redis, and elasticsearch — to NES coordinates during Gradle dependency resolution, and SHALL NOT rewrite any other Spring Data module, because only these four are published as NES artifacts. The Elasticsearch fork SHALL use `4.4.18-nes.patch.2-SNAPSHOT`; the other existing fork lines SHALL remain unchanged unless separately approved.
 
 #### Scenario: Redis declaration is transparently substituted
 - **WHEN** any dependency (direct or transitive) requests `org.springframework.data:spring-data-redis`
 - **THEN** Gradle dependency resolution uses `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-redis:2.7.18-nes.patch.1-SNAPSHOT`.
 
-#### Scenario: Elasticsearch declaration is transparently substituted on its own version line
+#### Scenario: Elasticsearch declaration uses the patch.2 NES line
 - **WHEN** any dependency requests `org.springframework.data:spring-data-elasticsearch`
-- **THEN** Gradle dependency resolution uses `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-elasticsearch:4.4.18-nes.patch.1-SNAPSHOT`
-- **AND** the elasticsearch version line `4.4.18-nes.patch.1-SNAPSHOT` is hardcoded independently of the `2.7.18-nes.patch.1-SNAPSHOT` line used by commons/keyvalue/redis.
+- **THEN** dependency resolution uses `cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-elasticsearch:4.4.18-nes.patch.2-SNAPSHOT`
+- **AND** it does not resolve the official Spring Data Elasticsearch artifact
+- **AND** the elasticsearch version line is hardcoded independently of the `2.7.18-nes.patch.1-SNAPSHOT` line used by commons/keyvalue/redis.
 
 #### Scenario: Unforked Spring Data module keeps official coordinates
 - **WHEN** a dependency requests an unforked `org.springframework.data` module such as `spring-data-jpa`, `spring-data-mongodb`, `spring-data-rest`, `spring-data-neo4j`, or `spring-data-r2dbc`

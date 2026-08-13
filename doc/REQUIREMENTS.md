@@ -4,6 +4,35 @@
 
 ---
 
+## 📅 2026年08月13日
+
+### [需求-042] 采用 NES Elasticsearch 客户端闭包与 Spring Data patch.2
+
+#### 背景与目的
+
+NES Elasticsearch 7.17、Java API Client、Barsson/JSON-P 与 Spring Data Elasticsearch patch.2 已可被 Boot 2.7 开发线消费。原先 BOM 仍管理部分官方 Elasticsearch 坐标（含 Transport Client、integ-test、`co.elastic.clients:elasticsearch-java`），会导致官方/NES 混用、JSON-P provider 冲突或不完整的 LZ4 运行时。
+
+#### 依赖管理契约
+
+- Boot BOM 显式管理 16 个 NES Elasticsearch 生产模块、`bjca-footstone-blasticsearch-java`、`bjca-footstone-barsson:1.0.5-nes.patch.1-SNAPSHOT` 和 `jakarta.json-api:2.0.2`。
+- 停止管理 `org.elasticsearch.client:transport`、`transport-netty4-client`、integ-test zip 和官方 `elasticsearch-java`。
+- Spring Data BOM 升级为 `2021.2.18-nes.patch.2-SNAPSHOT`；SDE 独立版本线升级为 `4.4.18-nes.patch.2-SNAPSHOT`；commons/keyvalue/redis 保持 `2.7.18-nes.patch.1`。
+- JSON-P 双轨：Johnzon/JSON-B 继续使用 `javax.json:javax.json-api`；NES Java Client 使用 Jakarta JSON-P 2.0.2 + Barsson。禁止检查仅放行 `javax.json` 组。
+- LZ4：BOM 排除 `org.lz4:lz4-java` 并管理 `at.yawk.lz4:lz4-java:1.11.1`；Elasticsearch starter 显式加入替换实现。直接 SDE/HLRC 消费者在生产者 POM 补齐前仍视为开放门禁。
+
+#### 发布与回滚门禁
+
+- 生成的开发元数据可以使用已批准 SNAPSHOT。正式 Boot RELEASE 在 Elasticsearch / Barsson / Spring Data patch.2 全部变为已验证 RELEASE 之前保持阻断。
+- 回滚需同时恢复官方 Elasticsearch 管理块、Jakarta JSON-P 1.1.6 禁止规则、Spring Data patch.1 和 starter 依赖。
+
+#### 涉及文件
+
+- `gradle.properties`、根 `build.gradle`、`spring-boot-dependencies/build.gradle`
+- Elasticsearch 相关 auto-config / actuator / starter / test-support 模块
+- `doc/NES_GAV_MAPPING.md`、`doc/QUICK_START.md`、`doc/USER_MANUAL.md`
+
+---
+
 ## 📅 2026年08月11日
 
 ### [需求-041] 采用 Spring Security patch.2 安全开发候选

@@ -91,7 +91,7 @@ dependencies {
 	testImplementation("io.projectreactor:reactor-core")
 	testImplementation("io.projectreactor:reactor-test")
 	testImplementation("io.r2dbc:r2dbc-h2")
-	testImplementation("jakarta.json:jakarta.json-api")
+	testImplementation("javax.json:javax.json-api")
 	testImplementation("org.apache.commons:commons-pool2")
 	testImplementation("org.apache.johnzon:johnzon-jsonb")
 	testImplementation("org.apache.tomcat.embed:tomcat-embed-el")

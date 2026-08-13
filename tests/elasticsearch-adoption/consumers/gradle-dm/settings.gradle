@@ -1,0 +1,12 @@
+pluginManagement {
+	repositories {
+		maven {
+			name = "nesPublic"
+			url = uri("http://192.168.131.36:8088/repository/maven-public/")
+			allowInsecureProtocol = true
+		}
+		gradlePluginPortal()
+	}
+}
+
+rootProject.name = "published-boot-elasticsearch-gradle-dm-consumer"

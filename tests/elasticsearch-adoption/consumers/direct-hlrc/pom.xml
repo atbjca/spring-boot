@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.springframework.boot.tests</groupId>
+	<artifactId>direct-hlrc-lz4-consumer</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<properties>
+		<elasticsearch.nes.version>7.17.29-nes.patch.1-SNAPSHOT</elasticsearch.nes.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	<repositories>
+		<repository>
+			<id>nes-snapshots</id>
+			<url>http://192.168.131.36:8088/repository/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>nes-public</id>
+			<url>http://192.168.131.36:8088/repository/maven-public/</url>
+		</repository>
+	</repositories>
+	<dependencies>
+		<dependency>
+			<groupId>cn.bjca.footstone.blasticsearch.client</groupId>
+			<artifactId>bjca-footstone-blasticsearch-rest-high-level-client</artifactId>
+			<version>${elasticsearch.nes.version}</version>
+		</dependency>
+	</dependencies>
+</project>

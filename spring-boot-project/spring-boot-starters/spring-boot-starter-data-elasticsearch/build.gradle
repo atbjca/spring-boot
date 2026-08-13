@@ -6,5 +6,7 @@ description = "Starter for using Elasticsearch search and analytics engine and S
 
 dependencies {
 	api(project(":spring-boot-project:spring-boot-starters:spring-boot-starter"))
-	api("org.springframework.data:spring-data-elasticsearch")
+	// 直接发布 NES GAV，避免 Maven 消费者绕过仅在本仓库构建期生效的 resolutionStrategy。
+	api("cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-elasticsearch:${springDataElasticsearchNesVersion}")
+	api("at.yawk.lz4:lz4-java")
 }

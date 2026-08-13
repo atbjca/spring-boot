@@ -106,13 +106,13 @@ dependencies {
 		exclude group: "org.eclipse.jetty", module: "jetty-jndi"
 	}
 	optional("org.ehcache:ehcache")
-	optional("org.elasticsearch.client:elasticsearch-rest-client") {
+	optional("cn.bjca.footstone.blasticsearch.client:bjca-footstone-blasticsearch-rest-client") {
 		exclude group: "commons-logging", module: "commons-logging"
 	}
-	optional("org.elasticsearch.client:elasticsearch-rest-client-sniffer") {
+	optional("cn.bjca.footstone.blasticsearch.client:bjca-footstone-blasticsearch-rest-client-sniffer") {
 		exclude group: "commons-logging", module: "commons-logging"
 	}
-	optional("org.elasticsearch.client:elasticsearch-rest-high-level-client") {
+	optional("cn.bjca.footstone.blasticsearch.client:bjca-footstone-blasticsearch-rest-high-level-client") {
 		exclude group: "commons-logging", module: "commons-logging"
 	}
 	optional("org.flywaydb:flyway-core")
@@ -239,7 +239,7 @@ dependencies {
 	testImplementation("com.sun.xml.messaging.saaj:saaj-impl")
 	testImplementation("io.projectreactor:reactor-test")
 	testImplementation("io.r2dbc:r2dbc-h2")
-	testImplementation("jakarta.json:jakarta.json-api")
+	testImplementation("javax.json:javax.json-api")
 	testImplementation("jakarta.xml.ws:jakarta.xml.ws-api")
 	testImplementation("org.apache.johnzon:johnzon-jsonb")
 	testImplementation("org.apache.logging.log4j:log4j-to-slf4j")

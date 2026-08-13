@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,19 @@ public class CheckClasspathForProhibitedDependencies extends DefaultTask {
 	}
 
 	private boolean prohibited(ModuleVersionIdentifier id) {
-		String group = id.getGroup();
+		return isProhibited(id.getGroup(), id.getName());
+	}
+
+	/**
+	 * Returns whether the given Maven coordinates are prohibited on the classpath. Only
+	 * the legacy {@code javax.json} group is allowlisted among {@code javax*} coordinates
+	 * so Johnzon / JSON-B can keep {@code javax.json.*} while NES Elasticsearch uses
+	 * {@code jakarta.json.*}.
+	 * @param group the dependency group
+	 * @param name the dependency artifact name
+	 * @return {@code true} if the dependency is prohibited
+	 */
+	static boolean isProhibited(String group, String name) {
 		if (group.equals("javax.batch")) {
 			return false;
 		}
@@ -79,13 +91,16 @@ public class CheckClasspathForProhibitedDependencies extends DefaultTask {
 		if (group.equals("javax.money")) {
 			return false;
 		}
+		if (group.equals("javax.json")) {
+			return false;
+		}
 		if (group.startsWith("javax")) {
 			return true;
 		}
 		if (group.equals("commons-logging")) {
 			return true;
 		}
-		if (group.equals("org.slf4j") && id.getName().equals("jcl-over-slf4j")) {
+		if (group.equals("org.slf4j") && name.equals("jcl-over-slf4j")) {
 			return true;
 		}
 		if (group.startsWith("org.jboss.spec")) {
