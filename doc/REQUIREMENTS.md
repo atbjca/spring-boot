@@ -100,16 +100,63 @@ nexusPassword=your-password
 - Tomcat CVE-2026-66299（examples-only）记为免疫；本轮不升 Tomcat。
 - 发布 / Nexus redeploy 不在本需求范围内。
 
+## [需求-012] HttpCore5 CVE-2026-54399 安全升级与 Parsson CVE 追认
+
+| 字段 | 内容 |
+|------|------|
+| 状态 | 已完成；HttpCore5/Parsson 分类、定向验证、clean thin build 与核心测试均通过 |
+| HttpCore5 原版本 | `org.apache.httpcomponents.core5:{httpcore5,httpcore5-h2,httpcore5-reactive}:5.3.6` |
+| HttpCore5 当前管理版本 | `5.4.3` |
+| HttpCore5 最低稳定修复版本 | `5.4.3`（CVE-2026-54399） |
+| Parsson 当前管理版本 | `org.eclipse.parsson:parsson:1.1.9` |
+| Parsson 最低修复版本 | `1.1.8`（CVE-2026-9563） |
+| 范围 | BOM 单点升级、HttpClient5/响应式 HTTP 兼容验证、Parsson 既有证据追认、CVE/VEX/总览同步 |
+| 非目标 | HttpCore5 5.5 beta、HttpClient5 独立升级、Parsson/Yasson/Jakarta JSON 版本变更、发布/Nexus/tag、Log4j2 移植 |
+
+### 验收标准
+
+- `spring-boot-dependencies` 必须通过单一 `HttpCore5` library 管理 `httpcore5`、`httpcore5-h2` 和 `httpcore5-reactive` 5.4.3，不得增加模块级版本、`resolutionStrategy` 或消费模块覆盖。
+- 生成 BOM、resolved BOM 与代表性依赖图必须只选择 HttpCore5 5.4.3；不得保留 CVE-2026-54399 受影响的 5.4.2 及更早版本或 5.5-beta1 及更早预览版本。
+- HttpClient5 保持 5.5.2；必须验证同步和响应式 HttpComponents builder、CLI、buildpack platform 及可用 smoke/integration 消费路径。
+- CVE-2026-54399 只有在定向测试、clean `make build-thin` 和核心 `make test` 成功后才能从“验证中”改为“已修复”。
+- Parsson 保持 1.1.9；Yasson 3.0.4 的 1.1.7 请求和 Elasticsearch Java client 的 1.0.5 请求继续统一解析到 1.1.9。CVE-2026-9563 在 1.1.8 修复，因此当前版本可依据审计截止后进入或更新的权威 advisory 数据追认为已修复。
+- 必须保留历史事实：Parsson 1.1.9 原升级发生时 OSV 未返回该 CVE，属于主动维护；本轮只是根据后续 advisory 追认安全状态，不得虚构当时的 CVE 驱动或测试目的。
+- Parsson 1.1.8 起默认限制 `15,000,000` 次 parser character-consumption，1.1.9 保留该限制；超大 JSON 下游可评估 `org.eclipse.parsson.maxParsingLimit`，本项目不得全局弱化该默认值。
+- 必须同步漏洞总览、两份独立 CVE 明细、VEX、GAV 映射和 OpenSpec；不得修改 release 版本或执行发布。
+- 实际验证结果：`make clean build-thin` 为 `BUILD SUCCESSFUL in 1m 56s`（828 actionable tasks）；`make test` 为 `BUILD SUCCESSFUL in 10m 11s`（42 actionable tasks：9 executed、2 cached、31 up-to-date）。定向测试和必需门禁均无相关失败，最终风险复核不要求额外执行 `make test-gate`。
+
+## [需求-013] Log4j2 2.25.5 七项 CVE 修复与 Boot 3.5 兼容迁移
+
+| 字段 | 内容 |
+|------|------|
+| 状态 | 已完成；BOM、源码兼容、focused/smoke、clean thin build、核心测试与 `make test-gate` 均通过 |
+| 原版本 | `org.apache.logging.log4j:log4j-bom:2.24.3` |
+| 当前版本 | `org.apache.logging.log4j:log4j-bom:2.25.5` |
+| 修复范围 | CVE-2025-68161、CVE-2026-34477、CVE-2026-34478、CVE-2026-34479、CVE-2026-34480、CVE-2026-34481、CVE-2026-49844 |
+| 默认 logging GAV | `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-starter-logging`（保持 Logback） |
+| 可选 Log4j2 GAV | `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-starter-log4j2` |
+| 非目标 | 默认日志切换、Log4j2 2.26/3.x、release 版本变更、发布/Nexus/tag |
+
+### 验收标准
+
+- `spring-boot-dependencies` 必须只通过单一 `Log4j2` library 导入 `log4j-bom:2.25.5`，不得增加模块级版本或 prerelease 覆盖。七项 CVE 涉及及代表性运行时模块必须为 2.25.5；必须保留上游 BOM 有意选择的 `log4j-flume-ng:2.23.1`，不得为了数字统一强制覆盖。
+- 默认发布 starter 必须继续依赖 `logback-classic:1.5.38`、`log4j-to-slf4j:2.25.5` 和 `jul-to-slf4j:2.0.18`；只有可选 Log4j2 starter 引入 `log4j-core`、`log4j-slf4j2-impl` 与 `log4j-jul:2.25.5`。
+- Log4j `PluginProcessor` 所需 builder setter 必须精确改为 public；`GraalVmProcessor` 必须使用 `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot` 生成元数据，不得全局关闭 `-Werror` 或 annotation processing。
+- ECS、GELF、Logstash、Extractor 和 custom formatter 必须使用受支持的 `Throwable` API，并保持结构化错误字段与 custom `StackTracePrinter` 行为。
+- `%wEx`、`%xwEx` 及其六个 alias 必须覆盖 short/full/extended、separator、cause、无异常与 CRLF/LF 归一化；CVE-2026-49844 必须直接验证 `NaN`、`Infinity`、`-Infinity` 输出为 JSON 字符串。
+- 实际验证结果：focused Log4j2 tests 与三个 smoke 模块通过；`make clean build-thin` assemble 为 `BUILD SUCCESSFUL in 3m 13s`（828 actionable tasks：780 executed、35 from cache、13 up-to-date）；`make test` 为 `BUILD SUCCESSFUL in 7m 35s`（42 actionable tasks：9 executed、2 from cache、31 up-to-date）。包级 Log4j2 重跑曾 1/174 失败（`getLoggerConfigurationsShouldReturnAllLoggers`，临时 Nested logger 未挂在测试 `LoggerContext` 上），已按上游 `7d343204016` 稳定化；随后单方法、整类和 174 项包级测试通过。首次 `make test-gate` 因 Codex HTTP 429 在 autoconfigure 测试中被取消，不计为通过；重跑为 `BUILD SUCCESSFUL in 16m 6s`（114 actionable tasks：15 executed、6 from cache、93 up-to-date）。
+- 七项独立 CVE、漏洞总览、VEX、GAV 映射、升级评估和 OpenSpec 必须一致报告为已修复；不得修改 `3.5.15-nes.patch.2-SNAPSHOT` 或执行制品发布。
+
 ## [需求-009] 显式管理 Parsson 1.1.9
 
 | 字段 | 内容 |
 |------|------|
-| 状态 | 当前依赖基线 |
+| 状态 | 当前依赖基线；后续 advisory 已确认 1.1.9 修复 CVE-2026-9563 |
 | 组件 | Eclipse Parsson（Jakarta JSON-P provider） |
 | 上一传递版本 | `1.1.7`（Yasson 3.0.4）/ `1.0.5`（Elasticsearch Java client） |
 | 当前管理版本 | `org.eclipse.parsson:parsson:1.1.9` |
 | 范围 | Boot BOM 显式版本管理、JSON-B 解析与兼容性验证 |
-| 非目标 | Yasson 3.0.5/groupId 迁移、Jakarta JSON API 升级、CVE 修复声明、发布/Nexus/tag |
+| 非目标 | Yasson 3.0.5/groupId 迁移、Jakarta JSON API 升级、发布/Nexus/tag |
 
 ### 验收标准
 
@@ -118,7 +165,7 @@ nexusPassword=your-password
 - Yasson 保持 `org.eclipse:yasson:3.0.4`；其 Parsson 1.1.7 请求及 Elasticsearch Java client 的 1.0.5 请求在代表性 runtime graph 中必须统一选择 1.1.9。
 - Jakarta JSON API 保持 2.1.3，Jakarta JSON Bind API 保持 3.0.2；其他 fork 与第三方依赖版本保持不变。
 - 必须运行 JSON-B 定向测试、clean `make build-thin` 与 `make test`，并如实记录任何无关测试波动。
-- OSV 对 Parsson 1.1.7 与 1.0.5 的查询在 2026-08-11 均未返回漏洞；本需求属于主动维护，不得虚构 CVE、受影响范围或“已修复”状态。
+- OSV 对 Parsson 1.1.7 与 1.0.5 的查询在原 2026-08-11 升级审计中均未返回漏洞，因此当时准确记录为主动维护。审计截止后进入或更新的 CVE-2026-9563 权威数据明确影响 1.1.8 之前的 Maven Central artifacts，并由 1.1.8 修复；当前 1.1.9 据此追认为已修复，但不得改写原升级时间线、断言 CVE 的首次发布日期或虚构测试目的。
 - Parsson 1.1.8 起新增默认 `15,000,000` 次字符解析操作上限，1.1.9 延续该行为；处理超大 JSON 的下游必须评估并按需配置 `org.eclipse.parsson.maxParsingLimit`，本项目不得擅自设置全局覆盖值。
 
 ## [需求-006] 2026-08-06 ActiveMQ Classic / Artemis 安全修复
@@ -177,7 +224,7 @@ nexusPassword=your-password
 | Undertow / CVE-2026-3260 | 保留 2.3.26.Final；按 2026-07-07 CNA REJECTED 状态记为不适用并保留旧 GHSA |
 | Infinispan / CVE-2025-5731 | 15.2.6.Final 超出 CNA `<15.2.5` 受影响范围；CLI 不在默认 cache runtime |
 | Spring Integration / CVE-2026-40987 | 6.5.10 新于 6.5.9 OSS 修复边界；当前扫描关联记为版本误报 |
-| Log4j2 | 2.24.3 的七个 finding 明确延期，默认运行时保持 Logback，按 appender/layout 使用与官方兼容进展重评 |
+| Log4j2 | 本需求当时将 2.24.3 的七个 finding 明确延期；后续 [需求-013] 已完成 2.25.5 兼容移植并转为已修复，默认运行时仍保持 Logback |
 
 ### 验收标准
 

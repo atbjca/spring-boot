@@ -2,11 +2,25 @@
   "schemaVersion": 1,
   "decisions": [
     {
+      "id": "GHSA-hf6x-8p5f-cgmf",
+      "status": "fixed",
+      "rationale": "Managed HttpCore5 was 5.3.6 and is inside CVE-2026-54399's affected range. The BOM now selects the minimum stable fixed release 5.4.3 for httpcore5, httpcore5-h2, and httpcore5-reactive; representative dependency graphs, focused synchronous/reactive and buildpack tests, the clean thin build, and the core test gate completed successfully.",
+      "authority": "Apache HttpComponents advisory, CVE-2026-54399 OSV record, and repository HttpCore5 remediation change",
+      "reviewedAt": "2026-08-13T06:16:29Z"
+    },
+    {
+      "id": "CVE-2026-9563",
+      "status": "fixed",
+      "rationale": "Parsson 1.1.9 is managed by the Boot BOM and is above the authoritative CVE-2026-9563 fixed boundary at 1.1.8. Existing archived JSON-B, dependency-resolution, clean-build, and core-test evidence covers the selected 1.1.9 state; the original audit query did not return the advisory, and authoritative data available or updated after that cutoff is now reconciled retrospectively without inferring its first publication date.",
+      "authority": "Eclipse Parsson security report, CVE-2026-9563 OSV record, fix commit 134e8d101aa74c8b9302d0cb62f6ccb4912a9d0c, and archived Parsson 1.1.9 verification",
+      "reviewedAt": "2026-08-13T05:47:15Z"
+    },
+    {
       "id": "GHSA-3pxv-7cmr-fjr4",
-      "status": "deferred",
-      "rationale": "Managed Log4j Core 2.24.3 is in the affected range for CVE-2026-34480, but Logback remains the default runtime and XmlLayout is not enabled by default. Log4j 2.25.x has verified Spring Boot 3.5 compile and API incompatibilities, so the upgrade is bounded and deferred pending upstream compatibility or downstream use of the affected layout.",
-      "authority": "Apache Logging Services advisory and repository Log4j2 2.25 compatibility assessment",
-      "reviewedAt": "2026-08-11T07:45:00Z"
+      "status": "fixed",
+      "rationale": "The Boot BOM now imports log4j-bom 2.25.5, above CVE-2026-34480's 2.25.4 fixed boundary for log4j-core XmlLayout. The 2.25 processor/API migration, focused logging tests, three Log4j2 smoke modules, clean thin build, and core test target passed; Logback remains the default runtime.",
+      "authority": "Apache Logging Services advisory and repository Log4j2 2.25.5 remediation change",
+      "reviewedAt": "2026-08-13T07:35:00Z"
     },
     {
       "id": "GHSA-3x3v-w654-m28m",
@@ -17,17 +31,17 @@
     },
     {
       "id": "GHSA-445c-vh5m-36rj",
-      "status": "deferred",
-      "rationale": "Managed Log4j Core 2.24.3 is in the affected range for CVE-2026-34478, but Logback remains the default runtime and Rfc5424Layout is not enabled by default. Log4j 2.25.x has verified Spring Boot 3.5 incompatibilities, so remediation is deferred with explicit layout-use and compatibility reevaluation triggers.",
-      "authority": "Apache Logging Services advisory and repository Log4j2 2.25 compatibility assessment",
-      "reviewedAt": "2026-08-11T07:45:00Z"
+      "status": "fixed",
+      "rationale": "The Boot BOM now imports log4j-bom 2.25.5, above CVE-2026-34478's 2.25.4 fixed boundary for log4j-core Rfc5424Layout. Vendor advisory and release evidence covers the configuration fix; the bounded 2.25 migration and project gates passed while Logback remains default.",
+      "authority": "Apache Logging Services advisory and repository Log4j2 2.25.5 remediation change",
+      "reviewedAt": "2026-08-13T07:35:00Z"
     },
     {
       "id": "GHSA-6hg6-v5c8-fphq",
-      "status": "deferred",
-      "rationale": "Managed Log4j Core 2.24.3 is in the affected range for CVE-2026-34477, but Logback remains the default runtime and the affected TLS Socket, SMTP, or Syslog appender configuration is not enabled by default. Log4j 2.25.x has verified Spring Boot 3.5 incompatibilities, so remediation is deferred with explicit appender-use and compatibility reevaluation triggers.",
-      "authority": "Apache Logging Services advisory and repository Log4j2 2.25 compatibility assessment",
-      "reviewedAt": "2026-08-11T07:45:00Z"
+      "status": "fixed",
+      "rationale": "The Boot BOM now imports log4j-bom 2.25.5, above CVE-2026-34477's 2.25.4 fixed boundary for nested TLS configuration in log4j-core appenders. Vendor advisory and release evidence covers the fix; the bounded 2.25 migration and project gates passed while Logback remains default.",
+      "authority": "Apache Logging Services advisory and repository Log4j2 2.25.5 remediation change",
+      "reviewedAt": "2026-08-13T07:35:00Z"
     },
     {
       "id": "GHSA-cqm8-rg2p-jfcf",
@@ -38,10 +52,10 @@
     },
     {
       "id": "GHSA-h383-gmxw-35v2",
-      "status": "deferred",
-      "rationale": "Managed Log4j 1.2 API bridge 2.24.3 is in the affected range for CVE-2026-34479, but Logback remains the default runtime and Log4j1XmlLayout is not enabled by default. Log4j 2.25.x has verified Spring Boot 3.5 incompatibilities, so remediation is deferred with explicit bridge/layout-use and compatibility reevaluation triggers.",
-      "authority": "Apache Logging Services advisory and repository Log4j2 2.25 compatibility assessment",
-      "reviewedAt": "2026-08-11T07:45:00Z"
+      "status": "fixed",
+      "rationale": "The resolved Log4j BOM now selects log4j-1.2-api 2.25.5, above CVE-2026-34479's 2.25.4 fixed boundary for Log4j1XmlLayout. Vendor advisory and release evidence covers the XML fix; the bounded 2.25 migration and project gates passed while the bridge remains non-default.",
+      "authority": "Apache Logging Services advisory and repository Log4j2 2.25.5 remediation change",
+      "reviewedAt": "2026-08-13T07:35:00Z"
     },
     {
       "id": "GHSA-rcjc-c4pj-xxrp",
@@ -52,24 +66,24 @@
     },
     {
       "id": "GHSA-vc5p-v9hr-52mj",
-      "status": "deferred",
-      "rationale": "Managed Log4j Core 2.24.3 is in the affected range for CVE-2025-68161, but Logback remains the default runtime and the affected TLS Socket Appender path is not enabled by default. The fixed 2.25.3+ line has verified Spring Boot 3.5 incompatibilities, so remediation is deferred with explicit appender-use and compatibility reevaluation triggers.",
-      "authority": "Apache Logging Services advisory and repository Log4j2 2.25 compatibility assessment",
-      "reviewedAt": "2026-08-11T07:45:00Z"
+      "status": "fixed",
+      "rationale": "The Boot BOM now imports log4j-bom 2.25.5, above CVE-2025-68161's 2.25.3 fixed boundary for TLS Socket Appender hostname verification. Vendor advisory and release evidence covers the fix; the bounded 2.25 migration and project gates passed while Logback remains default.",
+      "authority": "Apache Logging Services advisory and repository Log4j2 2.25.5 remediation change",
+      "reviewedAt": "2026-08-13T07:35:00Z"
     },
     {
       "id": "GHSA-w35j-pv5h-q9q9",
-      "status": "deferred",
-      "rationale": "Managed Log4j JSON Template Layout 2.24.3 is in the affected range for CVE-2026-34481, but Logback remains the default runtime and JsonTemplateLayout is not enabled by default. Log4j 2.25.x has verified Spring Boot 3.5 incompatibilities, so remediation is deferred with explicit layout-use and compatibility reevaluation triggers.",
-      "authority": "Apache Logging Services advisory and repository Log4j2 2.25 compatibility assessment",
-      "reviewedAt": "2026-08-11T07:45:00Z"
+      "status": "fixed",
+      "rationale": "The resolved Log4j BOM now selects log4j-layout-template-json 2.25.5, above CVE-2026-34481's 2.25.4 fixed boundary. Vendor advisory evidence and the repository MapMessage non-finite JSON regression cover the affected serialization family; the migration gates passed.",
+      "authority": "Apache Logging Services advisory and repository Log4j2 2.25.5 remediation change",
+      "reviewedAt": "2026-08-13T07:35:00Z"
     },
     {
       "id": "CVE-2026-49844",
-      "status": "deferred",
-      "rationale": "Managed Log4j API 2.24.3 is in the affected range for CVE-2026-49844, but Logback remains the default runtime and the project does not rely on MapMessage JSON serialization as a security boundary. Log4j 2.25.x has verified Spring Boot 3.5 incompatibilities, so remediation is deferred with explicit MapMessage/layout-use and compatibility reevaluation triggers.",
-      "authority": "Apache Logging Services advisory and repository Log4j2 2.25 compatibility assessment",
-      "reviewedAt": "2026-08-11T12:32:11Z"
+      "status": "fixed",
+      "rationale": "The resolved Log4j BOM now selects log4j-api 2.25.5, the fixed stable release for CVE-2026-49844. A direct MapMessage regression verifies NaN, positive infinity, and negative infinity are emitted as JSON strings; focused tests, smoke modules, clean thin build, core tests, and the required make test-gate passed.",
+      "authority": "Apache Logging Services advisory and repository Log4j2 2.25.5 remediation change",
+      "reviewedAt": "2026-08-13T08:32:14Z"
     }
   ]
 }

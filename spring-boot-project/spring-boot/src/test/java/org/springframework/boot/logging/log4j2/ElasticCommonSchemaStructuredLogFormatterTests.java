@@ -101,13 +101,14 @@ class ElasticCommonSchemaStructuredLogFormatterTests extends AbstractStructuredL
 		expectedError.put("message", "Boom");
 		assertThat(error).containsAllEntriesOf(expectedError);
 		String stackTrace = (String) error.get("stack_trace");
-		assertThat(stackTrace).startsWith(
-				"""
-						java.lang.RuntimeException: Boom
-						\tat org.springframework.boot.logging.log4j2.ElasticCommonSchemaStructuredLogFormatterTests.shouldFormatException""");
-		assertThat(json).contains(
-				"""
-						java.lang.RuntimeException: Boom\\n\\tat org.springframework.boot.logging.log4j2.ElasticCommonSchemaStructuredLogFormatterTests.shouldFormatException""");
+		assertThat(stackTrace)
+			.startsWith("java.lang.RuntimeException: Boom%n\tat org.springframework.boot.logging.log4j2.".formatted()
+					+ "ElasticCommonSchemaStructuredLogFormatterTests.shouldFormatException");
+		assertThat(json).contains(("java.lang.RuntimeException: Boom%n\\tat org.springframework.boot.logging.log4j2."
+				+ "ElasticCommonSchemaStructuredLogFormatterTests.shouldFormatException")
+			.formatted()
+			.replace("\n", "\\n")
+			.replace("\r", "\\r"));
 	}
 
 	@Test
@@ -132,6 +133,16 @@ class ElasticCommonSchemaStructuredLogFormatterTests extends AbstractStructuredL
 		Map<String, Object> deserialized = deserialize(json);
 		Map<String, Object> expectedMessage = Map.of("foo", true, "bar", 1.0);
 		assertThat(deserialized.get("message")).isEqualTo(expectedMessage);
+	}
+
+	@Test
+	void mapMessageJsonQuotesNonFiniteNumbers() {
+		MapMessage<?, ?> message = new MapMessage<>().with("nan", Double.NaN)
+			.with("positiveInfinity", Double.POSITIVE_INFINITY)
+			.with("negativeInfinity", Double.NEGATIVE_INFINITY);
+		Map<String, Object> json = deserialize(message.asString("JSON"));
+		assertThat(json).containsExactlyInAnyOrderEntriesOf(
+				Map.of("nan", "NaN", "positiveInfinity", "Infinity", "negativeInfinity", "-Infinity"));
 	}
 
 	@Test

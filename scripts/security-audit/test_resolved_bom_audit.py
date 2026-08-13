@@ -131,7 +131,7 @@ class ResolvedBomAuditTests(unittest.TestCase):
         self.assertEqual(["CVE-2026-0001", "GHSA-aaaa-bbbb-cccc"], findings[0]["aliases"])
         self.assertEqual("fixed", findings[0]["classification"]["status"])
 
-    def test_log4j_deferred_ledger_is_complete(self):
+    def test_log4j_fixed_ledger_is_complete(self):
         decisions = AUDIT.load_vex(Path(__file__).with_name("vex-decisions.json"))
         expected = {
             "GHSA-vc5p-v9hr-52mj",
@@ -143,7 +143,12 @@ class ResolvedBomAuditTests(unittest.TestCase):
             "CVE-2026-49844",
         }
         self.assertTrue(expected.issubset(decisions))
-        self.assertTrue(all(decisions[identifier]["status"] == "deferred" for identifier in expected))
+        self.assertTrue(all(decisions[identifier]["status"] == "fixed" for identifier in expected))
+
+    def test_httpcore_and_parsson_cve_ledger_tracks_current_verification_state(self):
+        decisions = AUDIT.load_vex(Path(__file__).with_name("vex-decisions.json"))
+        self.assertEqual("fixed", decisions["GHSA-hf6x-8p5f-cgmf"]["status"])
+        self.assertEqual("fixed", decisions["CVE-2026-9563"]["status"])
 
     def test_empty_lookup_is_complete(self):
         results, dates, errors = AUDIT.query_osv(

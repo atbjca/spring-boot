@@ -38,7 +38,7 @@ class TestLog4J2LoggingSystem extends Log4J2LoggingSystem {
 		return getLoggerContext().getConfiguration();
 	}
 
-	private LoggerContext getLoggerContext() {
+	LoggerContext getLoggerContext() {
 		return (LoggerContext) LogManager.getContext(false);
 	}
 

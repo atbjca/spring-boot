@@ -211,7 +211,8 @@ class Log4J2LoggingSystemTests extends AbstractLoggingSystemTests {
 
 	@Test
 	void getLoggerConfigurationsShouldReturnAllLoggers() {
-		LogManager.getLogger("org.springframework.boot.logging.log4j2.Log4J2LoggingSystemTests$Nested");
+		this.loggingSystem.getLoggerContext()
+			.getLogger("org.springframework.boot.logging.log4j2.Log4J2LoggingSystemTests$Nested");
 		this.loggingSystem.beforeInitialize();
 		this.loggingSystem.initialize(this.initializationContext, null, null);
 		this.loggingSystem.setLogLevel(getClass().getName(), LogLevel.DEBUG);

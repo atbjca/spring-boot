@@ -77,4 +77,7 @@
 	<suppress files="TestPrintStream\.java" id="staticAssertJ"/>
 	<suppress files="ItemMetadataAssert\.java" id="staticAssertJ"/>
 	<suppress files="SpringApplicationShutdownHookInstance\.java" id="staticAssertJ"/>
+	<!-- https://github.com/apache/logging-log4j2/issues/2769#issuecomment-3049020222 -->
+	<suppress files="SpringProfileArbiter\.java" checks="SpringMethodVisibility"/>
+	<suppress files="StructuredLogLayout\.java" checks="SpringMethodVisibility"/>
 </suppressions>

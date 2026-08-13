@@ -192,6 +192,12 @@ tasks.named("checkFormatMain") {
 	source(fileTree("src/main/javaTemplates"))
 }
 
+tasks.named("compileJava") {
+	// Provide the project coordinates to the `GraalVmProcessor`:
+	options.compilerArgs << '-Alog4j.graalvm.groupId=cn.bjca.footstone.bpring.boot'
+	options.compilerArgs << '-Alog4j.graalvm.artifactId=bjca-footstone-bpring-boot'
+}
+
 plugins.withType(EclipsePlugin) {
 	eclipse {
 		synchronizationTasks syncJavaTemplates

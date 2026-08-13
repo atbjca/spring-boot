@@ -59,18 +59,56 @@ Every CVE entry changed by this work MUST record the managed component version, 
 - **AND** managed Spring Integration 6.5.10 is classified as not affected by this CVE
 - **AND** the scanner alias or package association that produced the candidate is retained as false-positive evidence rather than silently discarded
 
-### Requirement: Log4j2 deferral is explicit and bounded
-The project MUST document Log4j2 2.24.3 findings CVE-2025-68161, CVE-2026-34477, CVE-2026-34478, CVE-2026-34479, CVE-2026-34480, CVE-2026-34481, and CVE-2026-49844 as deferred risk rather than fixed or immune, because Logback is the default runtime and the Log4j2 2.25.x upgrade has known Boot 3.5 compatibility issues.
+### Requirement: Log4j2 seven-CVE remediation is verified and bounded
+The project MUST manage stable `log4j-bom:2.25.5` and classify CVE-2025-68161, CVE-2026-34477, CVE-2026-34478, CVE-2026-34479, CVE-2026-34480, CVE-2026-34481, and CVE-2026-49844 as fixed only after completing the required Spring Boot 3.5 processor/API migration and verification while retaining Logback as the default runtime.
 
-#### Scenario: Default logging remains Logback
-- **WHEN** the default starter dependency graph is inspected
-- **THEN** Logback is the default logging implementation
-- **AND** `spring-boot-starter-log4j2` is not introduced into the default runtime
+#### Scenario: Default logging remains Logback after remediation
+- **WHEN** the default starter dependency graph and generated publication are inspected
+- **THEN** `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-starter-logging` retains `logback-classic` as its logging implementation and uses `log4j-to-slf4j:2.25.5` only as a bridge
+- **AND** `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-starter-log4j2` remains opt-in and is not introduced into the default runtime
 
-#### Scenario: Log4j2 reevaluation triggers are documented
-- **WHEN** the Log4j2 CVE decision is recorded
-- **THEN** it lists official Spring Boot compatibility, downstream Log4j2 adoption, vulnerable appender/layout usage, and severity escalation as reevaluation triggers
-- **AND** the upgrade assessment's stated count, table, trigger matrix, and vulnerability overview consistently cover all seven deferred CVEs
+#### Scenario: Generated BOM preserves authoritative Log4j versions
+- **WHEN** the dependency-management POM and resolved BOM are generated
+- **THEN** the imported Log4j BOM and all seven-CVE-relevant and representative runtime modules select stable 2.25.5 without project module-level overrides
+- **AND** upstream BOM exceptions such as `log4j-flume-ng:2.23.1` retain the version selected by `log4j-bom:2.25.5`
+
+#### Scenario: Boot Log4j2 compatibility and security behavior are verified
+- **WHEN** the seven Log4j2 findings are classified as fixed
+- **THEN** plugin processing, GraalVM metadata, structured throwable formatting, `%wEx`/`%xwEx` options and aliases, ordinary/Actuator/structured Log4j2 smoke modules, clean thin build, and core tests have passed
+- **AND** `make test-gate` has passed when a focused or full-test failure required it
+- **AND** a direct CVE-2026-49844 regression verifies that `MapMessage` values `NaN`, `Infinity`, and `-Infinity` are emitted as JSON strings
+- **AND** the seven independent CVE records retain their actual appender/layout triggers and authoritative affected/fixed ranges rather than relying on default-runtime unreachability as the fix
+
+### Requirement: Spring Boot Log4j2 integration is compatible with the 2.25 processor and API contracts
+The project MUST adapt its Log4j2 plugin builders, compiler configuration, structured exception handling, and throwable pattern converters to supported Log4j2 2.25.5 contracts without weakening the project's warning-as-error policy or introducing internal Log4j2 implementation APIs as a new dependency boundary.
+
+#### Scenario: Plugin and GraalVM annotation processors complete without suppressed build warnings
+- **WHEN** `spring-boot` is compiled cleanly against Log4j2 2.25.5
+- **THEN** every `@PluginBuilderAttribute` field has a processor-compatible public setter with narrowly documented Checkstyle handling
+- **AND** `GraalVmProcessor` receives the current module groupId and artifactId through compiler options
+- **AND** compilation completes under the existing `-Werror` and deprecation lint policy without globally disabling processor checks or warnings
+
+#### Scenario: Structured logging uses supported throwable APIs
+- **WHEN** ECS, GELF, and Logstash structured formatters render an event with an exception
+- **THEN** Boot obtains the exception through `LogEvent.getThrown()` or another supported public Log4j2 2.25.5 API
+- **AND** error type, message, full message, and stack trace retain the expected schema and custom `StackTracePrinter` semantics
+- **AND** production code does not depend on deprecated `LogEvent.getThrownProxy()` or `org.apache.logging.log4j.core.impl.ThrowableProxy`
+
+#### Scenario: Throwable pattern converters preserve observable behavior
+- **WHEN** `%wEx`, `%xwEx`, and their alias keys format events with and without exceptions using supported options
+- **THEN** short, full, extended, cause, separator, and whitespace behavior matches the documented Boot behavior
+- **AND** a throwable is neither omitted nor rendered twice
+- **AND** assertions pass with normalized Windows and Unix line endings
+
+### Requirement: Log4j2 security and migration documentation stays synchronized
+Project documentation and machine-readable security decisions MUST reflect the actual final Log4j2 migration state and MUST NOT report the seven CVEs as fixed before their required compatibility and security verification succeeds.
+
+#### Scenario: Completed migration updates every security ledger consistently
+- **WHEN** the change is ready for archive after successful verification
+- **THEN** `doc/REQUIREMENTS.md`, `doc/VULNERABILITY_REPORT.md`, all seven applicable `doc/CVE/` records, `doc/CVE/Log4j2-2.25-upgrade-assessment.md`, `doc/NES_GAV_MAPPING.md`, `scripts/security-audit/vex-decisions.json`, audit fixtures/tests, and OpenSpec report Log4j2 2.25.5 as fixed
+- **AND** fixed, deferred, immune, and total counts are recalculated from the final audit
+- **AND** the compatibility assessment records the implemented adaptations and actual commands/results rather than retaining the obsolete conclusion that 2.25.x is unconditionally deferred
+- **AND** no record claims a release-version change, publication, Nexus deployment, or unexecuted test
 
 ### Requirement: Security upgrades pass clean verification
 Dependency remediation MUST pass targeted dependency/BOM checks, affected-component regression tests, a clean thin build, and the project's core Phase 1 test target before CVEs are marked fixed or immune.
@@ -123,13 +161,37 @@ The project MUST manage `org.eclipse.parsson:parsson` at version 1.1.9 in the Sp
 
 ### Requirement: Parsson maintenance rationale is evidence based
 
-Project documentation MUST describe the Parsson 1.1.9 change as proactive compatible-line maintenance unless an authoritative advisory identifies an applicable vulnerability.
+Project documentation MUST describe the Parsson 1.1.9 change as proactive compatible-line maintenance when it was originally performed, and MUST additionally recognize CVE-2026-9563 as fixed when authoritative advisory evidence identifies the applicable vulnerability and the managed version is above the fixed boundary.
 
 #### Scenario: Documentation does not invent a Parsson CVE
 
 - **WHEN** the Parsson upgrade is documented
 - **THEN** the current and previous resolved versions and the transitive Yasson path are recorded
 - **AND** the documentation does not claim a CVE, affected range, or fixed vulnerability absent authoritative evidence
+
+#### Scenario: Later advisory is reconciled without rewriting history
+
+- **WHEN** an authoritative advisory later identifies Parsson 1.1.7 or earlier as affected and 1.1.8 as fixed
+- **THEN** managed Parsson 1.1.9 is classified as fixed
+- **AND** the project retains the historical fact that the original audit query did not return the advisory and the 1.1.9 upgrade was therefore documented as proactive maintenance
+- **AND** the later classification does not infer the advisory's first publication date from when its data became available to or changed in the audit source
+
+### Requirement: HttpCore5 HTTP parser exhaustion is managed on a stable fixed line
+
+The project MUST manage `org.apache.httpcomponents.core5:httpcore5`, `httpcore5-h2`, and `httpcore5-reactive` through one BOM-owned `HttpCore5` library at stable 5.4.3 or a newer approved stable fixed release for CVE-2026-54399, without selecting a 5.5 prerelease or adding module-level overrides.
+
+#### Scenario: HttpCore5 BOM ownership remains centralized
+
+- **WHEN** the generated dependency-management POM and resolved BOM are inspected
+- **THEN** all three HttpCore5 modules resolve to the same stable fixed version
+- **AND** HttpClient5 remains managed independently at its existing compatible version
+- **AND** no module build, consumer, or resolution strategy introduces a second HttpCore5 version source
+
+#### Scenario: HttpCore5 fixed status awaits project verification
+
+- **WHEN** CVE-2026-54399 is classified as fixed
+- **THEN** the final dependency graph, focused synchronous/reactive HttpComponents tests, selected CLI/buildpack or integration paths, clean thin build, and core project gate have passed
+- **AND** the CVE record identifies the unbounded HTTP/1.1 header/line memory-exhaustion trigger, authoritative range, selected version, commands, results, and audit cutoff
 
 ### Requirement: PostgreSQL JDBC channel-binding downgrade is remediated
 The project MUST manage `org.postgresql:postgresql` at 42.7.13 or newer on the 42.7.x line so that CVE-2026-54291 is outside the affected range.

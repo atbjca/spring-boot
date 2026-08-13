@@ -680,7 +680,7 @@ bom {
 			]
 		}
 	}
-	library("HttpCore5", "5.3.6") {
+	library("HttpCore5", "5.4.3") {
 		group("org.apache.httpcomponents.core5") {
 			modules = [
 				"httpcore5",
@@ -1329,7 +1329,7 @@ bom {
 			releaseNotes("https://github.com/liquibase/liquibase/releases/tag/v{version}")
 		}
 	}
-	library("Log4j2", "2.24.3") {
+	library("Log4j2", "2.25.5") {
 		prohibit {
 			contains "-alpha"
 			contains "-beta"

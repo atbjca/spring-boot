@@ -41,6 +41,27 @@ Artemis 2.54.0 的权威 BOM 已从 `org.apache.activemq:artemis-bom` 迁移到 
 
 Parsson 不是 NES fork，不参与根 `resolutionStrategy` GAV 重写。版本仅由 `spring-boot-dependencies` 的 `Parsson` library 拥有，保证直接声明和 Yasson 传递路径统一解析为 1.1.9。
 
+2026-08-13 更新后的权威漏洞数据确认 Parsson 1.1.8 修复 CVE-2026-9563，因此既有 1.1.9 版本现在追认为安全修复版本。该结论不改变坐标、版本或原升级的主动维护时间线；默认 `15,000,000` 次 parser character-consumption 限制及下游 `org.eclipse.parsson.maxParsingLimit` 兼容边界保持不变。
+
+## NES Logging Starter 坐标（2026-08-13）
+
+| 用途 | Gradle 源码组件身份 | 发布后的 Maven GAV |
+|------|---------------------|--------------------|
+| 默认 Logback starter | `cn.bjca.footstone.bpring.boot:spring-boot-starter-logging` | `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-starter-logging` |
+| 可选 Log4j2 starter | `cn.bjca.footstone.bpring.boot:spring-boot-starter-log4j2` | `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-starter-log4j2` |
+
+`DeployedPlugin` 仅在生成 Maven publication 时把 `spring-boot` 前缀替换为 `bjca-footstone-bpring-boot`，不会改变 Gradle 多项目构建内部的 component identity。因此 smoke test 的 `modules.replacedBy` 必须使用源码组件身份，面向制品消费者的依赖声明和 GAV 文档必须使用发布后的完整 NES GAV。默认 logging starter 继续依赖 Logback；其 `log4j-to-slf4j` 版本由 Log4j2 BOM 管理，并不意味着默认运行时切换到 Log4j2。
+
+## 官方 Apache HttpComponents Core 坐标（2026-08-13）
+
+| 组件 | 官方坐标 | 管理策略 | 版本 |
+|------|----------|----------|------|
+| Apache HttpCore5 HTTP/1.1 | `org.apache.httpcomponents.core5:httpcore5` | Boot BOM 单一 `HttpCore5` library 管理 | `5.4.3` |
+| Apache HttpCore5 HTTP/2 | `org.apache.httpcomponents.core5:httpcore5-h2` | 与 HTTP/1.1 模块同版本统一管理 | `5.4.3` |
+| Apache HttpCore5 reactive | `org.apache.httpcomponents.core5:httpcore5-reactive` | 与 HttpClient5/响应式客户端消费图统一管理 | `5.4.3` |
+
+HttpCore5 不是 NES fork，不参与 GAV 重写或上游别名映射。CVE-2026-54399 影响 5.4.2 及更早稳定版本和 5.5-beta1 及更早预览版本；本项目选择最低稳定修复版本 5.4.3，不采用 5.5 beta，也不增加模块级覆盖。HttpClient5 继续由独立 BOM library 管理在 5.5.2。
+
 ## 官方第三方 QueryDSL 坐标迁移（2026-08-11）
 
 | 组件 | 原坐标 | 当前坐标 | 版本 | Java 包 |

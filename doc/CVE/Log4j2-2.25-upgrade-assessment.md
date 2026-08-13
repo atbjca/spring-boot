@@ -1,9 +1,9 @@
-# Log4j2 2.24.3 → 2.25.5+ 升级可行性评估
+# Log4j2 2.24.3 → 2.25.5 实施与兼容性评估
 
-> **结论：暂缓升级，留在 2.24.3。**
-> 2.25.x 对 Spring Boot 3.5 存在成片的破坏性变更，升级已从「改版本号」演变为
-> 「替上游做 3.5 → 2.25 移植」。官方 Spring Boot 3.5.x 维护线至今仍停在 2.24.3，
-> 与本评估结论一致。
+> **结论：已完成 Log4j2 2.25.5 的有界源码迁移。**
+> 2026-07-02 的初次 clean build 证明该升级不能只改版本号；本次按后来上游
+> 2.25.x 适配方案移植 processor、Throwable 和 converter 变更，并在
+> 2026-08-13 通过定向测试、三个 Log4j2 smoke 模块、clean thin build 和核心测试。
 
 ## 关联 CVE
 
@@ -19,7 +19,7 @@
 | CVE-2026-34481 | - | JsonTemplateLayout 非有限浮点 JSON | 2.25.4 |
 | CVE-2026-49844 | - | MapMessage 非有限浮点 JSON | 2.25.5 |
 
-## 实测过程（2026-07-02，Java 17）
+## 历史实测过程（2026-07-02，Java 17）
 
 将 `spring-boot-dependencies/build.gradle` 的 Log4j2 版本改为 2.25.4 后，
 执行 **clean build**（`make clean` + `./gradlew :spring-boot-project:spring-boot:compileJava`）
@@ -60,6 +60,22 @@ public setter，否则**编译期报错**（旧版仅忽略）。命中 3 处：
 这些是「真·弃用」，未来大版本会删除。正确修法是迁移到 2.25.x 新 API
 （`LogEvent.getThrown()` 等），属于有语义风险的重构，需充分回归测试。
 
+## 2026-08-13 实施内容
+
+- Boot BOM 的单一 `Log4j2` library 从 2.24.3 升级到 `log4j-bom:2.25.5`，未增加模块级版本覆盖或预览版本。resolved BOM 中七个 CVE 涉及的 `log4j-core`、`log4j-api`、`log4j-1.2-api` 和 `log4j-layout-template-json` 均为 2.25.5。
+- 上游 BOM 有意保留已停止跟随主版本发布的 `log4j-flume-ng:2.23.1`；项目不为数字统一强制覆盖该版本。其余 29 个代表性/运行时模块（含 BOM 自身）为 2.25.5。
+- `GraalVmProcessor` 使用当前发布模块坐标 `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot`，生成 10 个反射元数据条目；`PluginProcessor` 生成 12 个插件。
+- `SpringProfileArbiter.Builder` 与 `StructuredLogLayout.Builder` 仅将 processor 要求的 setter 改为 public，并使用精确 Checkstyle suppression。
+- ECS、GELF、Logstash、Extractor 与 custom formatter 从弃用的 `getThrownProxy()` / `ThrowableProxy` 迁移到 `Throwable` API。
+- `%wEx` 使用 `VariablesNotEmptyReplacementConverter` 组合，`%xwEx` 通过受支持的 `LogEventPatternConverter` delegate 实现；测试覆盖所有六个 alias、short/full/extended、separator、cause、无异常和 CRLF/LF 归一化。
+- CVE-2026-49844 增加直接回归，确认 `MapMessage` 中 `NaN`、`Infinity`、`-Infinity` 以 JSON 字符串输出。
+
+## Starter 与默认运行时
+
+默认发布坐标 `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-starter-logging` 仍依赖 Logback 1.5.38，并携带用于将 Log4j API 路由到 SLF4J 的 `log4j-to-slf4j:2.25.5`。它没有切换到 Log4j2 runtime。
+
+只有显式选择 `cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-starter-log4j2` 时，才会引入 `log4j-core`、`log4j-slf4j2-impl` 和 `log4j-jul` 2.25.5。Gradle 多项目构建内部仍使用未加发布前缀的 component identity，因此 smoke test 的 `modules.replacedBy` 规则使用 `spring-boot-starter-logging` / `spring-boot-starter-log4j2`。
+
 ## 风险敞口评估
 
 这些 CVE 的**可利用性**对默认项目配置较低——命中的是「版本区间」而非「默认攻击路径」：
@@ -78,20 +94,21 @@ public setter，否则**编译期报错**（旧版仅忽略）。命中 3 处：
 appender/layout 时，**七项受影响路径均不会由默认配置触发**。扫描器只比对
 版本号，不感知实际未配置上述 appender/layout，故属「扫描器满意度」升级而非紧急漏洞。
 
-## 决策
+## 验证结果
 
-**暂缓升级。** 理由：
-1. 升级需替上游做成片的破坏性变更适配（第 2~4 层），成本高、有语义风险；
-2. 官方 Spring Boot 3.5.x 亦未跟进 2.25.x，独立 fork 移植维护负担大；
-3. 默认使用 Logback；即使下游主动切换 Log4j2，也不默认启用上述 appender/layout，风险敞口窄。
+- clean `spring-boot:compileJava`：`BUILD SUCCESSFUL in 2m 33s`，无 2.25.5 processor、`-Werror` 或 deprecation failure。
+- focused Log4j2 单元测试：`BUILD SUCCESSFUL in 1m 23s`；新增 converter 18 项测试最终 `BUILD SUCCESSFUL in 26s`。
+- ordinary Log4j2、Actuator Log4j2、structured logging Log4j2 smoke 模块：`BUILD SUCCESSFUL in 1m 31s`。
+- `make clean build-thin`：clean `BUILD SUCCESSFUL in 12s`；assemble `BUILD SUCCESSFUL in 3m 13s`，828 actionable tasks（780 executed、35 from cache、13 up-to-date）。
+- `make test`：`BUILD SUCCESSFUL in 7m 35s`，42 actionable tasks（9 executed、2 from cache、31 up-to-date）。
+- 包级 Log4j2 重跑曾出现 1/174 失败：`Log4J2LoggingSystemTests#getLoggerConfigurationsShouldReturnAllLoggers`。2.25.5 下经 `LogManager` 创建的临时 Nested logger 可能在 `getLoggerConfigurations()` 前被回收。已按上游 `7d343204016` 改为通过 `TestLog4J2LoggingSystem#getLoggerContext()` 注册；随后单方法、整类 59 项和包级 174 项均通过。该 focused failure 触发了 `make test-gate`。
+- 首次 `make test-gate` 在 Codex 会话因 HTTP 429 中断时于 `:spring-boot-autoconfigure:test` 被取消，不计为通过。重跑 `make test-gate`：`BUILD SUCCESSFUL in 16m 6s`，114 actionable tasks（15 executed、6 from cache、93 up-to-date）。
 
-CVE-2025-68161 可通过为 Socket Appender 配置私有或受限信任根来缩小临时风险，但该措施不等于版本已修复，也不能移除延期台账。
+远程 Spring build cache 多次返回 HTTP 403，Gradle 随后禁用远程缓存并在本地成功完成构建；这不是测试失败。
 
-**重新评估触发条件：**
-- 官方 Spring Boot 3.5.x 跟进 2.25.x → 直接 rebase；
-- 本项目确需启用 Socket/Syslog/Xml/Rfc5424 等受影响 appender/layout → 届时按第 2~4 层
-  逐层适配并做完整 clean build + 回归。
-- 下游开始默认采用 Log4j2、启用任一受影响路径，或漏洞严重性/公开利用证据升级 → 立即重新评估，不等待常规依赖维护窗口。
+## 最终决策
+
+七项 finding 均改为已修复。修复依据是选中固定版本并完成兼容性迁移与验证，而不是默认 Logback 带来的低可达性。默认 Logback 和受影响 appender/layout 非默认启用仍作为纵深风险边界保留。后续升级 Log4j2 时必须继续验证 public plugin setter、GraalVM 坐标、structured exception schema、throwable converter option 传播和两个发布 starter 的依赖图。
 
 ## 参考
 
