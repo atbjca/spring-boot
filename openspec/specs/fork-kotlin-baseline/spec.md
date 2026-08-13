@@ -1,5 +1,9 @@
-## ADDED Requirements
+# fork-kotlin-baseline Specification
 
+## Purpose
+fork 分支以 `gradle.properties` 的 `kotlinVersion` 作为 Kotlin 编译基线的单一来源，并保证 language/api version、jackson-module-kotlin 策略与文档随版本抬升同步。
+
+## Requirements
 ### Requirement: Kotlin 编译基线以 gradle.properties 单一来源为准
 
 fork 分支 SHALL 在 `gradle.properties` 中以 `kotlinVersion=<version>` 作为 Kotlin 版本的唯一来源。所有 Kotlin 相关构件（`kotlin-gradle-plugin`、`kotlin-compiler-embeddable`、`kotlin-stdlib` 等）MUST 通过 `${versions.kotlin}` 或等价机制解析同一个版本号；MUST NOT 在任何 `build.gradle` / `buildSrc` 中硬编码 Kotlin 版本字符串。

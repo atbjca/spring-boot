@@ -4,8 +4,7 @@
 
 提供本地 Gradle 分发包自动注入 Gradle wrapper 缓存的能力，使开发者无需手动下载 Gradle 即可完成构建，同时保持 CI 环境网络回退的兼容性。
 
-## ADDED Requirements
-
+## Requirements
 ### Requirement: `scripts/setup-gradle-local.sh` 可执行且逻辑正确
 
 `scripts/setup-gradle-local.sh` MUST 满足以下条件：
@@ -28,7 +27,8 @@
 
 #### Scenario: 无匹配的本地 zip
 - **WHEN** `${LOCAL_GRADLE_DIR}` 目录下不存在任何 `gradle-*-{bin,all}.zip`
-- **THEN** 脚本输出错误信息并以非 0 退出
+- **THEN** 脚本提示未找到本地发行包
+- **AND** 以 0 退出，让 Gradle wrapper 按 `distributionUrl` 联网下载
 
 ### Requirement: `make setup-gradle` 调用脚本
 
