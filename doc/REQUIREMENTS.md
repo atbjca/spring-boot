@@ -138,6 +138,59 @@ nexusPassword=your-password
 - 必须同步 `doc/VULNERABILITY_REPORT.md`、15 份 `doc/CVE/` 明细、`doc/NES_GAV_MAPPING.md` 与对应 OpenSpec 证据，审计截止不得早于 2026-08-06。
 - Fork/release 版本、发布配置与 Nexus 部署不在本需求范围内。
 
+## [需求-010] LZ4 Java CVE-2026-59949 安全升级
+
+| 字段 | 内容 |
+|------|------|
+| 状态 | 已完成；定向验证、clean thin build、核心测试和 Tier B 门禁均通过 |
+| 上一解析版本 | `at.yawk.lz4:lz4-java:1.10.1`（由 Kafka clients 3.9.2 传递引入） |
+| 当前管理版本 | `at.yawk.lz4:lz4-java:1.11.2` |
+| 最低修复版本 | `1.11.1` |
+| 范围 | Boot BOM 显式版本管理、Kafka/LZ4/XXHash 兼容性验证、CVE 文档 |
+| 非目标 | Kafka/Spring Kafka 升级、归档 `org.lz4` 坐标恢复、恶意 JNI 崩溃载荷执行、发布/Nexus/tag |
+
+### 验收标准
+
+- `spring-boot-dependencies` 必须通过单一 `LZ4 Java` library 管理 `at.yawk.lz4:lz4-java:1.11.2`，不得增加模块级版本或 resolutionStrategy 覆盖。
+- 生成 BOM 必须包含 `lz4-java.version=1.11.2` 和对应 managed dependency。
+- Kafka clients 3.9.2 的 1.10.1 传递请求必须统一解析到 1.11.2；Kafka 3.9.2 与 Spring Kafka `3.3.16-nes.patch.1` 保持不变。
+- 解析图不得选择 `at.yawk.lz4:lz4-java:1.10.1`、`org.lz4:lz4-java` 或 `net.jpountz.lz4:lz4` 旧制品。
+- 必须验证有效的 LZ4 压缩/解压、XXHash、Kafka producer/consumer、Streams 配置和 auto-configuration 路径；不得在主测试 JVM 中执行会触发 native 崩溃的非法数组范围载荷。
+- CVE 状态只有在父 OpenSpec change 的 clean build 和核心测试门禁通过后才能从“验证中”改为“已修复”。`make clean build-thin` 已成功；首次父变更 `make test` 的环境性 `SIGKILL 9` 中断已在资源恢复后重跑，用户于 2026-08-13 确认 `make test` 和 `make test-gate` 均成功完成。
+
+## [需求-011] 2026-08-11 剩余 BOM CVE 处理与全量审计
+
+| 字段 | 内容 |
+|------|------|
+| 状态 | 已完成；依赖修改、定向验证、完整 OSV 审计和全部项目门禁均通过 |
+| 审计截止 | 2026-08-11 |
+| 范围 | Derby 延期、Commons Lang、QueryDSL、OpenTelemetry、LZ4 修复，Undertow/Infinispan/Spring Integration 分类，Log4j2 台账，以及完整 resolved-BOM 审计 |
+| 非目标 | Java 基线升级、自建 Derby 制品、QueryDSL 6.x、Kafka/Spring Kafka 升级、Log4j2 2.25.x 移植、发布/Nexus/tag |
+
+| 组件 / finding | 要求状态 |
+|------|----------|
+| Apache Derby / CVE-2022-46337 | 保留 `10.16.1.1` 并明确延期；LDAP authentication 是触发边界；发布可消费的 Java 17 修复或 Java 基线升级时重评 |
+| Commons Lang3 / CVE-2025-48924 | `3.18.0` |
+| QueryDSL / CVE-2024-49203 | 从 `com.querydsl:5.1.0` 迁移到 `io.github.openfeign.querydsl:5.6.1`；Java 包仍为 `com.querydsl.*` |
+| OpenTelemetry / CVE-2026-45292 | `1.62.0`；parent-only OkHttp/MockWebServer 测试库对齐 `5.3.2`，不得加入发布 BOM |
+| LZ4 Java / CVE-2026-59949 | `at.yawk.lz4:lz4-java:1.11.2` |
+| Undertow / CVE-2026-3260 | 保留 2.3.26.Final；按 2026-07-07 CNA REJECTED 状态记为不适用并保留旧 GHSA |
+| Infinispan / CVE-2025-5731 | 15.2.6.Final 超出 CNA `<15.2.5` 受影响范围；CLI 不在默认 cache runtime |
+| Spring Integration / CVE-2026-40987 | 6.5.10 新于 6.5.9 OSS 修复边界；当前扫描关联记为版本误报 |
+| Log4j2 | 2.24.3 的七个 finding 明确延期，默认运行时保持 Logback，按 appender/layout 使用与官方兼容进展重评 |
+
+### 验收标准
+
+- Derby、Commons Lang3、OpenTelemetry、QueryDSL 和 LZ4 Java 的生产版本只能由 `spring-boot-dependencies` 对应 library/BOM 声明拥有，不得增加模块级版本或通用 resolutionStrategy 覆盖。
+- 生成 dependency-management POM 和 resolved BOM 必须显示 Derby 10.16.1.1、Commons Lang3 3.18.0、OpenTelemetry 1.62.0、OpenFeign QueryDSL 5.6.1、LZ4 Java 1.11.2；不得保留 `com.querydsl` 5.1.0 管理项。
+- QueryDSL 下游必须迁移 Maven groupId；本项目源码和公共 API 不得把 Java import 从 `com.querydsl.*` 改名。
+- Derby 10.16.1.2 的必要 Central 制品缺失、10.17.1.0 class-file major 63 与 Java 17 major 61 不兼容的证据必须保留；不得将该 finding 写成已修复。
+- 完整 resolved-BOM 审计必须覆盖直接管理和 imported BOM 展开的每个 Maven 坐标，应用 NES-to-upstream alias，并对所有命中给出 VEX 分类；失败、过期、截断或数量不一致不得报告为 clean。
+- 2026-08-11 最终审计证据必须记录 1560 个输入坐标、1547 个 distinct 坐标、13 个重复来源、0 个 malformed 坐标、9 个 normalized findings、0 个未分类项，以及 `complete-with-known-risk` 状态。
+- 必须保留 Commons Lang、QueryDSL/GraphQL、OpenTelemetry baggage/exporter、Kafka/LZ4、Derby、Undertow 和 Infinispan 的定向验证证据；`make clean build-thin` 必须成功。
+- `make test` 和 `make test-gate` 必须成功完成。首次 `make test` 的 `SIGKILL 9` 仅记录为环境中断；用户于 2026-08-13 确认资源恢复后的 `make test` 和 `make test-gate` 均成功完成，Commons Lang、QueryDSL、OpenTelemetry 和 LZ4 状态更新为“已修复”。
+- 必须同步漏洞总览、各 CVE 明细、Log4j2 评估、GAV 映射、机器可读 alias/VEX 和 OpenSpec 实施证据；不得修改 fork/release 版本、发布配置或 Nexus 内容。
+
 ## [需求-002] Framework / Security GAV 映射 Phase B
 
 | 字段 | 内容 |

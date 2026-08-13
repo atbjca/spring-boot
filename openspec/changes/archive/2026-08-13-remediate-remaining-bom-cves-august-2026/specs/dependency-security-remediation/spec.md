@@ -1,7 +1,5 @@
-## Purpose
+## MODIFIED Requirements
 
-Define evidence-based dependency security maintenance, compatible-line upgrade constraints, verification gates, and synchronized project documentation.
-## Requirements
 ### Requirement: Managed vulnerable dependencies are remediated on compatible patch lines
 The project MUST manage Jackson at 2.21.5 or newer compatible 2.21.x, Logback at 1.5.37 or newer compatible 1.5.x, Tomcat at 10.1.57 or newer compatible 10.1.x, Undertow at 2.3.26.Final or newer compatible 2.3.x while CVE-2026-3260 remains explicitly classified against the CNA rejection, Netty at 4.1.136.Final or newer compatible 4.1.x without adopting 4.2.x, PostgreSQL JDBC at 42.7.13 or newer compatible 42.7.x, ActiveMQ Classic at 6.2.8 or newer compatible 6.2.x, ActiveMQ Artemis at 2.54.0 or newer compatible 2.x verified by the project's messaging tests, Derby at the published Java 17 baseline 10.16.1.1 with CVE-2022-46337 explicitly deferred, Commons Lang3 at 3.18.0 or newer compatible 3.x, OpenTelemetry at 1.62.0 or newer compatible 1.x, OpenFeign QueryDSL at 5.6.1 or newer compatible 5.x, and `at.yawk.lz4:lz4-java` at 1.11.2 or newer compatible 1.x.
 
@@ -103,41 +101,7 @@ The implementation MUST update the project requirements, vulnerability overview,
 - **AND** `doc/NES_GAV_MAPPING.md` describes the QueryDSL migration and remains synchronized with any machine-readable NES-to-upstream audit aliases
 - **AND** existing Netty and PostgreSQL JDBC remediation evidence remains intact
 
-### Requirement: Parsson JSON-P provider is explicitly managed
-
-The project MUST manage `org.eclipse.parsson:parsson` at version 1.1.9 in the Spring Boot dependency BOM while preserving Yasson 3.0.4, Jakarta JSON API 2.1.3, and Jakarta JSON Bind API 3.0.2.
-
-#### Scenario: Generated BOM manages Parsson 1.1.9
-
-- **WHEN** the `spring-boot-dependencies` Maven POM is generated
-- **THEN** it defines `parsson.version` as `1.1.9`
-- **AND** dependency management contains `org.eclipse.parsson:parsson` using that property
-- **AND** the Yasson and Jakarta JSON API versions remain unchanged
-
-#### Scenario: Yasson transitive Parsson is upgraded consistently
-
-- **WHEN** a representative JSON-B test runtime graph resolves `org.eclipse:yasson:3.0.4`
-- **THEN** Yasson's transitive `org.eclipse.parsson:parsson:1.1.7` request resolves to `1.1.9`
-- **AND** representative Elasticsearch Java client requests for Parsson 1.0.5 also resolve to 1.1.9
-- **AND** the graph contains no selected Parsson 1.1.7 or alternate Parsson coordinate
-
-### Requirement: Parsson maintenance rationale is evidence based
-
-Project documentation MUST describe the Parsson 1.1.9 change as proactive compatible-line maintenance unless an authoritative advisory identifies an applicable vulnerability.
-
-#### Scenario: Documentation does not invent a Parsson CVE
-
-- **WHEN** the Parsson upgrade is documented
-- **THEN** the current and previous resolved versions and the transitive Yasson path are recorded
-- **AND** the documentation does not claim a CVE, affected range, or fixed vulnerability absent authoritative evidence
-
-### Requirement: PostgreSQL JDBC channel-binding downgrade is remediated
-The project MUST manage `org.postgresql:postgresql` at 42.7.13 or newer on the 42.7.x line so that CVE-2026-54291 is outside the affected range.
-
-#### Scenario: Managed pgjdbc meets fixed version
-- **WHEN** the Spring Boot dependency BOM POM is generated
-- **THEN** the managed PostgreSQL JDBC version is 42.7.13 or a newer compatible 42.7.x release
-- **AND** CVE-2026-54291 is recorded as fixed with authoritative affected range `>= 42.7.4, < 42.7.12`
+## ADDED Requirements
 
 ### Requirement: Derby deferral is explicit and bounded
 The project MUST retain Derby 10.16.1.1 as a deferred risk for CVE-2022-46337 while the Java baseline remains 17 and no complete Java-17-compatible fixed Derby release is available from Maven Central.

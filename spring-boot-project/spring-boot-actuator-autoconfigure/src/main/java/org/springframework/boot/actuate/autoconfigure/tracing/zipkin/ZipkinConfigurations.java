@@ -106,6 +106,7 @@ class ZipkinConfigurations {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass({ ZipkinSpanExporter.class, Span.class })
+	@SuppressWarnings("deprecation")
 	static class OpenTelemetryConfiguration {
 
 		@Bean

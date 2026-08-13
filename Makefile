@@ -1,4 +1,4 @@
-.PHONY: clean format build build-thin install deploy stop projects help test test-gate setup-gradle
+.PHONY: clean format build build-thin install deploy stop projects help test test-gate setup-gradle audit-bom-security audit-bom-inventory test-bom-security-audit
 
 LOCAL_GRADLE_DIR ?= $(HOME)/dev
 SETUP_GRADLE := ./scripts/setup-gradle-local.sh
@@ -15,6 +15,8 @@ help: ## 显示帮助信息
 	@echo "  make deploy     - 发布到 Nexus 私服"
 	@echo "  make test       - Phase 1 过渡（spring-boot + spring-boot-test，已全绿）"
 	@echo "  make test-gate  - Tier B 门槛（9 模块 14395 条，正式 merge 门槛）"
+	@echo "  make audit-bom-security - 生成 resolved BOM 并联网执行完整 OSV/VEX 审计"
+	@echo "  make audit-bom-inventory - 离线校验 resolved BOM 全量坐标库存"
 	@echo "  make stop       - 停止 Gradle Daemon"
 	@echo "  make projects   - 查看子项目列表"
 	@echo ""
@@ -71,6 +73,18 @@ stop: ## 停止 Gradle Daemon
 
 projects: setup-gradle ## 查看子项目列表
 	./gradlew projects
+
+audit-bom-security: setup-gradle ## 显式联网执行完整 resolved BOM OSV/VEX 审计
+	./gradlew :spring-boot-project:spring-boot-dependencies:createResolvedBom
+	python3 scripts/security-audit/resolved_bom_audit.py
+
+audit-bom-inventory: setup-gradle ## 离线校验 resolved BOM 全量坐标库存
+	./gradlew :spring-boot-project:spring-boot-dependencies:createResolvedBom
+	python3 scripts/security-audit/resolved_bom_audit.py --inventory-only \
+		--output build/reports/security/resolved-bom-inventory.json
+
+test-bom-security-audit: ## 运行 resolved BOM 审计工具的确定性测试
+	python3 -m unittest scripts/security-audit/test_resolved_bom_audit.py
 
 # ----------------------------------------------------------------------------
 # test —— Phase 1 核心测试入口（承诺全绿）

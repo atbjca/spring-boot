@@ -19,6 +19,7 @@ package org.springframework.boot.actuate.autoconfigure.tracing;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -36,13 +37,17 @@ import io.micrometer.tracing.otel.bridge.OtelTracer.EventPublisher;
 import io.micrometer.tracing.otel.bridge.Slf4JBaggageEventListener;
 import io.micrometer.tracing.otel.bridge.Slf4JEventListener;
 import io.micrometer.tracing.otel.propagation.BaggageTextMapPropagator;
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -87,6 +92,25 @@ import static org.mockito.Mockito.mock;
  * @author Yanming Zhou
  */
 class OpenTelemetryTracingAutoConfigurationTests {
+
+	private static final TextMapGetter<List<String>> BAGGAGE_GETTER = new TextMapGetter<>() {
+
+		@Override
+		public Iterable<String> keys(List<String> carrier) {
+			return List.of("baggage");
+		}
+
+		@Override
+		public String get(List<String> carrier, String key) {
+			return (!carrier.isEmpty() && "baggage".equals(key)) ? carrier.get(0) : null;
+		}
+
+		@Override
+		public Iterator<String> getAll(List<String> carrier, String key) {
+			return "baggage".equals(key) ? carrier.iterator() : List.<String>of().iterator();
+		}
+
+	};
 
 	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 		.withConfiguration(AutoConfigurations.of(
@@ -283,6 +307,31 @@ class OpenTelemetryTracingAutoConfigurationTests {
 	}
 
 	@Test
+	void w3cBaggageExtractionStopsAtEntryLimit() {
+		List<String> entries = new ArrayList<>();
+		for (int i = 0; i < 65; i++) {
+			entries.add("key%s=value%s".formatted(i, i));
+		}
+		Context extracted = W3CBaggagePropagator.getInstance()
+			.extract(Context.root(), List.of(String.join(",", entries)), BAGGAGE_GETTER);
+		Baggage baggage = Baggage.fromContext(extracted);
+		assertThat(baggage.size()).isEqualTo(64);
+		assertThat(baggage.getEntryValue("key0")).isEqualTo("value0");
+		assertThat(baggage.getEntryValue("key63")).isEqualTo("value63");
+		assertThat(baggage.getEntryValue("key64")).isNull();
+	}
+
+	@Test
+	void w3cBaggageExtractionRetainsValidEntriesBeforeSizeLimit() {
+		List<String> headers = List.of("safe=value", "oversized=" + "a".repeat(8192));
+		Context extracted = W3CBaggagePropagator.getInstance().extract(Context.root(), headers, BAGGAGE_GETTER);
+		Baggage baggage = Baggage.fromContext(extracted);
+		assertThat(baggage.size()).isOne();
+		assertThat(baggage.getEntryValue("safe")).isEqualTo("value");
+		assertThat(baggage.getEntryValue("oversized")).isNull();
+	}
+
+	@Test
 	void shouldConfigureRemoteAndTaggedFields() {
 		this.contextRunner
 			.withPropertyValues("management.tracing.baggage.remote-fields=r1",
@@ -312,7 +361,11 @@ class OpenTelemetryTracingAutoConfigurationTests {
 		this.contextRunner.withUserConfiguration(MeterProviderConfiguration.class).run((context) -> {
 			MeterProvider meterProvider = context.getBean(MeterProvider.class);
 			assertThat(Mockito.mockingDetails(meterProvider).isMock()).isTrue();
-			then(meterProvider).should().meterBuilder(anyString());
+			Object worker = ReflectionTestUtils.getField(context.getBean(BatchSpanProcessor.class), "worker");
+			Object instrumentation = ReflectionTestUtils.getField(worker, "spanProcessorInstrumentation");
+			assertThat(ReflectionTestUtils.getField(instrumentation, "meterProvider")).isInstanceOfSatisfying(
+					java.util.function.Supplier.class,
+					(supplier) -> assertThat(supplier.get()).isSameAs(meterProvider));
 		});
 	}
 

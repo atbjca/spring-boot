@@ -238,7 +238,7 @@ class KafkaAutoConfigurationTests {
 				"spring.kafka.properties.foo.bar.baz=qux.fiz.buz", "spring.kafka.producer.acks=all",
 				"spring.kafka.producer.batch-size=2KB", "spring.kafka.producer.bootstrap-servers=bar:1234", // test
 				// override
-				"spring.kafka.producer.buffer-memory=4KB", "spring.kafka.producer.compression-type=gzip",
+				"spring.kafka.producer.buffer-memory=4KB", "spring.kafka.producer.compression-type=lz4",
 				"spring.kafka.producer.key-serializer=org.apache.kafka.common.serialization.LongSerializer",
 				"spring.kafka.producer.retries=2", "spring.kafka.producer.properties.fiz.buz=fix.fox",
 				"spring.kafka.producer.security.protocol=SSL", "spring.kafka.producer.ssl.key-password=p4",
@@ -259,7 +259,7 @@ class KafkaAutoConfigurationTests {
 				assertThat(configs).containsEntry(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
 						Collections.singletonList("bar:1234")); // override
 				assertThat(configs).containsEntry(ProducerConfig.BUFFER_MEMORY_CONFIG, 4096L);
-				assertThat(configs).containsEntry(ProducerConfig.COMPRESSION_TYPE_CONFIG, "gzip");
+				assertThat(configs).containsEntry(ProducerConfig.COMPRESSION_TYPE_CONFIG, "lz4");
 				assertThat(configs).containsEntry(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
 				assertThat(configs).containsEntry(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SSL");
 				assertThat(configs).containsEntry(SslConfigs.SSL_KEY_PASSWORD_CONFIG, "p4");

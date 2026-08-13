@@ -245,7 +245,7 @@ bom {
 			releaseNotes("https://commons.apache.org/proper/commons-dbcp/changes-report.html#a{version}")
 		}
 	}
-	library("Commons Lang3", "3.17.0") {
+	library("Commons Lang3", "3.18.0") {
 		group("org.apache.commons") {
 			modules = [
 				"commons-lang3"
@@ -1378,6 +1378,17 @@ bom {
 			javadoc("https://projectlombok.org/api")
 		}
 	}
+	library("LZ4 Java", "1.11.2") {
+		group("at.yawk.lz4") {
+			modules = [
+				"lz4-java"
+			]
+		}
+		links {
+			site("https://github.com/yawkat/lz4-java")
+			releaseNotes("https://github.com/yawkat/lz4-java/releases/tag/v{version}")
+		}
+	}
 	library("MariaDB", "3.5.8") {
 		group("org.mariadb.jdbc") {
 			modules = [
@@ -1762,7 +1773,7 @@ bom {
 			releaseNotes("https://github.com/netty/netty/releases/tag/netty-{version}")
 		}
 	}
-	library("OpenTelemetry", "1.49.0") {
+	library("OpenTelemetry", "1.62.0") {
 		group("io.opentelemetry") {
 			bom("opentelemetry-bom")
 		}
@@ -1914,14 +1925,13 @@ bom {
 			releaseNotes("https://github.com/quartz-scheduler/quartz/releases/tag/v{version}")
 		}
 	}
-	library("QueryDSL", "5.1.0") {
-		group("com.querydsl") {
+	library("QueryDSL", "5.6.1") {
+		group("io.github.openfeign.querydsl") {
 			bom("querydsl-bom")
 		}
 		links {
-			site("https://github.com/querydsl/querydsl")
-			releaseNotes(version -> "https://github.com/querydsl/querydsl/releases/tag/QUERYDSL_%s"
-				.formatted(version.toString("_")))
+			site("https://github.com/OpenFeign/querydsl")
+			releaseNotes("https://github.com/OpenFeign/querydsl/releases/tag/{version}")
 		}
 	}
 	library("R2DBC H2", "1.0.1.RELEASE") {

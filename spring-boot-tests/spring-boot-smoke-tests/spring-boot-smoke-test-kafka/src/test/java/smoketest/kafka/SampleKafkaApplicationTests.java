@@ -39,7 +39,8 @@ import static org.hamcrest.Matchers.not;
  * @author Stephane Nicoll
  */
 @DisabledOnOs(OS.WINDOWS)
-@SpringBootTest(properties = "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}")
+@SpringBootTest(properties = { "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
+		"spring.kafka.producer.compression-type=lz4" })
 @EmbeddedKafka(topics = "testTopic")
 class SampleKafkaApplicationTests {
 

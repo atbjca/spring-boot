@@ -7,10 +7,11 @@
 
 ## 关联 CVE
 
-本评估覆盖以下 3 个仅能通过版本升级修复的 Log4j2 CVE：
+本评估覆盖以下 7 个仅能通过版本升级修复的 Log4j2 CVE：
 
 | CVE | CVSS | 漏洞类型 | 修复版本 |
 |-----|:----:|---------|:-------:|
+| CVE-2025-68161 | - | Socket Appender 未执行 TLS 主机名验证（MITM） | 2.25.3 |
 | CVE-2026-34477 | 5.9 | TLS 主机名验证不完整（MITM） | 2.25.4 |
 | CVE-2026-34478 | 7.5 | Rfc5424Layout CRLF 日志注入 | 2.25.4 |
 | CVE-2026-34479 | - | Log4j1XmlLayout 非法 XML 字符 | 2.25.4 |
@@ -65,6 +66,7 @@ public setter，否则**编译期报错**（旧版仅忽略）。命中 3 处：
 
 | CVE | 触发条件 |
 |-----|---------|
+| CVE-2025-68161 | 需 Log4j2 TLS Socket Appender，且部署依赖主机名验证阻止 MITM |
 | CVE-2026-34477 | 需 Socket/SMTP/Syslog appender + `<Ssl>` TLS 配置 |
 | CVE-2026-34478 | 需 Rfc5424Layout（Syslog 布局） |
 | CVE-2026-34480 | 需 XmlLayout |
@@ -72,7 +74,8 @@ public setter，否则**编译期报错**（旧版仅忽略）。命中 3 处：
 | CVE-2026-34481 | 需 JsonTemplateLayout 且依赖其 JSON 输出 |
 | CVE-2026-49844 | 需 MapMessage JSON 序列化且包含非有限浮点值 |
 
-典型 Spring Boot 应用使用默认 PatternLayout，**三者均无法触发**。扫描器只比对
+典型 Spring Boot 应用默认使用 Logback；即使下游主动切换 Log4j2，未配置上述
+appender/layout 时，**七项受影响路径均不会由默认配置触发**。扫描器只比对
 版本号，不感知实际未配置上述 appender/layout，故属「扫描器满意度」升级而非紧急漏洞。
 
 ## 决策
@@ -82,10 +85,13 @@ public setter，否则**编译期报错**（旧版仅忽略）。命中 3 处：
 2. 官方 Spring Boot 3.5.x 亦未跟进 2.25.x，独立 fork 移植维护负担大；
 3. 默认使用 Logback；即使下游主动切换 Log4j2，也不默认启用上述 appender/layout，风险敞口窄。
 
+CVE-2025-68161 可通过为 Socket Appender 配置私有或受限信任根来缩小临时风险，但该措施不等于版本已修复，也不能移除延期台账。
+
 **重新评估触发条件：**
 - 官方 Spring Boot 3.5.x 跟进 2.25.x → 直接 rebase；
 - 本项目确需启用 Socket/Syslog/Xml/Rfc5424 等受影响 appender/layout → 届时按第 2~4 层
   逐层适配并做完整 clean build + 回归。
+- 下游开始默认采用 Log4j2、启用任一受影响路径，或漏洞严重性/公开利用证据升级 → 立即重新评估，不等待常规依赖维护窗口。
 
 ## 参考
 

@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Moritz Halbritter
  */
+@SuppressWarnings("deprecation")
 class ZipkinConfigurationsOpenTelemetryConfigurationTests {
 
 	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()

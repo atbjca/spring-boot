@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "id": "spring-boot-fork",
+      "private": {
+        "groupId": "cn.bjca.footstone.bpring.boot",
+        "artifactPrefix": "bjca-footstone-bpring-boot-"
+      },
+      "upstream": {
+        "groupId": "org.springframework.boot",
+        "artifactPrefix": "spring-boot-"
+      },
+      "versionNormalization": "strip-nes-patch-suffix",
+      "provenance": "build.gradle allprojects group plus the Spring Boot fork publication convention"
+    },
+    {
+      "id": "spring-framework-fork",
+      "private": {
+        "groupId": "cn.bjca.footstone.bpring",
+        "artifactPrefix": "bjca-footstone-bpring-"
+      },
+      "upstream": {
+        "groupId": "org.springframework",
+        "artifactPrefix": "spring-"
+      },
+      "versionNormalization": "strip-nes-patch-suffix",
+      "provenance": "build.gradle resolutionStrategy Spring Framework rewrite"
+    },
+    {
+      "id": "spring-security-fork",
+      "private": {
+        "groupId": "cn.bjca.footstone.bpring.security",
+        "artifactPrefix": "bjca-footstone-bpring-security-"
+      },
+      "upstream": {
+        "groupId": "org.springframework.security",
+        "artifactPrefix": "spring-security-"
+      },
+      "versionNormalization": "strip-nes-patch-suffix",
+      "provenance": "build.gradle resolutionStrategy Spring Security rewrite"
+    },
+    {
+      "id": "spring-data-fork",
+      "private": {
+        "groupId": "cn.bjca.footstone.bpring.data",
+        "artifactPrefix": "bjca-footstone-bpring-data-"
+      },
+      "upstream": {
+        "groupId": "org.springframework.data",
+        "artifactPrefix": "spring-data-"
+      },
+      "versionNormalization": "strip-nes-patch-suffix",
+      "provenance": "build.gradle resolutionStrategy and spring-boot-dependencies Spring Data fork rules"
+    },
+    {
+      "id": "spring-kafka-fork",
+      "private": {
+        "groupId": "cn.bjca.footstone.bpring.kafka",
+        "artifactPrefix": "bjca-footstone-bpring-kafka"
+      },
+      "upstream": {
+        "groupId": "org.springframework.kafka",
+        "artifactPrefix": "spring-kafka"
+      },
+      "versionNormalization": "strip-nes-patch-suffix",
+      "provenance": "build.gradle resolutionStrategy Spring Kafka rewrite"
+    }
+  ]
+}
