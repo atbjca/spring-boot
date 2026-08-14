@@ -1,9 +1,5 @@
-# spring-kafka-header-security-baseline Specification
+## MODIFIED Requirements
 
-## Purpose
-Ensure Spring Boot NES consumes an auditable Spring Kafka build with exact trusted-package matching while preserving Kafka auto-configuration, Java 8, Kafka Clients, and EmbeddedKafka compatibility.
-
-## Requirements
 ### Requirement: Boot MUST consume a Spring Kafka artifact with the CVE-2026-41731 fix
 The Boot fork SHALL manage the NES Spring Kafka patch.2 SNAPSHOT and MUST verify that the resolved artifact implements exact trusted-package matching and contains the internal backport from commit `c119b8f62` or equivalent behavior.
 
@@ -33,14 +29,6 @@ Validation and maintained documentation SHALL record the internal fix commit, th
 - **WHEN** CVE-2026-41731 evidence is updated for Kafka patch.2
 - **THEN** the status is tied to the verified artifact evidence rather than the mutable version string alone
 - **AND** documentation instructs stale build environments to refresh the dependency.
-
-### Requirement: The trusted-package compatibility change MUST be documented
-Boot user-facing documentation SHALL explain that trusted packages now use exact package matching, subpackages must be added explicitly, and `"*"` bypasses the security boundary.
-
-#### Scenario: Application previously trusted a parent package
-- **WHEN** an application relied on `com.example` implicitly trusting `com.example.events`
-- **THEN** the migration documentation instructs it to add `com.example.events` explicitly
-- **AND** it does not recommend `"*"` as the normal migration path
 
 ### Requirement: Spring Kafka security adoption MUST preserve existing Boot integration
 The change SHALL preserve current Kafka auto-configuration, exact trusted-package behavior, Kafka Clients 3.9.2, EmbeddedKafka smoke behavior, and NES Spring Data Commons resolution while moving the managed Kafka version to patch.2.

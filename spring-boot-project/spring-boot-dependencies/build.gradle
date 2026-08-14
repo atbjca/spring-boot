@@ -1813,6 +1813,7 @@ bom {
 			modules = [
 				"spring-amqp" {
 					exclude group: "org.springframework", module: "*"
+					exclude group: "org.springframework.retry", module: "spring-retry"
 				},
 				"spring-rabbit" {
 					exclude group: "org.springframework", module: "*"
@@ -1845,6 +1846,7 @@ bom {
 				},
 				"spring-batch-infrastructure" {
 					exclude group: "org.springframework", module: "*"
+					exclude group: "org.springframework.retry", module: "spring-retry"
 				},
 				"spring-batch-integration" {
 					exclude group: "org.springframework", module: "*"
@@ -1931,9 +1933,14 @@ bom {
 			imports = [
 				"spring-integration-bom"
 			]
+			modules = [
+				"spring-integration-core" {
+					exclude group: "org.springframework.retry", module: "spring-retry"
+				}
+			]
 		}
 	}
-	library("Spring Kafka", "2.9.13-nes.patch.1") {
+	library("Spring Kafka", springKafkaNesVersion) {
 		considerSnapshots()
 		group("cn.bjca.footstone.bpring.kafka") {
 			// Spring Kafka NES 分支仍在发布 POM 中传递依赖官方 org.springframework:*。
@@ -2000,11 +2007,11 @@ bom {
 			]
 		}
 	}
-	library("Spring Retry", "1.3.4") {
+	library("Spring Retry NES", springRetryNesVersion) {
 		considerSnapshots()
-		group("org.springframework.retry") {
+		group("cn.bjca.footstone.bpring.retry") {
 			modules = [
-				"spring-retry"
+				"bjca-footstone-bpring-retry"
 			]
 		}
 	}

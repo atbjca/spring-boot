@@ -120,6 +120,8 @@ allprojects {
 		//   - forkGroupIdBase     : 基础 GroupId
 		//   - springFrameworkVersion : fork Spring Framework 版本
 		//   - springSecurityVersion  : fork Spring Security 版本
+		//   - springRetryNesVersion  : NES Spring Retry 版本
+		//   - springKafkaNesVersion  : NES Spring Kafka 版本
 		//
 		// 如需增加新的映射组（如 spring-data），可在下方仿照现有规则添加
 		// 新的 else if 分支，并在 gradle.properties 中定义对应版本参数。
@@ -143,18 +145,24 @@ allprojects {
 				details.useTarget("${forkGroupIdBase}.security:${newArtifactId}:${springSecurityVersion}")
 			}
 
-			// 规则三：org.springframework.kafka 组映射
+			// 规则三：org.springframework.retry:spring-retry 精确映射
+			// 只替换 Spring Retry 主模块，不泛化处理整个 org.springframework.retry 组。
+			else if (requested.group == 'org.springframework.retry' && requested.name == 'spring-retry') {
+				details.useTarget("cn.bjca.footstone.bpring.retry:bjca-footstone-bpring-retry:${springRetryNesVersion}")
+			}
+
+			// 规则四：org.springframework.kafka 组映射
 			// 将 org.springframework.kafka:spring-kafka{,-test} 替换为
-			//   cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka{,-test}:2.9.13-nes.patch.1
+			//   cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka{,-test}:${springKafkaNesVersion}
 			// Spring Kafka NES 分支已完成 artifactId 去特征化并发布到私服：
 			// spring-kafka → bjca-footstone-bpring-kafka、spring-kafka-test → bjca-footstone-bpring-kafka-test；
 			// GroupId、Version 不变。artifactId 通过 spring- 前缀替换得到，与规则一/二同构。
 			else if (requested.group == 'org.springframework.kafka' && requested.name.startsWith('spring-kafka')) {
 				def newArtifactId = requested.name.replaceFirst(/^spring-/, "${forkArtifactPrefix}-")
-				details.useTarget("cn.bjca.footstone.bpring.kafka:${newArtifactId}:2.9.13-nes.patch.1")
+				details.useTarget("cn.bjca.footstone.bpring.kafka:${newArtifactId}:${springKafkaNesVersion}")
 			}
 
-			// 规则四：ch.qos.logback 组映射
+			// 规则五：ch.qos.logback 组映射
 			// 将 ch.qos.logback:logback-{classic,core} 替换为
 			//   cn.bjca.footstone.bogback:bjca-footstone-bogback-{classic,core}:1.2.13-nes.patch.1
 			// Logback fork 仓库仅发布了 bjca-footstone-bogback-* 制品，
@@ -166,13 +174,13 @@ allprojects {
 				}
 			}
 
-			// 规则五：org.springframework.data 组映射（commons / keyvalue / redis）
+			// 规则六：org.springframework.data 组映射（commons / keyvalue / redis）
 			// 将 org.springframework.data:spring-data-{commons,keyvalue,redis} 替换为
 			//   cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-{commons,keyvalue,redis}:2.7.18-nes.patch.1
 			// 这三个模块在 NES 分支完成本体去特征化（commons/keyvalue 另含本体 CVE 修复：
 			// commons CVE-2026-41711/41716/41721、keyvalue CVE-2026-41719）并发布到私服，同为
 			// 2.7.18-nes.patch.1 版本线，故合并处理。elasticsearch 版本线不同（4.4.x），
-			// 见规则六。其余 spring-data-*（jpa / mongodb / rest / neo4j / r2dbc 等）保持官方坐标，
+			// 见规则七。其余 spring-data-*（jpa / mongodb / rest / neo4j / r2dbc 等）保持官方坐标，
 			// 由 mavenCentral / 私服代理解析。
 			// 本规则有双重作用：① 让源码中对上述模块的官方坐标声明解析到 NES 制品；
 			// ② 堵住 spring-data-jpa 等未 fork 模块通过传递依赖回拉官方 spring-data-commons 的链路
@@ -186,7 +194,7 @@ allprojects {
 				details.useTarget("cn.bjca.footstone.bpring.data:${newArtifactId}:2.7.18-nes.patch.1")
 			}
 
-			// 规则六：org.springframework.data:spring-data-elasticsearch 映射
+			// 规则七：org.springframework.data:spring-data-elasticsearch 映射
 			// 将 org.springframework.data:spring-data-elasticsearch 替换为
 			//   cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-elasticsearch:${springDataElasticsearchNesVersion}
 			// elasticsearch NES fork 跟随 Spring Data Elasticsearch 4.4.x 版本线，当前为
@@ -199,7 +207,7 @@ allprojects {
 				details.useTarget("cn.bjca.footstone.bpring.data:${newArtifactId}:${springDataElasticsearchNesVersion}")
 			}
 
-			// 规则七：Reactor Netty 官方坐标映射
+			// 规则八：Reactor Netty 官方坐标映射
 			// 仅替换 Spring Boot 2.7 使用并已在 NES fork 发布的四个稳定模块：
 			// reactor-netty / core / http / http-brave。incubator QUIC 属于独立 group
 			// 和版本线，禁止在此泛化替换，避免构造不存在的制品坐标。
@@ -212,7 +220,7 @@ allprojects {
 				details.useTarget("cn.bjca.footstone.beactor.netty:${newArtifactId}:${reactorNettyNesVersion}")
 			}
 
-			// 规则八：Elasticsearch 生产闭包 allowlist 映射
+			// 规则九：Elasticsearch 生产闭包 allowlist 映射
 			// 只替换已发布的 16 个 NES 生产模块和 Java API Client，禁止对
 			// org.elasticsearch / co.elastic.clients 做整组替换（Transport Client、
 			// integ-test 发行物等没有对应 NES 制品）。

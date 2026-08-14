@@ -227,7 +227,7 @@
 
 ## 7. Spring Kafka NES 模块映射
 
-Spring Kafka NES 分支当前采用 **GroupId 去特征化 + 版本 NES 化**，ArtifactId 保持 upstream 名称不变。
+Spring Kafka NES 分支当前采用 **GroupId、ArtifactId 去特征化 + 版本 NES 化**。
 
 > **映射方式**：根 `build.gradle` 的 `resolutionStrategy.eachDependency` 会在本仓库构建期将 `org.springframework.kafka` 组透明替换为 `cn.bjca.footstone.bpring.kafka`。
 >
@@ -235,12 +235,22 @@ Spring Kafka NES 分支当前采用 **GroupId 去特征化 + 版本 NES 化**，
 
 | 原始坐标 | NES 坐标 |
 | :--- | :--- |
-| `org.springframework.kafka:spring-kafka` | `cn.bjca.footstone.bpring.kafka:spring-kafka` |
-| `org.springframework.kafka:spring-kafka-test` | `cn.bjca.footstone.bpring.kafka:spring-kafka-test` |
+| `org.springframework.kafka:spring-kafka` | `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka` |
+| `org.springframework.kafka:spring-kafka-test` | `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka-test` |
 
-**版本：** `2.9.13-nes.patch.1`
+**版本：** `2.9.13-nes.patch.2-SNAPSHOT`
 
-> **注意：** 当前私服中未发布 `bjca-footstone-bpring-kafka-bom`，也未发布 `bjca-footstone-bpring-kafka` / `bjca-footstone-bpring-kafka-test` artifactId。下游应使用上表中的实际坐标。
+> **注意：** 当前私服未发布 `bjca-footstone-bpring-kafka-bom`。下游应导入 NES Boot BOM，并使用上表中的实际模块坐标。
+
+### 7.1 Spring Retry NES 精确映射
+
+| 原始坐标 | NES 坐标 |
+| :--- | :--- |
+| `org.springframework.retry:spring-retry` | `cn.bjca.footstone.bpring.retry:bjca-footstone-bpring-retry` |
+
+**版本：** `1.3.4-nes.patch.1-SNAPSHOT`
+
+Boot BOM 不再管理官方 Retry GAV。Maven 消费者必须迁移依赖声明；Java import 仍保持 `org.springframework.retry.*`。
 
 ### 6.3 扩展模块
 
@@ -316,7 +326,7 @@ forkGroupIdBase=cn.bjca.footstone.bpring
   Version:     (任意)                               → ${springSecurityVersion}
 ```
 
-> 此外，根 `build.gradle` 还实现了 **规则三（Spring Kafka）**、**规则四（Logback）**，详见源码内注释。
+> 此外，根 `build.gradle` 还实现了 **规则三（Spring Retry 精确映射）**、**规则四（Spring Kafka）** 和后续 fork 规则，详见源码内注释。
 
 **规则五 —— Spring Data 组映射（仅 commons / keyvalue）：**
 ```

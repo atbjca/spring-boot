@@ -7,6 +7,7 @@
 
 | 升级日期 | 组件名称 | 升级前版本 | 升级后版本 | 修复漏洞 / 原因 | 兼容性说明 |
 | :---: | :--- | :---: | :---: | :--- | :--- |
+| 2026-08-14 | Spring Kafka patch.2 + NES Spring Retry | Kafka `2.9.13-nes.patch.1-SNAPSHOT` / 官方 Retry 1.3.4 | **Kafka `2.9.13-nes.patch.2-SNAPSHOT` + NES Retry `1.3.4-nes.patch.1-SNAPSHOT`** | 统一 Boot、Kafka、Batch、AMQP、Integration 的 Retry 实现；验证 CVE-2026-41710 LRU 缓解和 CVE-2026-41731 精确受信包行为 | Java 8；验证时间戳 Kafka `20260814.020248-2`、Retry `20260810.073226-2`；均为 SNAPSHOT，Boot RELEASE 保持阻断 |
 | 2026-08-13 | NES Elasticsearch 客户端闭包 + Spring Data patch.2 | 官方 ES 7.17.29 / SDE patch.1 | **NES `7.17.29-nes.patch.1-SNAPSHOT` + Data BOM/SDE patch.2-SNAPSHOT** | 对齐已验证 NES 客户端闭包、Java API Client、Barsson、Jakarta JSON-P 2.0.2；停止管理 Transport Client / integ-test / 官方 elasticsearch-java；starter 显式 LZ4 替换（[需求-042]） | Java package 不变；内部依赖仍为 SNAPSHOT，正式 Boot RELEASE 保持阻断 |
 | 2026-08-11 | Spring Security NES（Boot 开发候选） | `5.8.16-nes.patch.1` RELEASE | **`5.8.16-nes.patch.2-SNAPSHOT`** | Boot 开发线采用包含七项 2026 CVE backport 的 Security 候选；已验证实际 Nexus 制品 `5.8.16-nes.patch.2-20260811.065312-1`、现有 BOM/GAV 映射、Maven/Gradle Java 8 SAML/Crypto smoke和 SendGrid 4.10.1 BC 统一 | 仅为开发候选，不是 RELEASE；patch.1 制品、tag、用户示例和回滚目标保持不变；正式 Boot 发布仍等待 Security patch.2 RELEASE/tag及剩余发布门禁 |
 | 2026-08-10 | Spring Boot NES fork 开发版本 | `2.7.18-nes.patch.1` | **`2.7.18-nes.patch.2-SNAPSHOT`** | 为 c3p0 / mchange / lz4-java 安全基线生成独立、可审计的开发制品，避免复用已发布 RELEASE 坐标 | 仅递增 Boot 制品版本；Spring Framework、Security、Data、Kafka、Reactor Netty 等独立 fork 版本保持不变 |

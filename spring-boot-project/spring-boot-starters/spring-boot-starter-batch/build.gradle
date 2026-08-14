@@ -7,5 +7,8 @@ description = "Starter for using Spring Batch"
 dependencies {
 	api(project(":spring-boot-project:spring-boot-starters:spring-boot-starter"))
 	api(project(":spring-boot-project:spring-boot-starters:spring-boot-starter-jdbc"))
-	api("org.springframework.batch:spring-batch-core")
+	api("org.springframework.batch:spring-batch-core") {
+		exclude group: "org.springframework.retry", module: "spring-retry"
+	}
+	api("cn.bjca.footstone.bpring.retry:bjca-footstone-bpring-retry")
 }

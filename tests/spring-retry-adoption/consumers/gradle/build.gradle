@@ -1,0 +1,88 @@
+plugins {
+	id "java"
+}
+
+def bootVersion = providers.gradleProperty("bootVersion").getOrElse("2.7.18-nes.patch.2-SNAPSHOT")
+def defaultBootRepository = file("../../../../spring-boot-project/spring-boot-dependencies/build/maven-repository")
+	.toURI()
+	.toString()
+def bootRepository = providers.gradleProperty("bootRepository").getOrElse(defaultBootRepository)
+
+repositories {
+	maven {
+		name = "bootCandidate"
+		url = uri(bootRepository)
+	}
+	maven {
+		name = "nesPublic"
+		url = uri("http://192.168.131.36:8088/repository/maven-public/")
+		allowInsecureProtocol = true
+	}
+	maven {
+		name = "nesSnapshots"
+		url = uri("http://192.168.131.36:8088/repository/snapshots/")
+		allowInsecureProtocol = true
+		mavenContent {
+			snapshotsOnly()
+		}
+	}
+}
+
+configurations.configureEach {
+	resolutionStrategy.eachDependency { details ->
+		if (details.requested.group == "org.springframework.retry"
+				&& details.requested.name == "spring-retry") {
+			details.useTarget(
+				"cn.bjca.footstone.bpring.retry:bjca-footstone-bpring-retry:1.3.4-nes.patch.1-SNAPSHOT")
+		}
+	}
+}
+
+dependencies {
+	implementation(platform(
+		"cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-dependencies:${bootVersion}"))
+	implementation("cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka")
+	implementation("org.springframework.batch:spring-batch-infrastructure")
+	implementation("org.springframework.amqp:spring-amqp")
+	implementation("org.springframework.integration:spring-integration-core")
+	implementation("cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-commons")
+	implementation("org.springframework.retry:spring-retry")
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+tasks.register("verifyRuntimeArtifacts") {
+	doLast {
+		def artifacts = configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts
+		def coordinates = artifacts
+			.collect { "${it.moduleVersion.id.group}:${it.name}:${it.moduleVersion.id.version}" }
+			.toSorted()
+		coordinates.each { println(it) }
+		def retryCoordinates = coordinates.findAll {
+			it.startsWith("org.springframework.retry:spring-retry:")
+				|| it.startsWith("cn.bjca.footstone.bpring.retry:bjca-footstone-bpring-retry:")
+		}
+		assert retryCoordinates == [
+			"cn.bjca.footstone.bpring.retry:bjca-footstone-bpring-retry:1.3.4-nes.patch.1-SNAPSHOT"
+		]
+		assert coordinates.any {
+			it == "cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka:2.9.13-nes.patch.2-SNAPSHOT"
+		}
+		assert coordinates.any {
+			it == "cn.bjca.footstone.bpring.data:bjca-footstone-bpring-data-commons:2.7.18-nes.patch.1"
+		}
+		def retryClassOwners = artifacts.findAll { artifact ->
+			def archive = new java.util.zip.ZipFile(artifact.file)
+			try {
+				archive.getEntry("org/springframework/retry/RetryContext.class") != null
+			}
+			finally {
+				archive.close()
+			}
+		}.collect { "${it.moduleVersion.id.group}:${it.name}:${it.moduleVersion.id.version}" }
+		assert retryClassOwners == [
+			"cn.bjca.footstone.bpring.retry:bjca-footstone-bpring-retry:1.3.4-nes.patch.1-SNAPSHOT"
+		]
+	}
+}

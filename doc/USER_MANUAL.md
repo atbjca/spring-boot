@@ -64,14 +64,29 @@ Boot / Johnzon / JSON-B 继续使用 `javax.json.*`，依赖 `javax.json:javax.j
 
 当前 Elasticsearch 闭包、Barsson 和 Spring Data patch.2 仍是 SNAPSHOT。下游必须配置 NES Nexus public/snapshots 仓库，升级或验收时刷新依赖缓存。正式 Boot RELEASE 在这些内部 SNAPSHOT 清零之前保持阻断。回滚需同时恢复官方 Elasticsearch 管理块、Jakarta JSON-P 1.1.6 禁止规则、Spring Data patch.1 和 starter 依赖。
 
+## Spring Retry NES 坐标与迁移
+
+NES Boot BOM 只管理以下 Retry 坐标：
+
+```xml
+<dependency>
+    <groupId>cn.bjca.footstone.bpring.retry</groupId>
+    <artifactId>bjca-footstone-bpring-retry</artifactId>
+</dependency>
+```
+
+官方 `org.springframework.retry:spring-retry` 不再由 BOM 管理，这是有意的 GAV 迁移断点。Java 包名不变，业务源码中的 `import org.springframework.retry.*` 无需修改。`bjca-footstone-bpring-boot-starter-batch` 已直接提供 NES Retry；直接组合 Spring Batch、AMQP 或 Integration 底层模块的 Maven 应用必须避免重新引入官方 Retry。
+
+当前版本为 `1.3.4-nes.patch.1-SNAPSHOT`，已验证时间戳 `20260810.073226-2` 和 Java 8 variant。容量为 2 的 LRU 回归证明访问 A 后插入 C 会保留 A/C、驱逐 B且不抛容量异常。由于 RELEASE 尚未发布，CVE-2026-41710 状态仅为“⚠️已缓解”；升级或验收时必须刷新 changing module，并限制攻击者可控的有状态重试 key。
+
 ## Spring Kafka NES 坐标
 
 Spring Kafka NES 分支使用以下 Maven 坐标：
 
 | 用途 | GroupId | ArtifactId | 版本 |
 |------|---------|------------|------|
-| 主模块 | `cn.bjca.footstone.bpring.kafka` | `bjca-footstone-bpring-kafka` | 由 Boot BOM 管理 |
-| 测试模块 | `cn.bjca.footstone.bpring.kafka` | `bjca-footstone-bpring-kafka-test` | 由 Boot BOM 管理 |
+| 主模块 | `cn.bjca.footstone.bpring.kafka` | `bjca-footstone-bpring-kafka` | `2.9.13-nes.patch.2-SNAPSHOT` |
+| 测试模块 | `cn.bjca.footstone.bpring.kafka` | `bjca-footstone-bpring-kafka-test` | `2.9.13-nes.patch.2-SNAPSHOT` |
 
 Java 包名不变，业务代码中的 `import org.springframework.kafka.*` 无需修改。
 
@@ -106,4 +121,4 @@ mapper.addTrustedPackages(
 
 不要使用 `addTrustedPackages("*")` 代替迁移。该配置会显式信任所有类型，只适用于 Producer 和 Topic 写权限完全可信的环境。
 
-当前 Boot 仍管理可变版本 `2.9.13-nes.patch.1`。已验证的安全时间戳为 `20260721.054238-2`；旧构建环境可能缓存修复前的同版本 JAR，升级或发布前应刷新 changing module 并运行 Kafka 安全回归测试。
+当前 Boot 管理可变版本 `2.9.13-nes.patch.2-SNAPSHOT`。已验证的安全时间戳为 `20260814.020248-2`；旧构建环境可能缓存不同内容的同版本 JAR，升级或发布前应刷新 changing module 并运行 Kafka 安全回归测试。

@@ -5,7 +5,7 @@
 > 本文档面向**下游组件使用者**，整合了四个 NES fork 项目的 GAV（GroupId / ArtifactId / Version）映射信息，
 > 帮助您快速将项目从官方 Spring 依赖迁移到 NES 内部维护版本。
 >
-> **版本状态**：当前仓库开发线管理 Spring Security `5.8.16-nes.patch.2-SNAPSHOT`；下文 `2.7.18-nes.patch.1` 示例仍表示已发布、可回滚的 Boot/Security patch.1 组合。本 change 不提供面向用户的 Security SNAPSHOT 试用承诺，patch.2 正式 RELEASE/tag 完成前不得将开发候选用于正式发布。
+> **版本状态**：当前仓库开发线为 Boot `2.7.18-nes.patch.2-SNAPSHOT`，管理 Spring Security `5.8.16-nes.patch.2-SNAPSHOT`、Spring Kafka `2.9.13-nes.patch.2-SNAPSHOT` 和 Spring Retry `1.3.4-nes.patch.1-SNAPSHOT`。下文 `2.7.18-nes.patch.1` 示例仍表示已发布、可回滚的 Boot 基线；内部 SNAPSHOT 清零前不得发布 Boot RELEASE。
 
 ---
 
@@ -36,7 +36,8 @@
 | Spring Framework | `5.3.39` | `5.3.39-nes.patch.1` |
 | Spring Security | `5.8.16` | `5.8.16-nes.patch.2-SNAPSHOT`（当前开发候选；已发布基线为 patch.1） |
 | Spring Authorization Server | `0.4.5` | `0.4.5-nes.patch.1` |
-| Spring Kafka | `2.9.13` | `2.9.13-nes.patch.1` |
+| Spring Kafka | `2.9.13` | `2.9.13-nes.patch.2-SNAPSHOT` |
+| Spring Retry | `1.3.4` | `1.3.4-nes.patch.1-SNAPSHOT` |
 
 ### 1.2 BOM 层级继承关系
 
@@ -63,7 +64,21 @@ bjca-footstone-bpring-boot-dependencies (Spring Boot BOM — 版本管理中心)
 | Spring Security | `org.springframework.security` | `cn.bjca.footstone.bpring.security` |
 | Authorization Server | `org.springframework.security` | `cn.bjca.footstone.bpring.security` |
 | Spring Kafka | `org.springframework.kafka` | `cn.bjca.footstone.bpring.kafka` |
+| Spring Retry | `org.springframework.retry` | `cn.bjca.footstone.bpring.retry` |
 | Logback | `ch.qos.logback` | `cn.bjca.footstone.bogback` |
+
+### 1.4 Spring Retry GAV 迁移断点
+
+Boot BOM 只管理 NES Retry，不再管理官方 `org.springframework.retry:spring-retry`。Maven 消费者必须把依赖声明改为：
+
+```xml
+<dependency>
+    <groupId>cn.bjca.footstone.bpring.retry</groupId>
+    <artifactId>bjca-footstone-bpring-retry</artifactId>
+</dependency>
+```
+
+这是 GAV 级 breaking change，但 Java API 包名没有改变，源码仍使用 `org.springframework.retry.*` import。使用 `bjca-footstone-bpring-boot-starter-batch` 时 Starter 已直接提供 NES Retry；直接使用 Spring Batch、AMQP 或 Integration 底层模块时，不要重新声明官方 Retry GAV。
 
 ---
 
@@ -602,7 +617,7 @@ NES BOM 对 8 个 **A 类第三方库** 执行了 `<exclusions>`，排除其对 
 
 | 序号 | A 类库 | 版本 | Starter 状态 |
 | :--- | :--- | :--- | :--- |
-| 1 | Spring Kafka NES | 2.9.13-nes.patch.1 | 无 Starter |
+| 1 | Spring Kafka NES | 2.9.13-nes.patch.2-SNAPSHOT | 无 Starter |
 | 2 | Spring Batch Core | 4.3.10 | 活跃 Starter（`spring-boot-starter-batch`） |
 | 3 | Spring HATEOAS | 1.5.6 | 已排除 Starter（`spring-boot-starter-hateoas`） |
 | 4 | Spring LDAP Core | 2.4.1 | 已排除 Starter（`spring-boot-starter-data-ldap`） |
@@ -657,6 +672,8 @@ Spring Kafka 已切换为 NES 坐标：
 
 Spring Kafka NES POM 仍声明以下官方 Spring Framework 传递依赖，因此 Boot BOM 继续排除 `org.springframework:*`，下游在不使用相关 Starter 时需补充 NES Framework 模块。
 
+Kafka patch.2 直接采用 BOM 管理的 NES Retry。最终依赖图中只能出现 `cn.bjca.footstone.bpring.retry:bjca-footstone-bpring-retry`，不能同时保留官方 Retry。
+
 | 缺失的原始依赖 | Fork 替代 ArtifactId |
 | :--- | :--- |
 | `spring-context` | `bjca-footstone-bpring-context` |
@@ -679,7 +696,7 @@ Spring Kafka NES POM 仍声明以下官方 Spring Framework 传递依赖，因�
 
 **最小补充集（不使用 Starter 时）：** `bjca-footstone-bpring-context`、`bjca-footstone-bpring-tx`（`spring-context` 会传递引入 `spring-aop`、`spring-beans`、`spring-core`）
 
-> **提示：** 使用 `bjca-footstone-bpring-boot-starter-batch` 的用户无需额外操作，Starter 已包含所有必要依赖。
+> **提示：** 使用 `bjca-footstone-bpring-boot-starter-batch` 的用户无需额外操作，Starter 已包含所有必要依赖和 NES Retry。直接引用 Batch 底层模块时，如需 Retry API，应显式声明 `cn.bjca.footstone.bpring.retry:bjca-footstone-bpring-retry`。
 
 ---
 
@@ -805,6 +822,12 @@ Spring WS Core 及其依赖 `spring-xml` 的缺失依赖如下：
 <dependency>
     <groupId>org.springframework.batch</groupId>
     <artifactId>spring-batch-core</artifactId>
+</dependency>
+
+<!-- 官方 Retry 已从传递依赖中排除，改用 NES Retry -->
+<dependency>
+    <groupId>cn.bjca.footstone.bpring.retry</groupId>
+    <artifactId>bjca-footstone-bpring-retry</artifactId>
 </dependency>
 
 <!-- 补充被排除的 Spring Framework fork 依赖（最小集） -->

@@ -32,10 +32,43 @@ class ForkDependencySubstitutionTests {
 
 	@Test
 	void springKafkaDependenciesAreSubstitutedToNesCoordinates() throws IOException {
+		String properties = readRootFile("gradle.properties");
+		assertThat(properties).contains("springKafkaNesVersion=2.9.13-nes.patch.2-SNAPSHOT");
 		String build = readRootBuildGradle();
 		assertThat(build).contains("requested.group == 'org.springframework.kafka'");
 		assertThat(build).contains("requested.name.startsWith('spring-kafka')");
-		assertThat(build).contains("cn.bjca.footstone.bpring.kafka:${newArtifactId}:2.9.13-nes.patch.1");
+		assertThat(build).contains("cn.bjca.footstone.bpring.kafka:${newArtifactId}:${springKafkaNesVersion}");
+	}
+
+	@Test
+	void springRetryDependencyIsPreciselySubstitutedToNesCoordinate() throws IOException {
+		String properties = readRootFile("gradle.properties");
+		assertThat(properties).contains("springRetryNesVersion=1.3.4-nes.patch.1-SNAPSHOT");
+		String build = readRootBuildGradle();
+		assertThat(build).contains("requested.group == 'org.springframework.retry'");
+		assertThat(build).contains("requested.name == 'spring-retry'");
+		assertThat(build)
+			.contains("cn.bjca.footstone.bpring.retry:bjca-footstone-bpring-retry:${springRetryNesVersion}");
+		assertThat(build).doesNotContain("requested.group.startsWith('org.springframework.retry')");
+	}
+
+	@Test
+	void springKafkaAndRetryNesModulesAndExclusionsAreManagedByTheBom() throws IOException {
+		String bom = readBom();
+		assertThat(bom).contains("library(\"Spring Kafka\", springKafkaNesVersion)");
+		assertThat(bom).contains("\"bjca-footstone-bpring-kafka\"");
+		assertThat(bom).contains("\"bjca-footstone-bpring-kafka-test\"");
+		assertThat(bom).contains("library(\"Spring Retry NES\", springRetryNesVersion)");
+		assertThat(bom).contains("group(\"cn.bjca.footstone.bpring.retry\")");
+		assertThat(bom).contains("\"bjca-footstone-bpring-retry\"");
+		assertThat(bom).doesNotContain("group(\"org.springframework.retry\")");
+		assertThat(bom).contains("\"spring-amqp\" {\n\t\t\t\t\texclude group: \"org.springframework\", module: \"*\"\n"
+				+ "\t\t\t\t\texclude group: \"org.springframework.retry\", module: \"spring-retry\"");
+		assertThat(bom).contains("\"spring-batch-infrastructure\" {\n"
+				+ "\t\t\t\t\texclude group: \"org.springframework\", module: \"*\"\n"
+				+ "\t\t\t\t\texclude group: \"org.springframework.retry\", module: \"spring-retry\"");
+		assertThat(bom).contains("\"spring-integration-core\" {\n"
+				+ "\t\t\t\t\texclude group: \"org.springframework.retry\", module: \"spring-retry\"");
 	}
 
 	@Test

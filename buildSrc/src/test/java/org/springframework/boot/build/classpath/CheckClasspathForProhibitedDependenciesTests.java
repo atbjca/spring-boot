@@ -50,4 +50,23 @@ class CheckClasspathForProhibitedDependenciesTests {
 		assertThat(CheckClasspathForProhibitedDependencies.isProhibited("jakarta.json", "jakarta.json-api")).isFalse();
 	}
 
+	@Test
+	void officialSpringRetryIsProhibited() {
+		assertThat(CheckClasspathForProhibitedDependencies.isProhibited("org.springframework.retry", "spring-retry"))
+			.isTrue();
+	}
+
+	@Test
+	void nesSpringRetryIsAllowed() {
+		assertThat(CheckClasspathForProhibitedDependencies.isProhibited("cn.bjca.footstone.bpring.retry",
+				"bjca-footstone-bpring-retry"))
+			.isFalse();
+	}
+
+	@Test
+	void unrelatedArtifactInOfficialSpringRetryGroupIsAllowed() {
+		assertThat(CheckClasspathForProhibitedDependencies.isProhibited("org.springframework.retry", "retry-support"))
+			.isFalse();
+	}
+
 }

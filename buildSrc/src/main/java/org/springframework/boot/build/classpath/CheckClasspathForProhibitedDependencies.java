@@ -103,6 +103,9 @@ public class CheckClasspathForProhibitedDependencies extends DefaultTask {
 		if (group.equals("org.slf4j") && name.equals("jcl-over-slf4j")) {
 			return true;
 		}
+		if (group.equals("org.springframework.retry") && name.equals("spring-retry")) {
+			return true;
+		}
 		if (group.startsWith("org.jboss.spec")) {
 			return true;
 		}

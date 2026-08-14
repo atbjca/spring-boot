@@ -64,6 +64,7 @@ eachDependency 拦截请求
 | :--- | :--- | :--- | :--- |
 | Spring Framework | `org.springframework:spring-xxx` | `cn.bjca.footstone.bpring:bjca-footstone-bpring-xxx` | 变量计算 |
 | Spring Security | `org.springframework.security:spring-security-xxx` | `cn.bjca.footstone.bpring.security:bjca-footstone-bpring-security-xxx` | 变量计算 |
+| Spring Retry | `org.springframework.retry:spring-retry` | `cn.bjca.footstone.bpring.retry:bjca-footstone-bpring-retry` | 精确模块映射 |
 | Spring Kafka | `org.springframework.kafka:spring-kafka{,-test}` | `cn.bjca.footstone.bpring.kafka:bjca-footstone-bpring-kafka{,-test}` | 固定子命名空间 + 前缀替换 |
 
 **代码示例**（`build.gradle`）：
@@ -85,19 +86,25 @@ else if (requested.group == 'org.springframework.security' && requested.name.sta
     details.useTarget("${forkGroupIdBase}.security:${newArtifactId}:${springSecurityVersion}")
 }
 
-// 规则三：org.springframework.kafka 组映射
+// 规则三：仅精确映射官方 Spring Retry 主模块
+else if (requested.group == 'org.springframework.retry' && requested.name == 'spring-retry') {
+    details.useTarget("cn.bjca.footstone.bpring.retry:bjca-footstone-bpring-retry:${springRetryNesVersion}")
+}
+
+// 规则四：org.springframework.kafka 组映射
 // Spring Kafka NES 分支已完成 artifactId 去特征化：spring-kafka{,-test}
 // 映射为 bjca-footstone-bpring-kafka{,-test}，GroupId 固定为 .kafka 子命名空间。
 else if (requested.group == 'org.springframework.kafka' && requested.name.startsWith('spring-kafka')) {
     def newArtifactId = requested.name.replaceFirst(/^spring-/, "${forkArtifactPrefix}-")
-    details.useTarget("cn.bjca.footstone.bpring.kafka:${newArtifactId}:2.9.13-nes.patch.1-SNAPSHOT")
+    details.useTarget("cn.bjca.footstone.bpring.kafka:${newArtifactId}:${springKafkaNesVersion}")
 }
 ```
 
 **特点**：
 - GroupId 通过 `forkGroupIdBase` + 后缀（如 `.security`）动态计算，或使用已确认的同系列子命名空间（如 `.kafka`）
 - ArtifactId 通过 `forkArtifactPrefix` 替换前缀（如 `spring-` → `bjca-footstone-bpring-`）
-- 版本统一使用 `gradle.properties` 中的变量（如 `springFrameworkVersion`）
+- 版本统一使用 `gradle.properties` 中的变量（如 `springFrameworkVersion`、`springRetryNesVersion`、`springKafkaNesVersion`）
+- Spring Retry：只匹配 `org.springframework.retry:spring-retry`，不会重写同 group 的其他 artifact
 - Spring Kafka：GroupId 使用已确认的同系列子命名空间 `.kafka`，artifactId 经 `spring-` 前缀替换为 `bjca-footstone-bpring-kafka{,-test}`，与私服实际发布坐标一致；版本与 BOM 中 `library("Spring Kafka", ...)` 保持一致。
 
 ### 2.2 独立 fork（硬编码规则）

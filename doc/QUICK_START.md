@@ -10,7 +10,7 @@ Maven 项目可通过 Parent POM 或 dependencyManagement 引入 NES Spring Boot
         <dependency>
             <groupId>cn.bjca.footstone.bpring.boot</groupId>
             <artifactId>bjca-footstone-bpring-boot-dependencies</artifactId>
-            <version>2.7.18-nes.patch.1</version>
+            <version>2.7.18-nes.patch.2-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -23,7 +23,7 @@ Maven 项目可通过 Parent POM 或 dependencyManagement 引入 NES Spring Boot
 ```xml
 <dependency>
     <groupId>cn.bjca.footstone.bpring.kafka</groupId>
-    <artifactId>spring-kafka</artifactId>
+    <artifactId>bjca-footstone-bpring-kafka</artifactId>
 </dependency>
 ```
 
@@ -32,12 +32,23 @@ Maven 项目可通过 Parent POM 或 dependencyManagement 引入 NES Spring Boot
 ```xml
 <dependency>
     <groupId>cn.bjca.footstone.bpring.kafka</groupId>
-    <artifactId>spring-kafka-test</artifactId>
+    <artifactId>bjca-footstone-bpring-kafka-test</artifactId>
     <scope>test</scope>
 </dependency>
 ```
 
 当前私服未发布 `bjca-footstone-bpring-kafka-bom`。版本由 `bjca-footstone-bpring-boot-dependencies` 统一管理。
+
+## 引入 Spring Retry NES
+
+```xml
+<dependency>
+    <groupId>cn.bjca.footstone.bpring.retry</groupId>
+    <artifactId>bjca-footstone-bpring-retry</artifactId>
+</dependency>
+```
+
+Boot BOM 不再管理官方 `org.springframework.retry:spring-retry`。直接依赖官方 GAV 的消费者必须迁移到上述 NES GAV；Java import 仍保持 `org.springframework.retry.*`。当前 Retry patch.1 和 Kafka patch.2 都是 SNAPSHOT，验收时应刷新依赖并核对实际时间戳，不能据此发布 Boot RELEASE。
 
 ## Kafka 与 Elasticsearch 同时使用时的 lz4 排除
 
@@ -97,7 +108,7 @@ Gradle：
 
 ```groovy
 dependencies {
-    implementation platform("cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-dependencies:2.7.18-nes.patch.1")
+    implementation platform("cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-dependencies:2.7.18-nes.patch.2-SNAPSHOT")
     implementation "cn.bjca.footstone.bpring.boot:bjca-footstone-bpring-boot-starter-reactor-netty"
 }
 ```
